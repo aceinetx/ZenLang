@@ -1,5 +1,3 @@
-use std::io::stdin;
-
 use zenlang::platform;
 
 pub struct Platform {}
