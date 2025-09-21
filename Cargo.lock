@@ -53,6 +53,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0dca6411025b24b60bfa7ec1fe1f8e710ac09782dca409ee8237ba74b51295fd"
 dependencies = [
  "serde_core",
+ "serde_derive",
 ]
 
 [[package]]
@@ -110,6 +111,7 @@ version = "0.1.0"
 dependencies = [
  "bincode",
  "libm",
+ "serde",
 ]
 
 [[package]]
