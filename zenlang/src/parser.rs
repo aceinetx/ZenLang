@@ -309,7 +309,7 @@ impl<'a> Parser<'_> {
                     }
                     Ok(expr) => {
                         if !matches!(self.current_token, Token::Semicolon) {
-                            return Err("expected semicolon after return");
+                            return Err("expected semicolon after let");
                         }
 
                         node.expr = Some(expr);
