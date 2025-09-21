@@ -31,7 +31,12 @@ impl Display for Value {
 
                 let len = array.len();
                 for i in 0..len {
-                    let _ = write!(f, "{}", array[i]);
+                    if let Value::String(_) = array[i] {
+                        let _ = write!(f, "\"{}\"", array[i]);
+                    } else {
+                        let _ = write!(f, "{}", array[i]);
+                    }
+
                     if i != len - 1 {
                         let _ = write!(f, ", ");
                     }
