@@ -5,6 +5,7 @@ use crate::platform::Platform;
 use crate::scope::Scope;
 use crate::strong_u64::*;
 use crate::value::*;
+use alloc::boxed::*;
 use alloc::format;
 use alloc::string::*;
 use alloc::vec::*;

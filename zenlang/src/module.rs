@@ -47,19 +47,6 @@ impl Module {
     pub fn get_opcode(&self, addr: u32) -> &Opcode {
         return &self.opcodes[addr as usize];
     }
-
-    pub fn debug_bytes(&self) {
-        if let Ok(bytes) = self.compile() {
-            for i in 0..bytes.len() {
-                let byte = bytes[i];
-                print!("{:x}     ", byte);
-                if byte != 0 {
-                    print!("{}", byte as char);
-                }
-                println!();
-            }
-        }
-    }
 }
 
 impl Default for Module {
