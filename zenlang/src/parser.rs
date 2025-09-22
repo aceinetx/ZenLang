@@ -342,6 +342,17 @@ impl<'a> Parser<'_> {
             Token::Semicolon => {
                 return Ok(None);
             }
+            Token::If => {
+                //
+                match self.parse_if_chain() {
+                    Ok(node) => {
+                        return Ok(Some(node));
+                    }
+                    Err(e) => {
+                        return Err(e);
+                    }
+                }
+            }
             _ => match self.parse_expression(0, false) {
                 Err(e) => {
                     return Err(e);
@@ -422,12 +433,18 @@ impl<'a> Parser<'_> {
         Ok(())
     }
 
+    pub fn parse_if_chain(&mut self) -> Result<Box<dyn node::Compile>, String> {
+        loop {
+            let token = self.current_token.clone();
+        }
+        return Err("unimplemented".into());
+    }
+
     pub fn parse(&mut self) -> Result<(), String> {
         self.root = root::AstRoot::new();
 
         let mut token = self.next();
         while !matches!(token, Token::EOF) {
-            //println!("tkn: {:?}", token);
             match token {
                 Token::Fn => {
                     if let Err(e) = self.parse_function() {

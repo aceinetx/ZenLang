@@ -22,6 +22,9 @@ pub enum Token {
     Semicolon,
     Comma,
     Assign,
+    If,
+    Elif,
+    Else,
     EOF,
 }
 
@@ -151,6 +154,12 @@ impl Tokenizer {
                         token = Token::True;
                     } else if name == "false" {
                         token = Token::False;
+                    } else if name == "if" {
+                        token = Token::If;
+                    } else if name == "elif" {
+                        token = Token::Elif;
+                    } else if name == "else" {
+                        token = Token::Else;
                     }
                 }
                 return token;
