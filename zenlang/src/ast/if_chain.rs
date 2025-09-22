@@ -31,20 +31,45 @@ impl Compile for AstIfChain {
         &mut self,
         compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
-        let module = compiler.get_module();
+        let mut branch_indexes: Vec<usize> = Vec::new();
 
-        let head_bst_opcode_index = module.opcodes.len();
-        let else_index: usize;
-
+        // compile expressions
         if let Some(head) = &mut self.head {
+            if let Some(value) = &mut head.value {
+                if let Err(e) = value.compile(compiler) {
+                    return Err(e);
+                }
+            }
+
+            let module = compiler.get_module();
+            branch_indexes.push(module.opcodes.len());
+
+            let opcode = Opcode::Bst(0, 0);
+            module.opcodes.push(opcode);
         } else {
             return Err("self.head is None".into());
         }
 
-        if let Some(else_node) = &mut self.else_node {
-            else_index = module.opcodes.len();
-        } else {
-            return Err("self.else_node is None".into());
+        // compile blocks
+        if let Some(head) = &mut self.head {
+            let addr: usize;
+            {
+                let module = compiler.get_module();
+                addr = module.opcodes.len() - 1;
+            }
+
+            for node in head.body.iter_mut() {
+                if let Err(e) = node.compile_all(compiler) {
+                    return Err(e);
+                }
+            }
+
+            {
+                let module = compiler.get_module();
+                if let Opcode::Bst(true_addr, _) = &mut module.opcodes[branch_indexes[0]] {
+                    *true_addr = addr as u32;
+                }
+            }
         }
 
         Ok(())

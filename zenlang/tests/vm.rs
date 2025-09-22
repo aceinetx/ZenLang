@@ -15,6 +15,9 @@ fn vm_test_ret_num() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
 
     loop {
         if !vm.step() {
@@ -22,7 +25,7 @@ fn vm_test_ret_num() {
         }
     }
 
-    assert!(vm.error.is_empty());
+    assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Number(1.23)));
 }
 
@@ -37,6 +40,9 @@ fn vm_test_ret_string() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
 
     loop {
         if !vm.step() {
@@ -44,7 +50,7 @@ fn vm_test_ret_string() {
         }
     }
 
-    assert!(vm.error.is_empty());
+    assert_eq!(vm.error, "");
     if let Value::String(s) = vm.ret {
         assert_eq!(s, "Hello");
     } else {
@@ -63,6 +69,9 @@ fn vm_test_ret_true() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
 
     loop {
         if !vm.step() {
@@ -70,7 +79,7 @@ fn vm_test_ret_true() {
         }
     }
 
-    assert!(vm.error.is_empty());
+    assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Boolean(true)));
 }
 
@@ -85,6 +94,9 @@ fn vm_test_ret_false() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
 
     loop {
         if !vm.step() {
@@ -92,7 +104,7 @@ fn vm_test_ret_false() {
         }
     }
 
-    assert!(vm.error.is_empty());
+    assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Boolean(false)));
 }
 
@@ -107,6 +119,9 @@ fn vm_test_ret_null() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
 
     loop {
         if !vm.step() {
@@ -114,7 +129,7 @@ fn vm_test_ret_null() {
         }
     }
 
-    assert!(vm.error.is_empty());
+    assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Null()));
 }
 
@@ -129,7 +144,11 @@ fn vm_test_ret_if_false() {
     }
     let mut vm = VM::new();
     let module = compiler.get_module();
+    println!("{:?}", module);
     vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
 
     loop {
         if !vm.step() {
@@ -137,7 +156,7 @@ fn vm_test_ret_if_false() {
         }
     }
 
-    assert!(vm.error.is_empty());
+    assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Number(0.0)));
 }
 
@@ -152,7 +171,11 @@ fn vm_test_ret_if_true() {
     }
     let mut vm = VM::new();
     let module = compiler.get_module();
+    println!("{:?}", module);
     vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
 
     loop {
         if !vm.step() {
@@ -160,7 +183,7 @@ fn vm_test_ret_if_true() {
         }
     }
 
-    assert!(vm.error.is_empty());
+    assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Number(1.0)));
 }
 
@@ -176,7 +199,11 @@ fn vm_test_ret_if_else() {
     }
     let mut vm = VM::new();
     let module = compiler.get_module();
+    println!("{:?}", module);
     vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
 
     loop {
         if !vm.step() {
@@ -184,7 +211,7 @@ fn vm_test_ret_if_else() {
         }
     }
 
-    assert!(vm.error.is_empty());
+    assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Number(2.0)));
 }
 
@@ -212,7 +239,11 @@ fn main {
     }
     let mut vm = VM::new();
     let module = compiler.get_module();
+    println!("{:?}", module);
     vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
 
     loop {
         if !vm.step() {
@@ -220,7 +251,7 @@ fn main {
         }
     }
 
-    assert!(vm.error.is_empty());
+    assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Number(5.0)));
 }
 
@@ -236,6 +267,9 @@ fn vm_test_cmp() {
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
     vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
 
     loop {
         if !vm.step() {
@@ -243,7 +277,7 @@ fn vm_test_cmp() {
         }
     }
 
-    assert!(vm.error.is_empty());
+    assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Boolean(true)));
 }
 
@@ -259,6 +293,9 @@ fn vm_test_cmp_false() {
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
     vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
 
     loop {
         if !vm.step() {
@@ -266,6 +303,6 @@ fn vm_test_cmp_false() {
         }
     }
 
-    assert!(vm.error.is_empty());
+    assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Boolean(false)));
 }
