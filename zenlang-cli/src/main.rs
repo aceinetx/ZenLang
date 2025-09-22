@@ -14,6 +14,7 @@ fn run_code(code: String) {
     }
 
     let module = compiler.get_module();
+    //println!("{:?}", module);
 
     let mut vm = vm::VM::new();
     vm.platform = Some(Box::new(platform::Platform::new()));
@@ -33,11 +34,11 @@ fn run_code(code: String) {
     }
     if !vm.error.is_empty() {
         println!("\n-- begin runtime error --");
+        println!("{}", vm.error);
         println!(
-            "runtime error at pc = {}:{} - {}",
+            "runtime error at pc = {}:{}",
             vm.pc.get_low() - 1,
             vm.pc.get_high(),
-            vm.error
         );
         println!("-- end runtime error --");
         return;

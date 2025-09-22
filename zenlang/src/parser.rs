@@ -471,6 +471,10 @@ impl<'a> Parser<'_> {
             let token = self.current_token.clone();
             match token {
                 Token::If => {
+                    if chain.head.is_some() {
+                        break;
+                    }
+
                     let mut node = if_stmt::AstIfStmt::new();
                     match self.parse_expression(0, true) {
                         Err(e) => {
