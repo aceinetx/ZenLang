@@ -198,6 +198,7 @@ fn vm_test_cmp() {
     }
     let mut vm = VM::new();
     let module = compiler.get_module();
+    println!("{:?}", module.opcodes);
     vm.load_module(module);
 
     loop {

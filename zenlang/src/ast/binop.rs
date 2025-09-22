@@ -6,6 +6,7 @@ pub enum AstBinopOp {
     MINUS,
     MUL,
     DIV,
+    EQ,
 }
 
 pub struct AstBinop {
@@ -68,6 +69,9 @@ impl Compile for AstBinop {
             }
             AstBinopOp::DIV => {
                 opcode = Opcode::Div();
+            }
+            AstBinopOp::EQ => {
+                opcode = Opcode::Eq();
             }
         }
 

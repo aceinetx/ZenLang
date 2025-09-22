@@ -34,6 +34,12 @@ impl<'a> Parser<'_> {
                 }
                 return None;
             }
+            Token::OperatorCmp(first, second) => {
+                if first == '=' && second == '=' {
+                    return Some(3);
+                }
+                return None;
+            }
             _ => {
                 return None;
             }
@@ -168,7 +174,8 @@ impl<'a> Parser<'_> {
                 self.next();
             }
             _ => {
-                return Err(self.error("unexpected token in parse_expression"));
+                return Err(self
+                    .error(format!("unexpected token in parse_expression: {:?}", token).as_str()));
             }
         }
 
@@ -202,6 +209,37 @@ impl<'a> Parser<'_> {
                                     binop.op = binop::AstBinopOp::MUL;
                                 } else if op == '/' {
                                     binop.op = binop::AstBinopOp::DIV;
+                                }
+                                left = Box::new(binop);
+                            }
+                        }
+                    }
+                    None => {
+                        break;
+                    }
+                }
+            } else if let Token::OperatorCmp(first_char, second_char) = token {
+                match self.get_token_precedence(&token) {
+                    Some(prec) => {
+                        if prec < min_prec {
+                            break;
+                        }
+
+                        // note to the future:
+                        // right assoc: next_min = prec
+                        // left assoc: next_min = prec + 1
+                        let next_min = prec + 1;
+                        self.next();
+                        match self.parse_expression(next_min, false) {
+                            Err(e) => {
+                                return Err(e);
+                            }
+                            Ok(right) => {
+                                let mut binop = binop::AstBinop::new();
+                                binop.left = Some(left);
+                                binop.right = Some(right);
+                                if first_char == '=' && second_char == '=' {
+                                    binop.op = binop::AstBinopOp::EQ;
                                 }
                                 left = Box::new(binop);
                             }
@@ -434,9 +472,6 @@ impl<'a> Parser<'_> {
     }
 
     pub fn parse_if_chain(&mut self) -> Result<Box<dyn node::Compile>, String> {
-        loop {
-            let token = self.current_token.clone();
-        }
         return Err("unimplemented".into());
     }
 

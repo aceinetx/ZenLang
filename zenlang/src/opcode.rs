@@ -22,5 +22,6 @@ pub enum Opcode {
     Sub(),
     Mul(),
     Div(),
+    Eq(),
     Ret(),
 }

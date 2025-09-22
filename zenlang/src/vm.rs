@@ -94,6 +94,23 @@ impl<'a> VM<'a> {
                     }
                 }
             }
+            AstBinopOp::EQ => {
+                if let Value::Number(left_num) = left {
+                    if let Value::Number(right_num) = right {
+                        return Value::Boolean(left_num == right_num);
+                    }
+                }
+                if let Value::Boolean(left_bool) = left {
+                    if let Value::Boolean(right_bool) = right {
+                        return Value::Boolean(left_bool == right_bool);
+                    }
+                }
+                if let Value::String(left_str) = left {
+                    if let Value::String(right_str) = right {
+                        return Value::Boolean(left_str == right_str);
+                    }
+                }
+            }
         }
         self.error = "unmatched left and right value types".into();
         return Value::Null();
@@ -377,6 +394,10 @@ impl<'a> VM<'a> {
             }
             Opcode::Div() => {
                 let value = self.compute_stack_values(AstBinopOp::DIV);
+                self.stack.push(value);
+            }
+            Opcode::Eq() => {
+                let value = self.compute_stack_values(AstBinopOp::EQ);
                 self.stack.push(value);
             }
             Opcode::Ret() => {

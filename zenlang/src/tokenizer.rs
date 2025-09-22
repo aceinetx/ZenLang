@@ -10,6 +10,7 @@ pub enum Token {
     Identifier(String),
     String(String),
     Operator(char),
+    OperatorCmp(char, char),
     Null,
     True,
     False,
@@ -195,6 +196,13 @@ impl Tokenizer {
                 return Token::Rbracket;
             } else if c == '=' {
                 self.pos += 1;
+                if self.pos < self.code.len() {
+                    let c = self.code.chars().nth(self.pos).unwrap();
+                    if c == '=' {
+                        self.pos += 1;
+                        return Token::OperatorCmp('=', '=');
+                    }
+                }
                 return Token::Assign;
             }
             self.pos += 1;
