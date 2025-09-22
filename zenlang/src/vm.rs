@@ -204,6 +204,10 @@ impl<'a> VM<'a> {
                 self.stack.push(Value::Null());
                 self.check_stack_overflow();
             }
+            Opcode::Loadcb(flag) => {
+                self.stack.push(Value::Boolean(*flag));
+                self.check_stack_overflow();
+            }
             Opcode::Loadcs(value) => {
                 let value = Value::String(value.to_string());
                 self.stack.push(value);

@@ -11,6 +11,8 @@ pub enum Token {
     String(String),
     Operator(char),
     Null,
+    True,
+    False,
     Lbrace,
     Rbrace,
     Lparen,
@@ -148,6 +150,10 @@ impl Tokenizer {
                         token = Token::Let;
                     } else if name == "Null" {
                         token = Token::Null;
+                    } else if name == "true" {
+                        token = Token::True;
+                    } else if name == "false" {
+                        token = Token::False;
                     }
                 }
                 return token;

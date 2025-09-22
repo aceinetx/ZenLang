@@ -2,6 +2,7 @@ pub mod array;
 pub mod array_assign;
 pub mod array_index;
 pub mod binop;
+pub mod boolean;
 pub mod func_call;
 pub mod function;
 pub mod node;

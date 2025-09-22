@@ -5,8 +5,9 @@ use bincode::*;
 pub enum Opcode {
     Call(),
     Vmcall(u8),
-    Loadcn(f64), // load contant number
-    Loadcnu(),
+    Loadcn(f64),    // load contant number
+    Loadcnu(),      // load constant null
+    Loadcb(bool),   // load constant boolean
     Loadcs(String), // load constant string
     Loadv(String),  // load variable
     Storev(String), // store variable

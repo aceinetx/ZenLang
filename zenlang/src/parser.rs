@@ -147,6 +147,20 @@ impl<'a> Parser<'_> {
 
                 self.next();
             }
+            Token::False => {
+                let mut node = boolean::AstBoolean::new();
+                node.flag = false;
+                left = Box::new(node);
+
+                self.next();
+            }
+            Token::True => {
+                let mut node = boolean::AstBoolean::new();
+                node.flag = true;
+                left = Box::new(node);
+
+                self.next();
+            }
             _ => {
                 return Err("unexpected token in parse_expression");
             }
