@@ -55,7 +55,7 @@ impl Display for Value {
                 );
             }
             Value::Null() => {
-                return write!(f, "Null");
+                return write!(f, "null");
             }
         }
     }

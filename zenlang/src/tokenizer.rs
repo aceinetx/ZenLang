@@ -145,7 +145,7 @@ impl Tokenizer {
                         token = Token::Return;
                     } else if name == "let" {
                         token = Token::Let;
-                    } else if name == "Null" {
+                    } else if name == "null" {
                         token = Token::Null;
                     } else if name == "true" {
                         token = Token::True;
