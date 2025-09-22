@@ -116,21 +116,18 @@ impl Tokenizer {
         return Token::String(string);
     }
 
-    pub fn _peek(&mut self) -> Token {
-        let pos = self.pos;
-        let token = self.next();
-        self.pos = pos;
-        return token;
-    }
+    pub fn get_line(&self) -> u64 {
+        let mut lines = 1;
+        for i in 0..self.code.len() {
+            if i >= self.pos {
+                break;
+            }
 
-    pub fn _peek_n(&mut self, n: usize) -> Token {
-        let pos = self.pos;
-        let mut token: Token = Token::EOF;
-        for _ in 0..n {
-            token = self.next();
+            if self.code.chars().nth(i).unwrap() == '\n' {
+                lines += 1;
+            }
         }
-        self.pos = pos;
-        return token;
+        return lines;
     }
 
     pub fn next(&mut self) -> Token {

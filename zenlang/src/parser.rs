@@ -1,6 +1,8 @@
 use crate::ast::*;
 use crate::tokenizer::*;
 use alloc::boxed::*;
+use alloc::format;
+use alloc::string::*;
 use alloc::vec::*;
 
 pub struct Parser<'a> {
@@ -44,11 +46,15 @@ impl<'a> Parser<'_> {
         return token;
     }
 
+    fn error(&self, text: &str) -> String {
+        return format!("{}: {}", self.tokenizer.get_line(), text);
+    }
+
     pub fn parse_expression(
         &mut self,
         min_prec: i32,
         step_token: bool,
-    ) -> Result<Box<dyn node::Compile>, &'static str> {
+    ) -> Result<Box<dyn node::Compile>, String> {
         let mut token;
         if step_token {
             token = self.next();
@@ -96,7 +102,7 @@ impl<'a> Parser<'_> {
                         break;
                     }
                     if !matches!(self.current_token, Token::Comma) {
-                        return Err("expected `,` after array item: [ <ITEMS> [HERE] ]");
+                        return Err(self.error("expected `,` after array item: [ <ITEMS> [HERE] ]"));
                     }
                 }
 
@@ -124,7 +130,7 @@ impl<'a> Parser<'_> {
                         left = node;
                         token = self.current_token.clone();
                         if !matches!(token, Token::Rparen) {
-                            return Err("expected `)`");
+                            return Err(self.error("expected `)`"));
                         }
                         self.next();
                     }
@@ -162,7 +168,7 @@ impl<'a> Parser<'_> {
                 self.next();
             }
             _ => {
-                return Err("unexpected token in parse_expression");
+                return Err(self.error("unexpected token in parse_expression"));
             }
         }
 
@@ -243,7 +249,8 @@ impl<'a> Parser<'_> {
                     }
 
                     if !matches!(token, Token::Comma) {
-                        return Err("expected `,` after a function argument: CALL(<args> [HERE])");
+                        return Err(self
+                            .error("expected `,` after a function argument: CALL(<args> [HERE])"));
                     }
                 }
 
@@ -257,7 +264,7 @@ impl<'a> Parser<'_> {
         Ok(left)
     }
 
-    pub fn parse_statement(&mut self) -> Result<Option<Box<dyn node::Compile>>, &'static str> {
+    pub fn parse_statement(&mut self) -> Result<Option<Box<dyn node::Compile>>, String> {
         let token = self.current_token.clone();
 
         match token {
@@ -267,7 +274,7 @@ impl<'a> Parser<'_> {
                 }
                 Ok(node) => {
                     if !matches!(self.current_token, Token::Semicolon) {
-                        return Err("expected semicolon after return");
+                        return Err(self.error("expected semicolon after return"));
                     }
 
                     let mut ret = ret::AstReturn::new();
@@ -282,7 +289,7 @@ impl<'a> Parser<'_> {
                 if let Token::Identifier(ident_name) = self.next() {
                     name = ident_name;
                 } else {
-                    return Err("expected identifier after let");
+                    return Err(self.error("expected identifier after let"));
                 }
 
                 self.next();
@@ -300,7 +307,7 @@ impl<'a> Parser<'_> {
                     }
 
                     if !matches!(self.next(), Token::Assign) {
-                        return Err("expected `=` after let <ident>[<index>]");
+                        return Err(self.error("expected `=` after let <ident>[<index>]"));
                     }
 
                     match self.parse_expression(0, true) {
@@ -314,7 +321,7 @@ impl<'a> Parser<'_> {
 
                     return Ok(Some(Box::new(node)));
                 } else if !matches!(self.current_token, Token::Assign) {
-                    return Err("expected `=` after let <ident>");
+                    return Err(self.error("expected `=` after let <ident>"));
                 }
 
                 match self.parse_expression(0, true) {
@@ -323,7 +330,7 @@ impl<'a> Parser<'_> {
                     }
                     Ok(expr) => {
                         if !matches!(self.current_token, Token::Semicolon) {
-                            return Err("expected semicolon after let");
+                            return Err(self.error("expected semicolon after let"));
                         }
 
                         node.expr = Some(expr);
@@ -343,17 +350,16 @@ impl<'a> Parser<'_> {
                     expr.disable_push();
 
                     if !matches!(self.current_token, Token::Semicolon) {
-                        return Err("expected semicolon after expression");
+                        return Err(self.error("expected semicolon after expression"));
                     }
 
                     return Ok(Some(expr));
                 }
             },
         }
-        //return Err("parse_statement did not parse any of the above statements");
     }
 
-    pub fn parse_block(&mut self) -> Result<Vec<Box<dyn node::Compile>>, &'static str> {
+    pub fn parse_block(&mut self) -> Result<Vec<Box<dyn node::Compile>>, String> {
         let mut vec: Vec<Box<dyn node::Compile>> = Vec::new();
 
         loop {
@@ -377,7 +383,7 @@ impl<'a> Parser<'_> {
         Ok(vec)
     }
 
-    pub fn parse_function(&mut self) -> Result<(), &'static str> {
+    pub fn parse_function(&mut self) -> Result<(), String> {
         let token = self.next();
         if let Token::Identifier(name) = token {
             let mut function = function::AstFunction::new();
@@ -392,7 +398,7 @@ impl<'a> Parser<'_> {
                 if let Token::Identifier(name) = token {
                     function.args.push(name);
                 } else {
-                    return Err("expected identifier in `fn <args> (HERE)`");
+                    return Err(self.error("expected identifier in `fn <args> (HERE)`"));
                 }
             }
 
@@ -411,12 +417,12 @@ impl<'a> Parser<'_> {
 
             self.root.children.push(Box::new(function));
         } else {
-            return Err("expected identifier after fn");
+            return Err(self.error("expected identifier after fn"));
         }
         Ok(())
     }
 
-    pub fn parse(&mut self) -> Result<(), &'static str> {
+    pub fn parse(&mut self) -> Result<(), String> {
         self.root = root::AstRoot::new();
 
         let mut token = self.next();
@@ -428,7 +434,9 @@ impl<'a> Parser<'_> {
                         return Err(e);
                     }
                 }
-                _ => {}
+                _ => {
+                    return Err(self.error("unexpected token, expected one of these: Fn"));
+                }
             }
             token = self.next();
         }
