@@ -1,11 +1,9 @@
 use crate::ast::elif_stmt::*;
-use crate::ast::else_stmt;
 use crate::ast::else_stmt::*;
 use crate::ast::if_stmt::*;
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::boxed::*;
 use alloc::vec::*;
-use bincode::enc;
 
 pub struct AstIfChain {
     pub head: Option<AstIfStmt>,
@@ -32,6 +30,39 @@ impl Compile for AstIfChain {
         &mut self,
         compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
+        // To the developer who is going to read this code:
+        //
+        // Dont. Don't make a mistake by trying to understand what it does
+        // Even I (aceinetx) can't really understand it
+        // This code literally works on magic
+
+        // We have this code:
+        /*
+           if x == 2 {
+               ...
+           } elif x == 1 {
+               ...
+           } else {
+               ...
+           }
+        */
+        // Our goal is to compile it to this: (Imagine we have labels)
+        /*
+           Loadv("x")
+           Loadcn(2.0)
+           Bst("1")
+           Loadv("x")
+           Loadcn(1.0)
+           Bst("2")
+           Br("3")
+        1: ... (head (if))
+           Br("4")
+        2: ... (elif)
+           Br("4")
+        3: ... (else)
+        4: the rest of the code
+        */
+
         let mut branch_indexes: Vec<usize> = Vec::new();
         let mut end_branch_indexes: Vec<usize> = Vec::new();
 
@@ -88,6 +119,7 @@ impl Compile for AstIfChain {
         {
             let addr: usize;
             {
+                // borrow checker workaround
                 let module = compiler.get_module();
                 addr = module.opcodes.len();
             }
@@ -148,6 +180,7 @@ impl Compile for AstIfChain {
 
         // * else
         {
+            // borrow checker workaround
             let module = compiler.get_module();
             else_addr = module.opcodes.len();
         }
@@ -160,6 +193,10 @@ impl Compile for AstIfChain {
         }
 
         {
+            // Set the last branch opcode (the one before the blocks opcodes) to the else_addr, which is:
+            // - The end of the chain if no else is present
+            // - The start of else if else if present
+            // ? I'm not sure about this, but this made every test pass
             let module = compiler.get_module();
             let opcode = &mut module.opcodes[*branch_indexes.last().unwrap()];
             if let Opcode::Br(addr) = opcode {
@@ -168,8 +205,11 @@ impl Compile for AstIfChain {
         }
 
         // * set end branch indexes
+        // End branch indexes are in every block, how if statements work is that we jump to the end, skipping every
+        // elif and else. We just set every opcode in the block to the end.
         let len: usize;
         {
+            // borrow checker workaround
             let module = compiler.get_module();
             len = module.opcodes.len();
         }
