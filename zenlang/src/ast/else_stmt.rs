@@ -1,4 +1,4 @@
-use crate::{ast::node::Compile, opcode::Opcode};
+use crate::ast::node::Compile;
 use alloc::boxed::*;
 use alloc::vec::*;
 
@@ -19,10 +19,8 @@ impl Compile for AstElseStmt {
 
     fn compile(
         &mut self,
-        compiler: &mut crate::compiler::Compiler,
+        _compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
-        let module = compiler.get_module();
-
         Ok(())
     }
 }

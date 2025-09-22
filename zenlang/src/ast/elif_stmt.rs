@@ -1,6 +1,5 @@
-use crate::{ast::node::Compile, opcode::Opcode};
+use crate::ast::node::Compile;
 use alloc::boxed::*;
-use alloc::string::*;
 use alloc::vec::*;
 
 pub struct AstElifStmt {
@@ -24,10 +23,8 @@ impl Compile for AstElifStmt {
 
     fn compile(
         &mut self,
-        compiler: &mut crate::compiler::Compiler,
+        _compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
-        let module = compiler.get_module();
-
         Ok(())
     }
 }
