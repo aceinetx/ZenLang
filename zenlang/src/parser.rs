@@ -24,19 +24,19 @@ impl<'a> Parser<'_> {
         match *token {
             Token::Operator(op) => {
                 if op == '+' {
-                    return Some(1);
+                    return Some(2);
                 } else if op == '-' {
-                    return Some(1);
+                    return Some(2);
                 } else if op == '*' {
-                    return Some(2);
+                    return Some(3);
                 } else if op == '/' {
-                    return Some(2);
+                    return Some(3);
                 }
                 return None;
             }
             Token::OperatorCmp(first, second) => {
                 if first == '=' && second == '=' {
-                    return Some(3);
+                    return Some(1);
                 }
                 return None;
             }
@@ -189,10 +189,7 @@ impl<'a> Parser<'_> {
                             break;
                         }
 
-                        // note to the future:
-                        // right assoc: next_min = prec
-                        // left assoc: next_min = prec + 1
-                        let next_min = prec + 1;
+                        let next_min = prec + 1; // left assoc
                         match self.parse_expression(next_min, false) {
                             Err(e) => {
                                 return Err(e);
@@ -225,10 +222,7 @@ impl<'a> Parser<'_> {
                             break;
                         }
 
-                        // note to the future:
-                        // right assoc: next_min = prec
-                        // left assoc: next_min = prec + 1
-                        let next_min = prec + 1;
+                        let next_min = prec; // right assoc 
                         self.next();
                         match self.parse_expression(next_min, false) {
                             Err(e) => {

@@ -210,3 +210,26 @@ fn vm_test_cmp() {
     assert!(vm.error.is_empty());
     assert!(matches!(vm.ret, Value::Boolean(true)));
 }
+
+#[test]
+fn vm_test_cmp_false() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 3 == 1 + 2; }".into());
+    let mut parser = Parser::new(&mut tokenizer);
+    let mut compiler = Compiler::new(&mut parser);
+    if let Err(e) = compiler.compile() {
+        assert_eq!(e, "");
+    }
+    let mut vm = VM::new();
+    let module = compiler.get_module();
+    println!("{:?}", module.opcodes);
+    vm.load_module(module);
+
+    loop {
+        if !vm.step() {
+            break;
+        }
+    }
+
+    assert!(vm.error.is_empty());
+    assert!(matches!(vm.ret, Value::Boolean(false)));
+}
