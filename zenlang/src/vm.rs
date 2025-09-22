@@ -380,13 +380,11 @@ impl<'a> VM<'a> {
                     self.stack.pop();
                 }
             }
-            Opcode::Bst(true_addr, false_addr) => {
+            Opcode::Bst(addr) => {
                 if let Some(value) = self.stack.pop() {
                     if let Value::Boolean(flag) = value {
                         if flag {
-                            self.pc.set_low(*true_addr - 1);
-                        } else {
-                            self.pc.set_low(*false_addr - 1);
+                            self.pc.set_low(*addr - 1);
                         }
                     } else {
                         self.error = "bst failed: value on stack is not a boolean".into();
@@ -396,7 +394,7 @@ impl<'a> VM<'a> {
                 }
             }
             Opcode::Br(addr) => {
-                self.pc.set_low(*addr);
+                self.pc.set_low(*addr - 1);
             }
             Opcode::Add() => {
                 let value = self.compute_stack_values(AstBinopOp::PLUS);

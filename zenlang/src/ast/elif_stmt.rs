@@ -5,14 +5,14 @@ use alloc::vec::*;
 
 pub struct AstElifStmt {
     pub value: Option<Box<dyn Compile>>,
-    pub block: Option<Box<dyn Compile>>,
+    pub body: Vec<Box<dyn Compile>>,
 }
 
 impl AstElifStmt {
     pub fn new() -> Self {
         return Self {
             value: None,
-            block: None,
+            body: Vec::new(),
         };
     }
 }

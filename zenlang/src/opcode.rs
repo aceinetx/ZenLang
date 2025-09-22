@@ -15,11 +15,11 @@ pub enum Opcode {
     Cafse(u64),     // construct array from stack elements
     Iafs(),         // Index array from stack
     Aiafs(String),
-    Bfas(),        // Begin function arguments setup
-    Efas(),        // End function arguments setup
-    Pop(),         // pop from stack
-    Bst(u32, u32), // branch stack true (branch if stack value is true)
-    Br(u32),       // branch
+    Bfas(),   // Begin function arguments setup
+    Efas(),   // End function arguments setup
+    Pop(),    // pop from stack
+    Bst(u32), // branch stack true (branch if stack value is true)
+    Br(u32),  // branch
     Add(),
     Sub(),
     Mul(),

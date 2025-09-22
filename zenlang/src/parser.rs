@@ -311,6 +311,7 @@ impl<'a> Parser<'_> {
 
                     let mut ret = ret::AstReturn::new();
                     ret.value = Some(node);
+                    self.next();
                     return Ok(Some(Box::new(ret)));
                 }
             },
@@ -351,6 +352,7 @@ impl<'a> Parser<'_> {
                         }
                     }
 
+                    self.next();
                     return Ok(Some(Box::new(node)));
                 } else if !matches!(self.current_token, Token::Assign) {
                     return Err(self.error("expected `=` after let <ident>"));
@@ -367,11 +369,13 @@ impl<'a> Parser<'_> {
 
                         node.expr = Some(expr);
                         node.name = name;
+                        self.next();
                         return Ok(Some(Box::new(node)));
                     }
                 }
             }
             Token::Semicolon => {
+                self.next();
                 return Ok(None);
             }
             Token::If => {
@@ -405,8 +409,8 @@ impl<'a> Parser<'_> {
     pub fn parse_block(&mut self) -> Result<Vec<Box<dyn node::Compile>>, String> {
         let mut vec: Vec<Box<dyn node::Compile>> = Vec::new();
 
+        self.next();
         loop {
-            self.next();
             if matches!(self.current_token, Token::Rbrace) {
                 break;
             }
@@ -484,7 +488,43 @@ impl<'a> Parser<'_> {
                             node.body = block;
                         }
                     }
+                    self.next();
                     chain.head = Some(node);
+                }
+                Token::Elif => {
+                    let mut node = elif_stmt::AstElifStmt::new();
+                    match self.parse_expression(0, true) {
+                        Err(e) => {
+                            return Err(e);
+                        }
+                        Ok(expr) => {
+                            node.value = Some(expr);
+                        }
+                    }
+                    match self.parse_block() {
+                        Err(e) => {
+                            return Err(e);
+                        }
+                        Ok(block) => {
+                            node.body = block;
+                        }
+                    }
+                    self.next();
+                    chain.elifs.push(node);
+                }
+                Token::Else => {
+                    let mut node = else_stmt::AstElseStmt::new();
+                    self.next();
+                    match self.parse_block() {
+                        Err(e) => {
+                            return Err(e);
+                        }
+                        Ok(block) => {
+                            node.body = block;
+                        }
+                    }
+                    self.next();
+                    chain.else_node = Some(node);
                 }
                 _ => {
                     break;
