@@ -3,7 +3,6 @@ use crate::ast::else_stmt::*;
 use crate::ast::if_stmt::*;
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::boxed::*;
-use alloc::string::*;
 use alloc::vec::*;
 
 pub struct AstIfChain {
@@ -32,9 +31,16 @@ impl Compile for AstIfChain {
         compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
         let mut branch_indexes: Vec<usize> = Vec::new();
+        let head: &mut AstIfStmt;
+        if let Some(h) = &mut self.head {
+            head = h;
+        } else {
+            return Err("self.head is None".into());
+        }
 
         // compile expressions
-        if let Some(head) = &mut self.head {
+        // * head
+        {
             if let Some(value) = &mut head.value {
                 if let Err(e) = value.compile(compiler) {
                     return Err(e);
@@ -46,16 +52,15 @@ impl Compile for AstIfChain {
 
             let opcode = Opcode::Bst(0, 0);
             module.opcodes.push(opcode);
-        } else {
-            return Err("self.head is None".into());
         }
 
         // compile blocks
-        if let Some(head) = &mut self.head {
+        // * head
+        {
             let addr: usize;
             {
                 let module = compiler.get_module();
-                addr = module.opcodes.len() - 1;
+                addr = module.opcodes.len();
             }
 
             for node in head.body.iter_mut() {
@@ -69,6 +74,19 @@ impl Compile for AstIfChain {
                 if let Opcode::Bst(true_addr, _) = &mut module.opcodes[branch_indexes[0]] {
                     *true_addr = addr as u32;
                 }
+            }
+        }
+
+        // * set false addr
+        let addr: usize;
+        {
+            let module = compiler.get_module();
+            addr = module.opcodes.len();
+        }
+        {
+            let module = compiler.get_module();
+            if let Opcode::Bst(_, false_addr) = &mut module.opcodes[branch_indexes[0]] {
+                *false_addr = addr as u32;
             }
         }
 

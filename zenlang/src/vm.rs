@@ -384,9 +384,9 @@ impl<'a> VM<'a> {
                 if let Some(value) = self.stack.pop() {
                     if let Value::Boolean(flag) = value {
                         if flag {
-                            self.pc.set_low(*true_addr);
+                            self.pc.set_low(*true_addr - 1);
                         } else {
-                            self.pc.set_low(*false_addr);
+                            self.pc.set_low(*false_addr - 1);
                         }
                     } else {
                         self.error = "bst failed: value on stack is not a boolean".into();
