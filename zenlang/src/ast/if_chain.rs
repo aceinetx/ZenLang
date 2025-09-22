@@ -33,6 +33,20 @@ impl Compile for AstIfChain {
     ) -> Result<(), alloc::string::String> {
         let module = compiler.get_module();
 
+        let head_bst_opcode_index = module.opcodes.len();
+        let else_index: usize;
+
+        if let Some(head) = &mut self.head {
+        } else {
+            return Err("self.head is None".into());
+        }
+
+        if let Some(else_node) = &mut self.else_node {
+            else_index = module.opcodes.len();
+        } else {
+            return Err("self.else_node is None".into());
+        }
+
         Ok(())
     }
 }

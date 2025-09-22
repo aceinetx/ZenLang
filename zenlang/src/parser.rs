@@ -445,10 +445,6 @@ impl<'a> Parser<'_> {
                 }
             }
 
-            //if !matches!(self.next(), Token::Lbrace) {
-            //return Err("expected `{` after fn <args>");
-            //}
-
             match self.parse_block() {
                 Err(e) => {
                     return Err(e);
@@ -466,7 +462,36 @@ impl<'a> Parser<'_> {
     }
 
     pub fn parse_if_chain(&mut self) -> Result<Box<dyn node::Compile>, String> {
-        return Err("unimplemented".into());
+        let mut chain = if_chain::AstIfChain::new();
+        loop {
+            let token = self.current_token.clone();
+            match token {
+                Token::If => {
+                    let mut node = if_stmt::AstIfStmt::new();
+                    match self.parse_expression(0, true) {
+                        Err(e) => {
+                            return Err(e);
+                        }
+                        Ok(expr) => {
+                            node.value = Some(expr);
+                        }
+                    }
+                    match self.parse_block() {
+                        Err(e) => {
+                            return Err(e);
+                        }
+                        Ok(block) => {
+                            node.body = block;
+                        }
+                    }
+                    chain.head = Some(node);
+                }
+                _ => {
+                    break;
+                }
+            }
+        }
+        return Ok(Box::new(chain));
     }
 
     pub fn parse(&mut self) -> Result<(), String> {

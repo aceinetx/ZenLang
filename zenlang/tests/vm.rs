@@ -189,6 +189,42 @@ fn vm_test_ret_if_else() {
 }
 
 #[test]
+fn vm_test_ret_if_elif() {
+    let mut tokenizer = Tokenizer::new(
+        r#"
+fn main {
+    let x = 2; 
+    if x == 3 {
+        return 1;
+    } elif x == 2 {
+        return 5;
+    } else {
+        return 2;
+    } 
+    return 0; 
+}"#
+        .into(),
+    );
+    let mut parser = Parser::new(&mut tokenizer);
+    let mut compiler = Compiler::new(&mut parser);
+    if let Err(e) = compiler.compile() {
+        assert_eq!(e, "");
+    }
+    let mut vm = VM::new();
+    let module = compiler.get_module();
+    vm.load_module(module);
+
+    loop {
+        if !vm.step() {
+            break;
+        }
+    }
+
+    assert!(vm.error.is_empty());
+    assert!(matches!(vm.ret, Value::Number(5.0)));
+}
+
+#[test]
 fn vm_test_cmp() {
     let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 == 1 + 2; }".into());
     let mut parser = Parser::new(&mut tokenizer);

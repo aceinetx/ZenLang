@@ -5,14 +5,14 @@ use alloc::vec::*;
 
 pub struct AstIfStmt {
     pub value: Option<Box<dyn Compile>>,
-    pub block: Option<Box<dyn Compile>>,
+    pub body: Vec<Box<dyn Compile>>,
 }
 
 impl AstIfStmt {
     pub fn new() -> Self {
         return Self {
             value: None,
-            block: None,
+            body: Vec::new(),
         };
     }
 }
@@ -27,6 +27,7 @@ impl Compile for AstIfStmt {
         compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
         let module = compiler.get_module();
+        unimplemented!();
 
         Ok(())
     }
