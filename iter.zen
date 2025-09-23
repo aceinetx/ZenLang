@@ -1,0 +1,24 @@
+fn iter_ arr func i {
+	let item = arr[i];
+	if item == null {
+		return null;
+	}
+	if func(item) == false {
+		return null;
+	}
+	return iter_(arr, func, i+1);
+}
+
+fn iter arr func {
+	return iter_(arr, func, 0);
+}
+
+fn print_item item {
+	println(item);
+	return true;
+}
+
+fn main {
+	iter([1,2,3,4,5], print_item);
+	return null;
+}
