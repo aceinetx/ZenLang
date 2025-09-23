@@ -34,8 +34,11 @@ impl<'a> Parser<'_> {
                 }
                 return None;
             }
-            Token::OperatorCmp(first, second) => {
+            Token::OperatorCmp(first, _) => {
                 if first == '=' {
+                    return Some(1);
+                }
+                if first == '!' {
                     return Some(1);
                 }
                 if first == '>' {
@@ -59,6 +62,10 @@ impl<'a> Parser<'_> {
     }
 
     fn error(&self, text: &str) -> String {
+        return format!("{}: {}", self.tokenizer.get_line(), text);
+    }
+
+    fn error_str(&self, text: String) -> String {
         return format!("{}: {}", self.tokenizer.get_line(), text);
     }
 
@@ -322,7 +329,10 @@ impl<'a> Parser<'_> {
                 }
                 Ok(node) => {
                     if !matches!(self.current_token, Token::Semicolon) {
-                        return Err(self.error("expected semicolon after return"));
+                        return Err(self.error_str(format!(
+                            "expected semicolon after return, found {:?}",
+                            self.current_token
+                        )));
                     }
 
                     let mut ret = ret::AstReturn::new();
