@@ -458,6 +458,14 @@ impl<'a> Parser<'_> {
                     }
                 }
             }
+            Token::Break => {
+                let node = break_stmt::AstBreak::new();
+                self.next();
+                if !matches!(self.current_token, Token::Semicolon) {
+                    return Err(self.error("expected semicolon after break"));
+                }
+                return Ok(Some(Box::new(node)));
+            }
             Token::While => {
                 let mut node = while_stmt::AstWhileStmt::new();
                 match self.parse_expression(0, true) {

@@ -50,19 +50,35 @@ impl Compile for AstWhileStmt {
         }
 
         // * compile body
+        compiler.while_stmts_break_indexes.push(Vec::new());
         for node in &mut self.body {
             if let Err(e) = node.compile(compiler) {
                 return Err(e);
             }
         }
 
-        let module = compiler.get_module();
-        let exit_addr = module.opcodes.len() + 1;
-        if let Opcode::Br(addr) = &mut module.opcodes[br_exit_opcode_index] {
-            *addr = exit_addr as u32;
+        let exit_addr;
+        {
+            let module = compiler.get_module();
+            exit_addr = module.opcodes.len() + 1;
+            if let Opcode::Br(addr) = &mut module.opcodes[br_exit_opcode_index] {
+                *addr = exit_addr as u32;
+            }
+
+            module.opcodes.push(Opcode::Br(cmp_addr as u32));
         }
 
-        module.opcodes.push(Opcode::Br(cmp_addr as u32));
+        let last: Vec<usize>;
+        {
+            last = compiler.while_stmts_break_indexes.last().unwrap().clone();
+        }
+
+        let module = compiler.get_module();
+        for index in last.iter() {
+            if let Opcode::Br(addr) = &mut module.opcodes[*index] {
+                *addr = exit_addr as u32;
+            }
+        }
         Ok(())
     }
 }

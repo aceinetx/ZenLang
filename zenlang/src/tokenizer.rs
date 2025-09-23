@@ -28,6 +28,7 @@ pub enum Token {
     Elif,
     Else,
     While,
+    Break,
     EOF,
 }
 
@@ -165,6 +166,8 @@ impl Tokenizer {
                         token = Token::Else;
                     } else if name == "while" {
                         token = Token::While;
+                    } else if name == "break" {
+                        token = Token::Break;
                     }
                 }
                 return token;
