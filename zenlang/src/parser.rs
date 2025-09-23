@@ -466,6 +466,14 @@ impl<'a> Parser<'_> {
                 }
                 return Ok(Some(Box::new(node)));
             }
+            Token::Continue => {
+                let node = continue_stmt::AstContinue::new();
+                self.next();
+                if !matches!(self.current_token, Token::Semicolon) {
+                    return Err(self.error("expected semicolon after contin7e"));
+                }
+                return Ok(Some(Box::new(node)));
+            }
             Token::While => {
                 let mut node = while_stmt::AstWhileStmt::new();
                 match self.parse_expression(0, true) {
