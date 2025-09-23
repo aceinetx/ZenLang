@@ -73,12 +73,17 @@ impl Compile for AstWhileStmt {
             last = compiler.while_stmts_break_indexes.last().unwrap().clone();
         }
 
-        let module = compiler.get_module();
-        for index in last.iter() {
-            if let Opcode::Br(addr) = &mut module.opcodes[*index] {
-                *addr = exit_addr as u32;
+        {
+            let module = compiler.get_module();
+            for index in last.iter() {
+                if let Opcode::Br(addr) = &mut module.opcodes[*index] {
+                    *addr = exit_addr as u32;
+                }
             }
         }
+
+        compiler.while_stmts_break_indexes.pop();
+
         Ok(())
     }
 }
