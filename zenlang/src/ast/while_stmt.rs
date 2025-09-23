@@ -51,6 +51,7 @@ impl Compile for AstWhileStmt {
 
         // * compile body
         compiler.while_stmts_break_indexes.push(Vec::new());
+        compiler.while_stmts_continue_indexes.push(Vec::new());
         for node in &mut self.body {
             if let Err(e) = node.compile(compiler) {
                 return Err(e);
@@ -68,21 +69,47 @@ impl Compile for AstWhileStmt {
             module.opcodes.push(Opcode::Br(cmp_addr as u32));
         }
 
-        let last: Vec<usize>;
+        // break statementss
         {
-            last = compiler.while_stmts_break_indexes.last().unwrap().clone();
-        }
+            let last: Vec<usize>;
+            {
+                last = compiler.while_stmts_break_indexes.last().unwrap().clone();
+            }
 
-        {
-            let module = compiler.get_module();
-            for index in last.iter() {
-                if let Opcode::Br(addr) = &mut module.opcodes[*index] {
-                    *addr = exit_addr as u32;
+            {
+                let module = compiler.get_module();
+                for index in last.iter() {
+                    if let Opcode::Br(addr) = &mut module.opcodes[*index] {
+                        *addr = exit_addr as u32;
+                    }
                 }
             }
+
+            compiler.while_stmts_break_indexes.pop();
         }
 
-        compiler.while_stmts_break_indexes.pop();
+        // continue statementss
+        {
+            let last: Vec<usize>;
+            {
+                last = compiler
+                    .while_stmts_continue_indexes
+                    .last()
+                    .unwrap()
+                    .clone();
+            }
+
+            {
+                let module = compiler.get_module();
+                for index in last.iter() {
+                    if let Opcode::Br(addr) = &mut module.opcodes[*index] {
+                        *addr = cmp_addr as u32;
+                    }
+                }
+            }
+
+            compiler.while_stmts_continue_indexes.pop();
+        }
 
         Ok(())
     }
