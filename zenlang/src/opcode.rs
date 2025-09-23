@@ -25,5 +25,10 @@ pub enum Opcode {
     Mul(),
     Div(),
     Eq(),
+    Neq(),
+    Lt(),
+    Gt(),
+    Le(),
+    Ge(),
     Ret(),
 }

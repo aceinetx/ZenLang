@@ -204,7 +204,28 @@ impl Tokenizer {
                     }
                 }
                 return Token::Assign;
+            } else if c == '>' {
+                self.pos += 1;
+                if self.pos < self.code.len() {
+                    let c = self.code.chars().nth(self.pos).unwrap();
+                    if c == '=' {
+                        self.pos += 1;
+                        return Token::OperatorCmp('>', '=');
+                    }
+                }
+                return Token::OperatorCmp('>', '>');
+            } else if c == '<' {
+                self.pos += 1;
+                if self.pos < self.code.len() {
+                    let c = self.code.chars().nth(self.pos).unwrap();
+                    if c == '=' {
+                        self.pos += 1;
+                        return Token::OperatorCmp('<', '=');
+                    }
+                }
+                return Token::OperatorCmp('<', '<');
             }
+
             self.pos += 1;
         }
         return Token::EOF;

@@ -197,3 +197,67 @@ fn tokenizer_test_eq_2() {
     let token = tokenizer.next();
     assert!(matches!(token, Token::Number(1.0)));
 }
+
+#[test]
+fn tokenizer_test_lt() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 < 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::OperatorCmp('<', '<')));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}
+
+#[test]
+fn tokenizer_test_gt() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 > 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::OperatorCmp('>', '>')));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}
+
+#[test]
+fn tokenizer_test_le() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 <= 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::OperatorCmp('<', '=')));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}
+
+#[test]
+fn tokenizer_test_ge() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 >= 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::OperatorCmp('>', '=')));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}

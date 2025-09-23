@@ -13,8 +13,40 @@ pub enum Value {
     Null(),
 }
 
-impl PartialEq for Value {
-    fn eq(&self, other: &Self) -> bool {
+impl Value {
+    pub fn lt(&self, other: &Value) -> bool {
+        if let Value::Number(a) = self {
+            if let Value::Number(b) = other {
+                return a < b;
+            }
+        }
+        return false;
+    }
+    pub fn gt(&self, other: &Value) -> bool {
+        if let Value::Number(a) = self {
+            if let Value::Number(b) = other {
+                return a > b;
+            }
+        }
+        return false;
+    }
+    pub fn le(&self, other: &Value) -> bool {
+        if let Value::Number(a) = self {
+            if let Value::Number(b) = other {
+                return a <= b;
+            }
+        }
+        return false;
+    }
+    pub fn ge(&self, other: &Value) -> bool {
+        if let Value::Number(a) = self {
+            if let Value::Number(b) = other {
+                return a >= b;
+            }
+        }
+        return false;
+    }
+    pub fn equal(&self, other: &Value) -> bool {
         match (self, other) {
             (Value::Number(x), Value::Number(y)) => x == y,
             (Value::String(a), Value::String(b)) => a == b,
@@ -24,7 +56,7 @@ impl PartialEq for Value {
                     return false;
                 }
                 for i in 0..a.len() {
-                    if a[i] != b[i] {
+                    if !a[i].equal(&b[i]) {
                         return false;
                     }
                 }
@@ -40,7 +72,6 @@ impl PartialEq for Value {
         }
     }
 }
-
 impl Display for Value {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {

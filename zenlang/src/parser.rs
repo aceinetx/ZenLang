@@ -24,19 +24,25 @@ impl<'a> Parser<'_> {
         match *token {
             Token::Operator(op) => {
                 if op == '+' {
-                    return Some(2);
+                    return Some(3);
                 } else if op == '-' {
-                    return Some(2);
+                    return Some(3);
                 } else if op == '*' {
-                    return Some(3);
+                    return Some(4);
                 } else if op == '/' {
-                    return Some(3);
+                    return Some(4);
                 }
                 return None;
             }
             Token::OperatorCmp(first, second) => {
                 if first == '=' && second == '=' {
                     return Some(1);
+                }
+                if first == '>' {
+                    return Some(2);
+                }
+                if first == '<' {
+                    return Some(2);
                 }
                 return None;
             }
@@ -234,6 +240,14 @@ impl<'a> Parser<'_> {
                                 binop.right = Some(right);
                                 if first_char == '=' && second_char == '=' {
                                     binop.op = binop::AstBinopOp::EQ;
+                                } else if first_char == '>' && second_char == '>' {
+                                    binop.op = binop::AstBinopOp::GT;
+                                } else if first_char == '<' && second_char == '<' {
+                                    binop.op = binop::AstBinopOp::LT;
+                                } else if first_char == '>' && second_char == '=' {
+                                    binop.op = binop::AstBinopOp::GE;
+                                } else if first_char == '<' && second_char == '=' {
+                                    binop.op = binop::AstBinopOp::LE;
                                 }
                                 left = Box::new(binop);
                             }

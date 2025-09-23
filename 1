@@ -95,22 +95,7 @@ impl<'a> VM<'a> {
                 }
             }
             AstBinopOp::EQ => {
-                return Value::Boolean(left.equal(&right));
-            }
-            AstBinopOp::NEQ => {
-                return Value::Boolean(!left.equal(&right));
-            }
-            AstBinopOp::LT => {
-                return Value::Boolean(left.lt(&right));
-            }
-            AstBinopOp::GT => {
-                return Value::Boolean(left.gt(&right));
-            }
-            AstBinopOp::LE => {
-                return Value::Boolean(left.le(&right));
-            }
-            AstBinopOp::GE => {
-                return Value::Boolean(left.ge(&right));
+                return Value::Boolean(left.eq(right));
             }
         }
         self.error = "unmatched left and right value types".into();
@@ -411,26 +396,6 @@ impl<'a> VM<'a> {
             }
             Opcode::Eq() => {
                 let value = self.compute_stack_values(AstBinopOp::EQ);
-                self.stack.push(value);
-            }
-            Opcode::Neq() => {
-                let value = self.compute_stack_values(AstBinopOp::NEQ);
-                self.stack.push(value);
-            }
-            Opcode::Lt() => {
-                let value = self.compute_stack_values(AstBinopOp::LT);
-                self.stack.push(value);
-            }
-            Opcode::Gt() => {
-                let value = self.compute_stack_values(AstBinopOp::GT);
-                self.stack.push(value);
-            }
-            Opcode::Le() => {
-                let value = self.compute_stack_values(AstBinopOp::LE);
-                self.stack.push(value);
-            }
-            Opcode::Ge() => {
-                let value = self.compute_stack_values(AstBinopOp::GE);
                 self.stack.push(value);
             }
             Opcode::Ret() => {

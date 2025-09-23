@@ -7,6 +7,11 @@ pub enum AstBinopOp {
     MUL,
     DIV,
     EQ,
+    NEQ,
+    LT,
+    GT,
+    LE,
+    GE,
 }
 
 pub struct AstBinop {
@@ -72,6 +77,21 @@ impl Compile for AstBinop {
             }
             AstBinopOp::EQ => {
                 opcode = Opcode::Eq();
+            }
+            AstBinopOp::NEQ => {
+                opcode = Opcode::Neq();
+            }
+            AstBinopOp::LT => {
+                opcode = Opcode::Lt();
+            }
+            AstBinopOp::GT => {
+                opcode = Opcode::Gt();
+            }
+            AstBinopOp::LE => {
+                opcode = Opcode::Le();
+            }
+            AstBinopOp::GE => {
+                opcode = Opcode::Ge();
             }
         }
 
