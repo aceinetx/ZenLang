@@ -13,7 +13,7 @@ fn compiler_test_func_1() {
     }
 
     let module = compiler.get_module();
-    assert_eq!(module.opcodes.len(), 0);
+    assert_eq!(module.opcodes.len(), 2);
     assert_eq!(module.functions.len(), 1);
     assert_eq!(module.functions[0].addr, 0);
     assert_eq!(module.functions[0].name, "main");
@@ -34,7 +34,7 @@ fn compiler_test_func_2() {
     assert_eq!(module.functions[0].addr, 0);
     assert_eq!(module.functions[0].name, "add");
     assert_eq!(module.functions[0].args_count, 2);
-    assert_eq!(module.functions[1].addr, 2);
+    assert_eq!(module.functions[1].addr, 4);
     assert_eq!(module.functions[1].name, "main");
     assert_eq!(module.functions[1].args_count, 0);
 }
@@ -89,7 +89,7 @@ fn compiler_test_let() {
     }
 
     let module = compiler.get_module();
-    assert_eq!(module.opcodes.len(), 6);
+    assert_eq!(module.opcodes.len(), 8);
     assert!(matches!(module.opcodes[0], Opcode::Loadcn(1.0)));
     assert!(matches!(module.opcodes[1], Opcode::Loadcn(2.0)));
     assert!(matches!(module.opcodes[2], Opcode::Loadcn(3.0)));
@@ -150,7 +150,7 @@ fn compiler_test_func_call() {
     }
 
     let module = compiler.get_module();
-    assert_eq!(module.opcodes.len(), 10);
+    assert_eq!(module.opcodes.len(), 12);
 
     assert!(matches!(module.opcodes[0], Opcode::Bfas()));
     assert!(matches!(module.opcodes[1], Opcode::Efas()));
@@ -205,4 +205,31 @@ fn compiler_test_load_string() {
     assert_eq!(module.functions[0].addr, 0);
     assert_eq!(module.functions[0].name, "main");
     assert_eq!(module.functions[0].args_count, 0);
+}
+
+#[test]
+fn compiler_test_main_function_shall_not_accept_args() {
+    let mut tokenizer = Tokenizer::new("fn main x {}".into());
+    let mut parser = Parser::new(&mut tokenizer);
+    let mut compiler = Compiler::new(&mut parser);
+    if let Err(e) = compiler.compile() {
+        assert_eq!(e, "main function should not accept any arguments");
+    } else {
+        assert!(false);
+    }
+}
+
+#[test]
+fn compiler_test_implicit_null() {
+    let mut tokenizer = Tokenizer::new("fn main {}".into());
+    let mut parser = Parser::new(&mut tokenizer);
+    let mut compiler = Compiler::new(&mut parser);
+    if let Err(e) = compiler.compile() {
+        assert_eq!(e, "");
+    }
+    assert_eq!(compiler.warnings.len(), 1);
+    assert_eq!(
+        compiler.warnings[0],
+        "function main implicitly returns null"
+    );
 }

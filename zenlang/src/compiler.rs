@@ -2,10 +2,12 @@ use crate::ast::node::Compile;
 use crate::module::Module;
 use crate::parser::*;
 use alloc::string::*;
+use alloc::vec::*;
 
 pub struct Compiler<'a> {
     parser: &'a mut Parser<'a>,
     module: Module,
+    pub warnings: Vec<String>,
 }
 
 impl<'a> Compiler<'_> {
@@ -13,6 +15,7 @@ impl<'a> Compiler<'_> {
         let inst = Compiler {
             parser: parser,
             module: Module::new(),
+            warnings: Vec::new(),
         };
 
         return inst;
@@ -23,6 +26,7 @@ impl<'a> Compiler<'_> {
     }
 
     pub fn compile(&mut self) -> Result<(), String> {
+        self.warnings.clear();
         if let Err(e) = self.parser.parse() {
             return Err(e.into());
         }

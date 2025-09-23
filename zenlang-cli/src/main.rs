@@ -13,6 +13,13 @@ fn run_code(code: String) {
         return;
     }
 
+    if compiler.warnings.len() > 0 {
+        println!("compile warnings:");
+        for warning in compiler.warnings.iter() {
+            println!("- {}", warning);
+        }
+    }
+
     let module = compiler.get_module();
     //println!("{:?}", module);
 
