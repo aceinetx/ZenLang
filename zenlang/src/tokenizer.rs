@@ -27,6 +27,7 @@ pub enum Token {
     If,
     Elif,
     Else,
+    While,
     EOF,
 }
 
@@ -162,6 +163,8 @@ impl Tokenizer {
                         token = Token::Elif;
                     } else if name == "else" {
                         token = Token::Else;
+                    } else if name == "while" {
+                        token = Token::While;
                     }
                 }
                 return token;
