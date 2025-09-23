@@ -410,14 +410,14 @@ impl<'a> VM<'a> {
                     if let Value::Boolean(flag) = value {
                         if flag {
                             self.pc.set_low(*addr - 1);
-                            return;
                         }
+                        return;
                     }
                     if let Value::Number(num) = value {
                         if num != 0.0 {
                             self.pc.set_low(*addr - 1);
-                            return;
                         }
+                        return;
                     }
 
                     self.error = "bst failed: value on stack is not of an acceptable type".into();
