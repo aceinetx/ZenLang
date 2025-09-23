@@ -35,7 +35,7 @@ impl<'a> Parser<'_> {
                 return None;
             }
             Token::OperatorCmp(first, second) => {
-                if first == '=' && second == '=' {
+                if first == '=' {
                     return Some(1);
                 }
                 if first == '>' {
@@ -240,6 +240,8 @@ impl<'a> Parser<'_> {
                                 binop.right = Some(right);
                                 if first_char == '=' && second_char == '=' {
                                     binop.op = binop::AstBinopOp::EQ;
+                                } else if first_char == '!' && second_char == '=' {
+                                    binop.op = binop::AstBinopOp::NEQ;
                                 } else if first_char == '>' && second_char == '>' {
                                     binop.op = binop::AstBinopOp::GT;
                                 } else if first_char == '<' && second_char == '<' {

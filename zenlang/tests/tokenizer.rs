@@ -261,3 +261,35 @@ fn tokenizer_test_ge() {
     let token = tokenizer.next();
     assert!(matches!(token, Token::Number(1.0)));
 }
+
+#[test]
+fn tokenizer_test_neq() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 != 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::OperatorCmp('!', '=')));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}
+
+#[test]
+fn tokenizer_test_not() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 ! 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Operator('!')));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}
