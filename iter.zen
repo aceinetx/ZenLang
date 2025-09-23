@@ -1,16 +1,16 @@
-fn iter_ arr func i {
-	let item = arr[i];
-	if item == null {
-		return null;
-	}
-	if func(item) == false {
-		return null;
-	}
-	return iter_(arr, func, i+1);
-}
-
 fn iter arr func {
-	return iter_(arr, func, 0);
+	let i = 0;
+	let item = arr[i];
+
+	while item != null {
+		if func(item) == false {
+			return null;
+		}
+
+		let i = i + 1;
+		let item = arr[i];
+	}
+	return null;
 }
 
 fn print_item item {

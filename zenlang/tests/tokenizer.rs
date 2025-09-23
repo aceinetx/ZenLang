@@ -357,3 +357,35 @@ fn tokenizer_test_bitshl() {
     let token = tokenizer.next();
     assert!(matches!(token, Token::Number(1.0)));
 }
+
+#[test]
+fn tokenizer_test_while() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 while 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::While));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}
+
+#[test]
+fn tokenizer_test_break() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 break 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Break));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}

@@ -7,6 +7,7 @@ use alloc::vec::*;
 pub struct Compiler<'a> {
     parser: &'a mut Parser<'a>,
     module: Module,
+    pub while_stmts_break_indexes: Vec<Vec<usize>>,
     pub warnings: Vec<String>,
 }
 
@@ -15,6 +16,7 @@ impl<'a> Compiler<'_> {
         let inst = Compiler {
             parser: parser,
             module: Module::new(),
+            while_stmts_break_indexes: Vec::new(),
             warnings: Vec::new(),
         };
 
