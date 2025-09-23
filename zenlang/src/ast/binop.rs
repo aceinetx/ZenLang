@@ -12,6 +12,10 @@ pub enum AstBinopOp {
     GT,
     LE,
     GE,
+    BITSHR,
+    BITSHL,
+    BITAND,
+    BITOR,
 }
 
 pub struct AstBinop {
@@ -93,6 +97,10 @@ impl Compile for AstBinop {
             AstBinopOp::GE => {
                 opcode = Opcode::Ge();
             }
+            AstBinopOp::BITSHR => opcode = Opcode::Bshr(),
+            AstBinopOp::BITSHL => opcode = Opcode::Bshl(),
+            AstBinopOp::BITAND => opcode = Opcode::Band(),
+            AstBinopOp::BITOR => opcode = Opcode::Bor(),
         }
 
         let module = compiler.get_module();

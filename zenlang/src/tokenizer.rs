@@ -11,6 +11,7 @@ pub enum Token {
     String(String),
     Operator(char),
     OperatorCmp(char, char),
+    BitOperator(char, char),
     Null,
     True,
     False,
@@ -182,6 +183,12 @@ impl Tokenizer {
             } else if ['+', '-', '*', '/'].contains(&c) {
                 self.pos += 1;
                 return Token::Operator(c);
+            } else if c == '|' {
+                self.pos += 1;
+                return Token::BitOperator('|', '|');
+            } else if c == '&' {
+                self.pos += 1;
+                return Token::BitOperator('&', '&');
             } else if c == '(' {
                 self.pos += 1;
                 return Token::Lparen;
@@ -211,6 +218,9 @@ impl Tokenizer {
                     if c == '=' {
                         self.pos += 1;
                         return Token::OperatorCmp('>', '=');
+                    } else if c == '>' {
+                        self.pos += 1;
+                        return Token::BitOperator('>', '>');
                     }
                 }
                 return Token::OperatorCmp('>', '>');
@@ -221,6 +231,9 @@ impl Tokenizer {
                     if c == '=' {
                         self.pos += 1;
                         return Token::OperatorCmp('<', '=');
+                    } else if c == '<' {
+                        self.pos += 1;
+                        return Token::BitOperator('<', '<');
                     }
                 }
                 return Token::OperatorCmp('<', '<');
