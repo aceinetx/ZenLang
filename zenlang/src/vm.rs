@@ -138,23 +138,19 @@ impl<'a> VM<'a> {
             1 => {
                 if let Some(platform) = &self.platform {
                     if let Some(value) = self.stack.pop() {
-                        if let Value::String(s) = value {
-                            platform.print(format!("{}", s));
-                            return;
-                        }
+                        platform.print(format!("{}", value));
+                        return;
                     }
-                    self.error = "vmcall: expected string in stack".into();
+                    self.error = "vmcall: no value on stack".into();
                 }
             }
             2 => {
                 if let Some(platform) = &self.platform {
                     if let Some(value) = self.stack.pop() {
-                        if let Value::String(s) = value {
-                            platform.println(format!("{}", s));
-                            return;
-                        }
+                        platform.println(format!("{}", value));
+                        return;
                     }
-                    self.error = "vmcall: expected string in stack".into();
+                    self.error = "vmcall: no value on stack".into();
                 }
             }
             3 => {
