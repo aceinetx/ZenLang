@@ -1,8 +1,7 @@
+use crate::strong_u64::U64BitsControl;
 use alloc::string::*;
 use alloc::vec::*;
 use core::fmt::Display;
-
-use crate::strong_u64::U64BitsControl;
 
 #[derive(Clone, Debug)]
 pub enum Value {
@@ -12,6 +11,34 @@ pub enum Value {
     Array(Vec<Value>),
     FunctionRef(u64, u64),
     Null(),
+}
+
+impl PartialEq for Value {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Value::Number(x), Value::Number(y)) => x == y,
+            (Value::String(a), Value::String(b)) => a == b,
+            (Value::Boolean(a), Value::Boolean(b)) => a == b,
+            (Value::Array(a), Value::Array(b)) => {
+                if a.len() != b.len() {
+                    return false;
+                }
+                for i in 0..a.len() {
+                    if a[i] != b[i] {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            (Value::FunctionRef(a, b), Value::FunctionRef(c, d)) => {
+                return a == c && b == d;
+            }
+            (Value::Null(), Value::Null()) => {
+                return true;
+            }
+            _ => false,
+        }
+    }
 }
 
 impl Display for Value {
