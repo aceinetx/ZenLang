@@ -94,6 +94,34 @@ impl<'a> VM<'a> {
                     }
                 }
             }
+            AstBinopOp::BITSHR => {
+                if let Value::Number(left_num) = left {
+                    if let Value::Number(right_num) = right {
+                        return Value::Number(((left_num as i64) >> (right_num as i64)) as f64);
+                    }
+                }
+            }
+            AstBinopOp::BITSHL => {
+                if let Value::Number(left_num) = left {
+                    if let Value::Number(right_num) = right {
+                        return Value::Number(((left_num as i64) << (right_num as i64)) as f64);
+                    }
+                }
+            }
+            AstBinopOp::BITAND => {
+                if let Value::Number(left_num) = left {
+                    if let Value::Number(right_num) = right {
+                        return Value::Number(((left_num as i64) & (right_num as i64)) as f64);
+                    }
+                }
+            }
+            AstBinopOp::BITOR => {
+                if let Value::Number(left_num) = left {
+                    if let Value::Number(right_num) = right {
+                        return Value::Number(((left_num as i64) | (right_num as i64)) as f64);
+                    }
+                }
+            }
             AstBinopOp::EQ => {
                 return Value::Boolean(left.equal(&right));
             }
@@ -431,6 +459,22 @@ impl<'a> VM<'a> {
             }
             Opcode::Ge() => {
                 let value = self.compute_stack_values(AstBinopOp::GE);
+                self.stack.push(value);
+            }
+            Opcode::Bshr() => {
+                let value = self.compute_stack_values(AstBinopOp::BITSHR);
+                self.stack.push(value);
+            }
+            Opcode::Bshl() => {
+                let value = self.compute_stack_values(AstBinopOp::BITSHL);
+                self.stack.push(value);
+            }
+            Opcode::Band() => {
+                let value = self.compute_stack_values(AstBinopOp::BITAND);
+                self.stack.push(value);
+            }
+            Opcode::Bor() => {
+                let value = self.compute_stack_values(AstBinopOp::BITOR);
                 self.stack.push(value);
             }
             Opcode::Ret() => {

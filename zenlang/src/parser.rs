@@ -24,28 +24,37 @@ impl<'a> Parser<'_> {
         match *token {
             Token::Operator(op) => {
                 if op == '+' {
-                    return Some(3);
+                    return Some(6);
                 } else if op == '-' {
-                    return Some(3);
+                    return Some(6);
                 } else if op == '*' {
-                    return Some(4);
+                    return Some(7);
                 } else if op == '/' {
-                    return Some(4);
+                    return Some(7);
                 }
                 return None;
             }
             Token::OperatorCmp(first, _) => {
                 if first == '=' {
+                    return Some(4);
+                } else if first == '!' {
+                    return Some(4);
+                } else if first == '>' {
+                    return Some(5);
+                } else if first == '<' {
+                    return Some(5);
+                }
+                return None;
+            }
+            Token::BitOperator(first, _) => {
+                if first == '|' {
                     return Some(1);
-                }
-                if first == '!' {
-                    return Some(1);
-                }
-                if first == '>' {
+                } else if first == '&' {
                     return Some(2);
-                }
-                if first == '<' {
-                    return Some(2);
+                } else if first == '<' {
+                    return Some(3);
+                } else if first == '>' {
+                    return Some(3);
                 }
                 return None;
             }
@@ -257,6 +266,40 @@ impl<'a> Parser<'_> {
                                     binop.op = binop::AstBinopOp::GE;
                                 } else if first_char == '<' && second_char == '=' {
                                     binop.op = binop::AstBinopOp::LE;
+                                }
+                                left = Box::new(binop);
+                            }
+                        }
+                    }
+                    None => {
+                        break;
+                    }
+                }
+            } else if let Token::BitOperator(first_char, _) = token {
+                match self.get_token_precedence(&token) {
+                    Some(prec) => {
+                        if prec < min_prec {
+                            break;
+                        }
+
+                        let next_min = prec; // right assoc 
+                        self.next();
+                        match self.parse_expression(next_min, false) {
+                            Err(e) => {
+                                return Err(e);
+                            }
+                            Ok(right) => {
+                                let mut binop = binop::AstBinop::new();
+                                binop.left = Some(left);
+                                binop.right = Some(right);
+                                if first_char == '|' {
+                                    binop.op = binop::AstBinopOp::BITOR;
+                                } else if first_char == '&' {
+                                    binop.op = binop::AstBinopOp::BITAND;
+                                } else if first_char == '<' {
+                                    binop.op = binop::AstBinopOp::BITSHL;
+                                } else if first_char == '>' {
+                                    binop.op = binop::AstBinopOp::BITSHR;
                                 }
                                 left = Box::new(binop);
                             }

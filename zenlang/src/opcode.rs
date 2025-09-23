@@ -30,5 +30,9 @@ pub enum Opcode {
     Gt(),
     Le(),
     Ge(),
+    Bshr(),
+    Bshl(),
+    Band(),
+    Bor(),
     Ret(),
 }
