@@ -114,11 +114,21 @@ impl<'a> VM<'a> {
                         return Value::Number(((left_num as i64) & (right_num as i64)) as f64);
                     }
                 }
+                if let Value::Boolean(left) = left {
+                    if let Value::Boolean(right) = right {
+                        return Value::Number((left && right) as i64 as f64);
+                    }
+                }
             }
             AstBinopOp::BITOR => {
                 if let Value::Number(left_num) = left {
                     if let Value::Number(right_num) = right {
                         return Value::Number(((left_num as i64) | (right_num as i64)) as f64);
+                    }
+                }
+                if let Value::Boolean(left) = left {
+                    if let Value::Boolean(right) = right {
+                        return Value::Number((left || right) as i64 as f64);
                     }
                 }
             }
