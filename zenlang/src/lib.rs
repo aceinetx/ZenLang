@@ -12,4 +12,6 @@ pub mod tokenizer;
 pub mod unescape;
 pub mod value;
 pub mod vm;
+pub mod vmcall;
+
 extern crate alloc;
