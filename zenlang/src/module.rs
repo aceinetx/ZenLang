@@ -1,9 +1,13 @@
 use crate::opcode::Opcode;
+use ::serde::{Deserialize, Serialize};
 use alloc::string::String;
 use alloc::vec::Vec;
+use bincode;
+use bincode::config::Configuration;
+use bincode::error::DecodeError;
 use bincode::*;
 
-#[derive(Encode, Decode, Debug)]
+#[derive(Encode, Decode, Serialize, Deserialize, Debug)]
 pub struct ModuleFunction {
     pub name: String,
     pub addr: u32,
@@ -40,8 +44,17 @@ impl Module {
         return bytes;
     }
 
-    pub fn load(_bytes: Vec<u8>) {
-        todo!();
+    pub fn load(&mut self, bytes: Vec<u8>) -> Result<(), DecodeError> {
+        let cfg = bincode::config::standard();
+        match bincode::decode_from_slice::<Module, Configuration>(&bytes, cfg) {
+            Err(e) => {
+                return Err(e);
+            }
+            Ok(new) => {
+                *self = new.0;
+                return Ok(());
+            }
+        }
     }
 
     pub fn get_opcode(&self, addr: u32) -> &Opcode {
