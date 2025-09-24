@@ -1,3 +1,4 @@
+use crate::unescape;
 use alloc::string::*;
 use libm::pow;
 
@@ -121,6 +122,9 @@ impl Tokenizer {
             self.pos += 1;
         }
 
+        if let Some(s) = unescape::unescape(string.as_str()) {
+            string = s;
+        }
         return Token::String(string);
     }
 
@@ -144,7 +148,7 @@ impl Tokenizer {
             if self.is_digit(c) {
                 let token = self.number();
                 return token;
-            } else if self.is_letter(c) {
+            } else if self.is_identifier_letter(c) {
                 let mut token = self.identifier();
                 if let Token::Identifier(ref name) = token {
                     if name == "fn" {

@@ -9,6 +9,7 @@ pub mod scope;
 pub mod stdlib;
 pub mod strong_u64;
 pub mod tokenizer;
+pub mod unescape;
 pub mod value;
 pub mod vm;
 extern crate alloc;

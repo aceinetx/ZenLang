@@ -389,3 +389,23 @@ fn tokenizer_test_break() {
     let token = tokenizer.next();
     assert!(matches!(token, Token::Number(1.0)));
 }
+
+#[test]
+fn tokenizer_test_escape_str() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 \"Hello\\n\" 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    if let Token::String(s) = token {
+        assert_eq!(s, "Hello\n");
+    } else {
+        assert!(false);
+    }
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}
