@@ -187,6 +187,7 @@ impl<'a> Parser<'_> {
         loop {
             token = self.current_token.clone();
             if let Token::Operator(op) = token {
+                // Simple operator
                 match self.get_token_precedence(&token) {
                     Some(prec) => {
                         if prec < min_prec {
@@ -220,6 +221,7 @@ impl<'a> Parser<'_> {
                     }
                 }
             } else if let Token::OperatorCmp(first_char, second_char) = token {
+                // Compare operator
                 match self.get_token_precedence(&token) {
                     Some(prec) => {
                         if prec < min_prec {
@@ -258,6 +260,7 @@ impl<'a> Parser<'_> {
                     }
                 }
             } else if let Token::BitOperator(first_char, _) = token {
+                // Bitwise operator
                 match self.get_token_precedence(&token) {
                     Some(prec) => {
                         if prec < min_prec {
@@ -302,6 +305,33 @@ impl<'a> Parser<'_> {
                         node.array = Some(left);
                         node.index = Some(index);
                         left = Box::new(node);
+                    }
+                }
+                self.next();
+            } else if let Token::Dot = token {
+                // Dotted index into a value
+                self.next();
+                match self.current_token.clone() {
+                    Token::Number(num) => {
+                        let mut node = array_index::AstArrayIndex::new();
+                        let mut index = number::AstNumber::new();
+                        index.number = num;
+
+                        node.array = Some(left);
+                        node.index = Some(Box::new(index));
+                        left = Box::new(node);
+                    }
+                    Token::Identifier(key) => {
+                        let mut node = array_index::AstArrayIndex::new();
+                        let mut index = string::AstString::new();
+                        index.string = key;
+
+                        node.array = Some(left);
+                        node.index = Some(Box::new(index));
+                        left = Box::new(node);
+                    }
+                    _ => {
+                        return Err(self.error("Expected either a constant string or a identifier in a dot index. Tip: use [expr] for indexing with runtime values"));
                     }
                 }
                 self.next();

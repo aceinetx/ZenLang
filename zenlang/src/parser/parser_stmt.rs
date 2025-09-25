@@ -40,8 +40,8 @@ impl<'a> Parser<'_> {
                 }
 
                 self.next();
-                // We want to index into the dictonary/array
                 if matches!(self.current_token, Token::Lbracket) {
+                    // We want to index into the dictonary/array
                     let mut node = array_assign::AstArrayAssign::new();
                     node.name = name;
                     loop {
@@ -58,6 +58,50 @@ impl<'a> Parser<'_> {
 
                             if !matches!(self.current_token, Token::Rbracket) {
                                 return Err(self.error("expected `]`"));
+                            }
+                        } else if matches!(self.current_token, Token::Assign) {
+                            // Oh! We got a assign operator - parse the expression
+                            match self.parse_expression(0, true) {
+                                Err(e) => {
+                                    return Err(e);
+                                }
+                                Ok(expr) => {
+                                    // We expect a semicolon after the expression
+                                    if !matches!(self.current_token, Token::Semicolon) {
+                                        return Err(self.error("expected semicolon after let"));
+                                    }
+
+                                    node.expr = Some(expr);
+                                    self.next();
+                                    return Ok(Some(Box::new(node)));
+                                }
+                            }
+                        }
+
+                        self.next();
+                    }
+                } else if matches!(self.current_token, Token::Dot) {
+                    // We want to index using dotted indexing
+                    let mut node = array_assign::AstArrayAssign::new();
+                    node.name = name;
+                    loop {
+                        // Still want to index into
+                        if matches!(self.current_token, Token::Dot) {
+                            self.next();
+                            match self.current_token.clone() {
+                                Token::Number(num) => {
+                                    let mut index = number::AstNumber::new();
+                                    index.number = num;
+                                    node.indexes.push(Box::new(index));
+                                }
+                                Token::Identifier(key) => {
+                                    let mut index = string::AstString::new();
+                                    index.string = key;
+                                    node.indexes.push(Box::new(index));
+                                }
+                                _ => {
+                                    return Err(self.error("Expected either a constant string or a identifier in a dot index. Tip: use [expr] for indexing with runtime values"));
+                                }
                             }
                         } else if matches!(self.current_token, Token::Assign) {
                             // Oh! We got a assign operator - parse the expression
