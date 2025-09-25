@@ -47,7 +47,7 @@ jobs:
           cargo build
           cargo doc
           echo '<meta http-equiv="refresh" content="0;url=zenlang/index.html">' > target/doc/index.html
-          cp target/doc/zenlang/ ./docs -r
+          cp target/doc/ ./docs -r
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
