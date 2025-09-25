@@ -51,6 +51,7 @@ jobs:
           mkdir docs
           cp target/doc/zenlang/* ./docs/ -r
           cp target/doc/static.files ./docs/ -r
+          ls docs
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
