@@ -308,19 +308,48 @@ impl<'a> VM<'a> {
                     return;
                 }
 
-                if let Value::Array(array) = array {
-                    if let Value::Number(index) = index {
-                        let usize_index = index as usize;
-                        if usize_index >= array.len() {
+                match array {
+                    Value::Array(array) => {
+                        if let Value::Number(index) = index {
+                            let usize_index = index as usize;
+                            if usize_index >= array.len() {
+                                self.stack.push(Value::Null());
+                                return;
+                            }
+
+                            self.stack.push(array[usize_index].clone());
+                            return;
+                        }
+                    }
+                    Value::Dictionary(dict) => {
+                        if let Value::String(index) = index {
+                            for element in dict {
+                                if element.0 == index {
+                                    self.stack.push(element.1.clone());
+                                    return;
+                                }
+                            }
                             self.stack.push(Value::Null());
                             return;
                         }
-
-                        self.stack.push(array[usize_index].clone());
+                    }
+                    _ => {}
+                }
+                self.error = format!("iafs failed: invalid operand types");
+            }
+            Opcode::Cdfse(names) => {
+                let mut items = Vec::<(String, Value)>::new();
+                for i in 0..names.len() {
+                    if let Some(stack_value) = self.stack.pop() {
+                        // todo: do smth w ts clone
+                        items.insert(0, (names[names.len() - i - 1].clone(), stack_value));
+                    } else {
+                        self.error = format!("cdfse failed: no more values on stack");
                         return;
                     }
                 }
-                self.error = format!("iafs failed: invalid operand types");
+                let value = Value::Dictionary(items);
+                self.stack.push(value);
             }
             Opcode::Aiafs(name) => {
                 let value;
@@ -351,21 +380,36 @@ impl<'a> VM<'a> {
                     return;
                 }
 
-                if let Value::Array(array) = array {
-                    if let Value::Number(index) = index {
-                        let usize_index = index as usize;
-                        if usize_index >= array.len() {
-                            self.error = format!(
-                                "aiafs failed: index ({}) is larger or equal to array length ({})",
-                                usize_index,
-                                array.len()
-                            );
+                match array {
+                    Value::Array(array) => {
+                        if let Value::Number(index) = index {
+                            let usize_index = index as usize;
+                            if usize_index >= array.len() {
+                                self.error = format!(
+                                    "aiafs failed: index ({}) is larger or equal to array length ({})",
+                                    usize_index,
+                                    array.len()
+                                );
+                                return;
+                            }
+
+                            array[usize_index] = value;
                             return;
                         }
-
-                        array[usize_index] = value;
-                        return;
                     }
+                    Value::Dictionary(dict) => {
+                        if let Value::String(index) = index {
+                            for element in dict.iter_mut() {
+                                if element.0 == index {
+                                    element.1 = value;
+                                    return;
+                                }
+                            }
+                            self.error = format!("aiafs failed: index ({}) does not exist", index,);
+                            return;
+                        }
+                    }
+                    _ => {}
                 }
                 self.error = format!("aiafs failed: invalid operand types");
             }
