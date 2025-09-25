@@ -6,11 +6,13 @@ on:
       - 'zenlang/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - '.github/**'
   pull_request:
     paths:
       - 'zenlang/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - '.github/**'
       
 env:
   CARGO_TERM_COLOR: always
