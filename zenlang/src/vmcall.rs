@@ -3,6 +3,7 @@ use crate::vm::*;
 use alloc::format;
 
 impl<'a> VM<'a> {
+    // Performs a vmcall
     pub fn vmcall(&mut self, index: u8) {
         match index {
             1 => {
