@@ -1,3 +1,6 @@
+//! VM
+//!
+//! Contains the virtual machine for ZenLang
 mod vm;
 mod vm_aiafs;
 mod vm_compute;

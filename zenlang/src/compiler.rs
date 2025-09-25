@@ -1,3 +1,7 @@
+//! Compiler
+//!
+//! Compiles ZenLang into a module
+
 use crate::ast::node::Compile;
 use crate::module::Module;
 use crate::parser::*;
@@ -25,10 +29,12 @@ impl<'a> Compiler<'_> {
         return inst;
     }
 
+    /// Get the compile module
     pub fn get_module(&mut self) -> &mut Module {
         return &mut self.module;
     }
 
+    /// Compile everything
     pub fn compile(&mut self) -> Result<(), String> {
         self.warnings.clear();
         if let Err(e) = self.parser.parse() {

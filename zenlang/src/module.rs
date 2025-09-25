@@ -1,3 +1,6 @@
+//! Module
+//!
+//! Contains ZenLang module structs
 use crate::opcode::Opcode;
 use ::serde::{Deserialize, Serialize};
 use alloc::string::String;
@@ -7,10 +10,16 @@ use bincode::config::Configuration;
 use bincode::error::DecodeError;
 use bincode::*;
 
+/// ModuleFunction
+///
+/// Contains information about a module function
 #[derive(Encode, Decode, Serialize, Deserialize, Debug)]
 pub struct ModuleFunction {
+    /// Function name
     pub name: String,
+    /// Function address relative to the module offset
     pub addr: u32,
+    /// Argument count
     pub args_count: u64,
 }
 
@@ -24,9 +33,14 @@ impl ModuleFunction {
     }
 }
 
+/// Module
+///
+/// Contains module information (code)
 #[derive(Encode, Decode, Debug)]
 pub struct Module {
+    /// Opcodes of the module (entire code)
     pub opcodes: Vec<Opcode>,
+    /// Function informations
     pub functions: Vec<ModuleFunction>,
 }
 
@@ -38,12 +52,14 @@ impl Module {
         };
     }
 
+    /// Compiles the module into bytes vector (Serializes)
     pub fn compile(&self) -> Result<Vec<u8>, bincode::error::EncodeError> {
         let cfg = bincode::config::standard();
         let bytes = bincode::encode_to_vec(self, cfg);
         return bytes;
     }
 
+    /// Load the module from bytes vector (Deserializes)
     pub fn load(&mut self, bytes: Vec<u8>) -> Result<(), DecodeError> {
         let cfg = bincode::config::standard();
         match bincode::decode_from_slice::<Module, Configuration>(&bytes, cfg) {
@@ -57,6 +73,7 @@ impl Module {
         }
     }
 
+    /// Get an opcode at a certain address
     pub fn get_opcode(&self, addr: u32) -> &Opcode {
         return &self.opcodes[addr as usize];
     }

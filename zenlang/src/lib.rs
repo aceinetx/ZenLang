@@ -1,3 +1,12 @@
+//! ZenLang
+//!
+//! Primary programming language of ZenOS
+//! ```
+//! fn main {
+//!     println("Hello from ZenLang");
+//!     return null;
+//! }
+//! ```
 #![no_std]
 pub mod ast;
 pub mod compiler;

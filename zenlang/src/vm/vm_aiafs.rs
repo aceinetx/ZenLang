@@ -4,6 +4,9 @@ use alloc::format;
 use alloc::vec::*;
 
 impl<'a> VM<'a> {
+    /// Perform Aiafs operation
+    ///
+    /// The reason it's in a function (not in execute_opcode) is because it needs to be recursive
     pub(crate) fn aiafs(&mut self, value: Value, set_to: Value, mut indexes: Vec<Value>) -> Value {
         match value {
             Value::Array(mut array) => {

@@ -1,7 +1,11 @@
+//! Opcode
+//!
+//! What the virtual machine executes
 use alloc::string::*;
 use alloc::vec::*;
 use bincode::*;
 
+/// Opcode
 #[derive(Encode, Decode, Debug)]
 pub enum Opcode {
     Call(),

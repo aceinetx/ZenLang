@@ -6,6 +6,10 @@ use alloc::format;
 use alloc::string::*;
 
 impl<'a> Parser<'_> {
+    /// Parses an expression
+    ///
+    /// * `min_prec` - Minimal precedence, 0 if just started parsing
+    /// * `step_token` - Whether parse_expression should step a token once
     pub(crate) fn parse_expression(
         &mut self,
         min_prec: i32,

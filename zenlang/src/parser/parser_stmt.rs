@@ -6,6 +6,7 @@ use alloc::format;
 use alloc::string::*;
 
 impl<'a> Parser<'_> {
+    /// Parses statements
     pub(crate) fn parse_statement(&mut self) -> Result<Option<Box<dyn node::Compile>>, String> {
         let token = self.current_token.clone();
 

@@ -3,11 +3,23 @@ use alloc::boxed::*;
 use alloc::string::String;
 use alloc::vec::*;
 
+/// Trait implemented by all ast nodes
 pub trait Compile {
+    /// Get the children vector
     fn get_children(&mut self) -> Option<&mut Vec<Box<dyn Compile>>>;
 
+    /// Disable pushing for the current node
+    ///
+    /// This is needed in these cases, where with pushing would just flood the stack with unused data:
+    /// ```
+    /// fn main {
+    ///     123;
+    /// }
+    /// ```
+    /// This would push 123 on the stack with nothing using it, disable_push prevents this
     fn disable_push(&mut self) {}
 
+    /// Compiles the current node and it's children recursively
     fn compile_all(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         if let Err(e) = self.compile(compiler) {
             return Err(e);
@@ -25,5 +37,7 @@ pub trait Compile {
         }
         Ok(())
     }
+
+    /// Compiles the current node
     fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String>;
 }

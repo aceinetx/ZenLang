@@ -1,3 +1,6 @@
+//! ast
+//!
+//! Contains all ast nodes
 pub mod array;
 pub mod array_assign;
 pub mod array_index;

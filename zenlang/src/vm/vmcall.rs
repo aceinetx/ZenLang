@@ -3,7 +3,12 @@ use crate::vm::*;
 use alloc::format;
 
 impl<'a> VM<'a> {
-    // Performs a vmcall
+    /// Performs a vmcall
+    ///
+    /// ### VMCall indexes
+    /// - 1: print
+    /// - 2: println
+    /// - 3: get_string
     pub fn vmcall(&mut self, index: u8) {
         match index {
             1 => {

@@ -1,7 +1,7 @@
+//! unescape
+//!
+//! Port of unescape-rs to no_std
 use alloc::collections::VecDeque;
-/**
- * Port of unescape-rs to no_std
- */
 use alloc::string::*;
 
 macro_rules! try_option {

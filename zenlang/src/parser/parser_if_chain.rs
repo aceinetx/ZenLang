@@ -5,6 +5,7 @@ use alloc::boxed::*;
 use alloc::string::*;
 
 impl<'a> Parser<'_> {
+    /// Parses an if chain
     pub(crate) fn parse_if_chain(&mut self) -> Result<Box<dyn node::Compile>, String> {
         let mut chain = if_chain::AstIfChain::new();
         loop {

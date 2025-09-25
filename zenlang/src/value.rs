@@ -1,8 +1,12 @@
+//! Value
+//!
+//! ZenLang variable value
 use crate::strong_u64::U64BitsControl;
 use alloc::string::*;
 use alloc::vec::*;
 use core::fmt::Display;
 
+/// Value
 #[derive(Clone, Debug)]
 pub enum Value {
     Number(f64),
@@ -15,6 +19,7 @@ pub enum Value {
 }
 
 impl Value {
+    /// Perform a less than (<) operation. False if unsupported operands
     pub fn lt(&self, other: &Value) -> bool {
         if let Value::Number(a) = self {
             if let Value::Number(b) = other {
@@ -23,6 +28,8 @@ impl Value {
         }
         return false;
     }
+
+    /// Perform a greater than (>) operation. False if unsupported operands
     pub fn gt(&self, other: &Value) -> bool {
         if let Value::Number(a) = self {
             if let Value::Number(b) = other {
@@ -31,6 +38,8 @@ impl Value {
         }
         return false;
     }
+
+    /// Perform a less than or equal (<=) operation. False if unsupported operands
     pub fn le(&self, other: &Value) -> bool {
         if let Value::Number(a) = self {
             if let Value::Number(b) = other {
@@ -39,6 +48,8 @@ impl Value {
         }
         return false;
     }
+
+    /// Perform a greater than or equal (>=) operation. False if unsupported operands
     pub fn ge(&self, other: &Value) -> bool {
         if let Value::Number(a) = self {
             if let Value::Number(b) = other {
@@ -47,6 +58,8 @@ impl Value {
         }
         return false;
     }
+
+    /// Perform an equal (==) operation. All operands are valid
     pub fn equal(&self, other: &Value) -> bool {
         match (self, other) {
             (Value::Number(x), Value::Number(y)) => x == y,
@@ -87,6 +100,7 @@ impl Value {
         }
     }
 }
+
 impl Display for Value {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {

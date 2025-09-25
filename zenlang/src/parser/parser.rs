@@ -20,6 +20,7 @@ impl<'a> Parser<'_> {
         };
     }
 
+    /// Get the token precedence from a given token
     pub(crate) fn get_token_precedence(&mut self, token: &Token) -> Option<i32> {
         match *token {
             Token::Operator(op) => {
@@ -64,20 +65,30 @@ impl<'a> Parser<'_> {
         }
     }
 
+    /// Steps a token once
+    ///
+    /// Saves the next token to the self.current_token
     pub(crate) fn next(&mut self) -> Token {
         let token = self.tokenizer.next();
         self.current_token = token.clone();
         return token;
     }
 
+    /// Formats an error message like this:
+    ///
+    /// 1: error text
     pub(crate) fn error(&self, text: &str) -> String {
         return format!("{}: {}", self.tokenizer.get_line(), text);
     }
 
+    /// Formats an error message like this:
+    ///
+    /// 1: error text
     pub(crate) fn error_str(&self, text: String) -> String {
         return format!("{}: {}", self.tokenizer.get_line(), text);
     }
 
+    /// Parses a code block
     pub(crate) fn parse_block(&mut self) -> Result<Vec<Box<dyn node::Compile>>, String> {
         let mut vec: Vec<Box<dyn node::Compile>> = Vec::new();
 
@@ -104,6 +115,7 @@ impl<'a> Parser<'_> {
         Ok(vec)
     }
 
+    /// Parses function
     pub(crate) fn parse_function(&mut self) -> Result<(), String> {
         let token = self.next();
         if let Token::Identifier(name) = token {
@@ -141,6 +153,7 @@ impl<'a> Parser<'_> {
         Ok(())
     }
 
+    /// Parse everything to self.root
     pub fn parse(&mut self) -> Result<(), String> {
         self.root = root::AstRoot::new();
 
