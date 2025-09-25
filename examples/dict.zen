@@ -1,0 +1,9 @@
+fn hello {
+    println("Hello!");
+    return null;
+}
+
+fn main {
+    let x = {"x" = hello};
+    return x.x();
+}
