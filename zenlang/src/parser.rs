@@ -108,15 +108,17 @@ impl<'a> Parser<'_> {
                 }
             }
             Token::Lbracket => {
-                // parse array
+                // Parse array
                 let mut node = array::AstArray::new();
 
                 loop {
                     self.next();
+                    // Got a `]`, so it's the end - break out
                     if matches!(self.current_token, Token::Rbracket) {
                         break;
                     }
 
+                    // Parse the value
                     match self.parse_expression(0, false) {
                         Err(e) => {
                             return Err(e);
@@ -126,9 +128,11 @@ impl<'a> Parser<'_> {
                         }
                     }
 
+                    // Got a `]`, so it's the end - break out
                     if matches!(self.current_token, Token::Rbracket) {
                         break;
                     }
+                    // Expect a comma after each item
                     if !matches!(self.current_token, Token::Comma) {
                         return Err(self.error("expected `,` after array item: [ <ITEMS> [HERE] ]"));
                     }
@@ -152,11 +156,12 @@ impl<'a> Parser<'_> {
                 self.next();
             }
             Token::Lbrace => {
-                // dictionary
+                // Dictionary
                 let mut node = dict::AstDict::new();
 
                 loop {
                     self.next();
+                    // Got a `}`, so it's the end - break out
                     if matches!(self.current_token, Token::Rbrace) {
                         break;
                     }
@@ -165,15 +170,18 @@ impl<'a> Parser<'_> {
                     if let Token::String(s) = self.current_token.clone() {
                         name = s;
                     } else {
+                        // Dictionary keys are just strings in ZenLang - so expect a string
                         return Err(self.error("expected string as dict item name"));
                     }
 
                     self.next();
+                    // We parsed the key - expect a equal sign
                     if !matches!(self.current_token, Token::Assign) {
                         return Err(self.error("expected `=` after dict item name"));
                     }
                     self.next();
 
+                    // Finally parse the value
                     match self.parse_expression(0, false) {
                         Err(e) => {
                             return Err(e);
@@ -183,9 +191,11 @@ impl<'a> Parser<'_> {
                         }
                     }
 
+                    // Got a `}`, so it's the end - break out
                     if matches!(self.current_token, Token::Rbrace) {
                         break;
                     }
+                    // Expect a semicolon after each value
                     if !matches!(self.current_token, Token::Comma) {
                         return Err(self.error("expected `,` after dict item: [ <ITEMS> [HERE] ]"));
                     }
@@ -354,6 +364,7 @@ impl<'a> Parser<'_> {
                     }
                 }
             } else if let Token::Lbracket = token {
+                // Index into a value
                 match self.parse_expression(0, true) {
                     Err(e) => {
                         return Err(e);
@@ -370,12 +381,15 @@ impl<'a> Parser<'_> {
                 let mut node = func_call::AstFuncCall::new();
                 node.reference = Some(left);
 
+                // Parse the function arguments
                 loop {
                     self.next();
+                    // Got `(` so it's the end - break out
                     if matches!(self.current_token, Token::Rparen) {
                         break;
                     }
 
+                    // Parse the argument
                     match self.parse_expression(0, false) {
                         Err(e) => {
                             return Err(e);
@@ -386,10 +400,13 @@ impl<'a> Parser<'_> {
                     }
 
                     token = self.current_token.clone();
+                    // Got `(` so it's the end - break out
                     if matches!(token, Token::Rparen) {
                         break;
                     }
 
+                    // We didn't get a (, so it means we need to continue parsing
+                    // However, we expect a semicolon after each argument, so expect it here
                     if !matches!(token, Token::Comma) {
                         return Err(self
                             .error("expected `,` after a function argument: CALL(<args> [HERE])"));
@@ -415,6 +432,7 @@ impl<'a> Parser<'_> {
                     return Err(e);
                 }
                 Ok(node) => {
+                    // We expect a semicolon after the expression
                     if !matches!(self.current_token, Token::Semicolon) {
                         return Err(self.error_str(format!(
                             "expected semicolon after return, found {:?}",
@@ -444,6 +462,7 @@ impl<'a> Parser<'_> {
                     let mut node = array_assign::AstArrayAssign::new();
                     node.name = name;
                     loop {
+                        // Still want to index into
                         if matches!(self.current_token, Token::Lbracket) {
                             match self.parse_expression(0, true) {
                                 Err(e) => {
@@ -458,11 +477,13 @@ impl<'a> Parser<'_> {
                                 return Err(self.error("expected `]`"));
                             }
                         } else if matches!(self.current_token, Token::Assign) {
+                            // Oh! We got a assign operator - parse the expression
                             match self.parse_expression(0, true) {
                                 Err(e) => {
                                     return Err(e);
                                 }
                                 Ok(expr) => {
+                                    // We expect a semicolon after the expression
                                     if !matches!(self.current_token, Token::Semicolon) {
                                         return Err(self.error("expected semicolon after let"));
                                     }
@@ -477,14 +498,17 @@ impl<'a> Parser<'_> {
                         self.next();
                     }
                 } else if !matches!(self.current_token, Token::Assign) {
+                    // If we don't want to index, we expect a =
                     return Err(self.error("expected `=` after let <ident>"));
                 }
 
+                // Parse the assign expression
                 match self.parse_expression(0, true) {
                     Err(e) => {
                         return Err(e);
                     }
                     Ok(expr) => {
+                        // We expect a semicolon after the expression
                         if !matches!(self.current_token, Token::Semicolon) {
                             return Err(self.error("expected semicolon after let"));
                         }
@@ -497,6 +521,7 @@ impl<'a> Parser<'_> {
                 }
             }
             Token::Semicolon => {
+                // Making a whole ast struct just for semicolons is unnecessary, just return None
                 self.next();
                 return Ok(None);
             }
@@ -567,6 +592,7 @@ impl<'a> Parser<'_> {
         self.next();
         loop {
             if matches!(self.current_token, Token::Rbrace) {
+                // End of the block - break out
                 break;
             }
 
@@ -575,6 +601,7 @@ impl<'a> Parser<'_> {
                     return Err(e);
                 }
                 Ok(node_option) => {
+                    // parse_statement can return None in case if the statement was one semicolon (valid syntax)
                     if let Some(node) = node_option {
                         vec.push(node);
                     }
@@ -591,9 +618,11 @@ impl<'a> Parser<'_> {
             let mut function = function::AstFunction::new();
             function.name = name;
 
+            // Parse function arguments
             loop {
                 let token = self.next();
                 if matches!(token, Token::Lbrace) {
+                    // Got a `{` - break out
                     break;
                 }
 
@@ -627,6 +656,7 @@ impl<'a> Parser<'_> {
             match token {
                 Token::If => {
                     if chain.head.is_some() {
+                        // If we already have chain.head defined - it means we exited the chain, so break the loop
                         break;
                     }
 
@@ -684,6 +714,7 @@ impl<'a> Parser<'_> {
                     }
                     self.next();
                     chain.else_node = Some(node);
+                    break; // Guaranteed to be the end of the chain - break out of the loop
                 }
                 _ => {
                     break;
