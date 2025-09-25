@@ -1,5 +1,5 @@
 use zenlang::compiler::*;
-use zenlang::parser::parser::*;
+use zenlang::parser::*;
 use zenlang::tokenizer::*;
 use zenlang::value::*;
 use zenlang::vm::*;

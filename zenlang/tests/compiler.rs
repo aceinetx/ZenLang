@@ -1,6 +1,6 @@
 use zenlang::compiler::*;
 use zenlang::opcode::*;
-use zenlang::parser::parser::*;
+use zenlang::parser::*;
 use zenlang::tokenizer::*;
 
 #[test]
