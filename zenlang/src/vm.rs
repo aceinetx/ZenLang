@@ -255,7 +255,7 @@ impl<'a> VM<'a> {
                         }
                     }
                 }
-                self.error = format!("unknown variable or function: {}", name);
+                self.stack.push(Value::Null());
             }
             Opcode::Storev(name) => {
                 // do something with the clone here
