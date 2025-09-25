@@ -205,6 +205,19 @@ impl Tokenizer {
                 return Token::Dot;
             } else if ['+', '-', '*', '/'].contains(&c) {
                 self.pos += 1;
+                if self.pos < self.code.len() {
+                    let c = self.code.chars().nth(self.pos).unwrap();
+                    if c == '/' {
+                        while self.pos < self.code.len() {
+                            if self.code.chars().nth(self.pos).unwrap() == '\n' {
+                                self.pos += 1;
+                                break;
+                            }
+                            self.pos += 1;
+                        }
+                        continue;
+                    }
+                }
                 return Token::Operator(c);
             } else if c == '|' {
                 self.pos += 1;
