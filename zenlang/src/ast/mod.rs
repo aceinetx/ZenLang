@@ -5,6 +5,7 @@ pub mod binop;
 pub mod boolean;
 pub mod break_stmt;
 pub mod continue_stmt;
+pub mod dict;
 pub mod elif_stmt;
 pub mod else_stmt;
 pub mod func_call;

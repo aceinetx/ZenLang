@@ -151,6 +151,50 @@ impl<'a> Parser<'_> {
 
                 self.next();
             }
+            Token::Lbrace => {
+                // dictionary
+                let mut node = dict::AstDict::new();
+
+                loop {
+                    self.next();
+                    if matches!(self.current_token, Token::Rbrace) {
+                        break;
+                    }
+
+                    let name;
+                    if let Token::String(s) = self.current_token.clone() {
+                        name = s;
+                    } else {
+                        return Err(self.error("expected string as dict item name"));
+                    }
+
+                    self.next();
+                    if !matches!(self.current_token, Token::Assign) {
+                        return Err(self.error("expected `=` after dict item name"));
+                    }
+                    self.next();
+
+                    match self.parse_expression(0, false) {
+                        Err(e) => {
+                            return Err(e);
+                        }
+                        Ok(expr) => {
+                            node.dict.push((name, expr));
+                        }
+                    }
+
+                    if matches!(self.current_token, Token::Rbrace) {
+                        break;
+                    }
+                    if !matches!(self.current_token, Token::Comma) {
+                        return Err(self.error("expected `,` after dict item: [ <ITEMS> [HERE] ]"));
+                    }
+                }
+
+                left = Box::new(node);
+
+                self.next();
+            }
             Token::Lparen => {
                 self.next();
                 match self.parse_expression(0, false) {

@@ -10,6 +10,7 @@ pub enum Value {
     Boolean(bool),
     Array(Vec<Value>),
     FunctionRef(u64, u64),
+    Dictionary(Vec<(String, Value)>),
     Null(),
 }
 
@@ -62,6 +63,20 @@ impl Value {
                 }
                 return true;
             }
+            (Value::Dictionary(a), Value::Dictionary(b)) => {
+                if a.len() != b.len() {
+                    return false;
+                }
+                for i in 0..a.len() {
+                    if a[i].0 != b[i].0 {
+                        return false;
+                    }
+                    if !a[i].1.equal(&b[i].1) {
+                        return false;
+                    }
+                }
+                return true;
+            }
             (Value::FunctionRef(a, b), Value::FunctionRef(c, d)) => {
                 return a == c && b == d;
             }
@@ -101,6 +116,28 @@ impl Display for Value {
                 }
 
                 let _ = write!(f, "]");
+                Ok(())
+            }
+            Value::Dictionary(dict) => {
+                let _ = write!(f, "{{");
+
+                let len = dict.len();
+                for i in 0..len {
+                    let entry = &dict[i];
+                    let _ = write!(f, "{} = ", entry.0);
+
+                    if let Value::String(_) = entry.1 {
+                        let _ = write!(f, "\"{}\"", entry.1);
+                    } else {
+                        let _ = write!(f, "{}", entry.1);
+                    }
+
+                    if i != len - 1 {
+                        let _ = write!(f, ", ");
+                    }
+                }
+
+                let _ = write!(f, "}}");
                 Ok(())
             }
             Value::FunctionRef(addr, args_count) => {
