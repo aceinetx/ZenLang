@@ -70,3 +70,36 @@ fn main {
     assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Number(111.0)));
 }
+
+#[test]
+fn vm_test_dict_get_nested() {
+    let mut tokenizer = Tokenizer::new(
+        r#"
+fn main { 
+    let x = {"a" = {"v" = 69}, "b" = 42};
+    return x["a"]["v"] + x["b"];
+}"#
+        .into(),
+    );
+    let mut parser = Parser::new(&mut tokenizer);
+    let mut compiler = Compiler::new(&mut parser);
+    if let Err(e) = compiler.compile() {
+        assert_eq!(e, "");
+    }
+    let mut vm = VM::new();
+    let module = compiler.get_module();
+    println!("{:?}", module.opcodes);
+    vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
+
+    loop {
+        if !vm.step() {
+            break;
+        }
+    }
+
+    assert_eq!(vm.error, "");
+    assert!(matches!(vm.ret, Value::Number(111.0)));
+}
