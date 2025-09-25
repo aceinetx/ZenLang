@@ -52,6 +52,7 @@ jobs:
           cp target/doc/zenlang/* ./docs/ -r
           cp target/doc/static.files ./docs/ -r
           ls docs
+          find ./docs -type f -print0 | xargs -0 sed -i 's#\.\./static\.files#static.files#g'
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
