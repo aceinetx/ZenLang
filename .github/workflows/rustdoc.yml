@@ -49,10 +49,8 @@ jobs:
           cargo build
           cargo doc
           mkdir docs
-          cp target/doc/zenlang/* ./docs/ -r
-          cp target/doc/static.files ./docs/ -r
-          ls docs
-          find ./docs -type f -print0 | xargs -0 sed -i 's#\.\./static\.files#static.files#g'
+          echo '<meta http-equiv="refresh" content="0;url=zenlang/index.html">' > target/doc/index.html
+          cp target/doc/* ./docs -r
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
