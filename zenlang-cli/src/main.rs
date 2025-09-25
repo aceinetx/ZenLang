@@ -3,7 +3,9 @@ use std::{
     fs::{self},
     io::Read,
 };
-use zenlang::{compiler, module, parser, stdlib, strong_u64::U64BitsControl, tokenizer, vm};
+use zenlang::{
+    compiler, module, parser::parser, stdlib, strong_u64::U64BitsControl, tokenizer, vm,
+};
 
 mod platform;
 

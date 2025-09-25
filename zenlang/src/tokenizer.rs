@@ -24,6 +24,7 @@ pub enum Token {
     Rbracket,
     Semicolon,
     Comma,
+    Dot,
     Assign,
     If,
     Elif,
@@ -193,6 +194,9 @@ impl Tokenizer {
             } else if c == ',' {
                 self.pos += 1;
                 return Token::Comma;
+            } else if c == '.' {
+                self.pos += 1;
+                return Token::Dot;
             } else if ['+', '-', '*', '/'].contains(&c) {
                 self.pos += 1;
                 return Token::Operator(c);
