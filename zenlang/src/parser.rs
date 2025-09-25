@@ -439,6 +439,7 @@ impl<'a> Parser<'_> {
                 }
 
                 self.next();
+                // We want to index into the dictonary/array
                 if matches!(self.current_token, Token::Lbracket) {
                     let mut node = array_assign::AstArrayAssign::new();
                     node.name = name;
