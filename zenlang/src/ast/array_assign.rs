@@ -5,7 +5,7 @@ use alloc::vec::*;
 
 pub struct AstArrayAssign {
     pub name: String,
-    pub index: Option<Box<dyn Compile>>,
+    pub indexes: Vec<Box<dyn Compile>>,
     pub expr: Option<Box<dyn Compile>>,
 }
 
@@ -13,7 +13,7 @@ impl AstArrayAssign {
     pub fn new() -> Self {
         return Self {
             name: String::new(),
-            index: None,
+            indexes: Vec::new(),
             expr: None,
         };
     }
@@ -35,16 +35,16 @@ impl Compile for AstArrayAssign {
         } else {
             return Err("expr is None".into());
         }
-        if let Some(index) = &mut self.index {
+        for index in self.indexes.iter_mut() {
             if let Err(e) = index.compile(compiler) {
                 return Err(e);
             }
-        } else {
-            return Err("index is None".into());
         }
 
         let module = compiler.get_module();
-        module.opcodes.push(Opcode::Aiafs(self.name.clone()));
+        module
+            .opcodes
+            .push(Opcode::Aiafs(self.name.clone(), self.indexes.len() as u64));
 
         Ok(())
     }

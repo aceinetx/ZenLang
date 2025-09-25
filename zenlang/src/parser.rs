@@ -442,31 +442,39 @@ impl<'a> Parser<'_> {
                 if matches!(self.current_token, Token::Lbracket) {
                     let mut node = array_assign::AstArrayAssign::new();
                     node.name = name;
+                    loop {
+                        if matches!(self.current_token, Token::Lbracket) {
+                            match self.parse_expression(0, true) {
+                                Err(e) => {
+                                    return Err(e);
+                                }
+                                Ok(index) => {
+                                    node.indexes.push(index);
+                                }
+                            }
 
-                    match self.parse_expression(0, true) {
-                        Err(e) => {
-                            return Err(e);
+                            if !matches!(self.current_token, Token::Rbracket) {
+                                return Err(self.error("expected `]`"));
+                            }
+                        } else if matches!(self.current_token, Token::Assign) {
+                            match self.parse_expression(0, true) {
+                                Err(e) => {
+                                    return Err(e);
+                                }
+                                Ok(expr) => {
+                                    if !matches!(self.current_token, Token::Semicolon) {
+                                        return Err(self.error("expected semicolon after let"));
+                                    }
+
+                                    node.expr = Some(expr);
+                                    self.next();
+                                    return Ok(Some(Box::new(node)));
+                                }
+                            }
                         }
-                        Ok(index) => {
-                            node.index = Some(index);
-                        }
+
+                        self.next();
                     }
-
-                    if !matches!(self.next(), Token::Assign) {
-                        return Err(self.error("expected `=` after let <ident>[<index>]"));
-                    }
-
-                    match self.parse_expression(0, true) {
-                        Err(e) => {
-                            return Err(e);
-                        }
-                        Ok(expr) => {
-                            node.expr = Some(expr);
-                        }
-                    }
-
-                    self.next();
-                    return Ok(Some(Box::new(node)));
                 } else if !matches!(self.current_token, Token::Assign) {
                     return Err(self.error("expected `=` after let <ident>"));
                 }

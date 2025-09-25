@@ -16,7 +16,7 @@ pub enum Opcode {
     Cafse(u64),         // construct array from stack elements
     Iafs(),             // Index array or dictionary from stack
     Cdfse(Vec<String>), // construct dictionary from stack elements
-    Aiafs(String),
+    Aiafs(String, u64),
     Bfas(),   // Begin function arguments setup
     Efas(),   // End function arguments setup
     Pop(),    // pop from stack

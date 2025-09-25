@@ -186,6 +186,62 @@ impl<'a> VM<'a> {
         self.scopes.pop();
     }
 
+    fn aiafs(&mut self, value: Value, set_to: Value, mut indexes: Vec<Value>) -> Value {
+        match value {
+            Value::Array(mut array) => {
+                let index = indexes[0].clone();
+                if let Value::Number(index) = index {
+                    let usize_index = index as usize;
+                    if usize_index >= array.len() {
+                        self.error = format!(
+                            "aiafs failed: index ({}) is larger or equal to array length ({})",
+                            usize_index,
+                            array.len()
+                        );
+                        return Value::Null();
+                    }
+
+                    if indexes.len() == 1 {
+                        array[usize_index] = set_to;
+                        return Value::Array(array);
+                    } else {
+                        indexes.remove(0);
+                        if let Value::Array(inner) = &array[usize_index] {
+                            array[usize_index] =
+                                self.aiafs(Value::Array(inner.clone()), set_to, indexes);
+                            return Value::Array(array);
+                        }
+                    }
+                }
+            }
+            Value::Dictionary(mut dict) => {
+                let index = indexes[0].clone();
+                if let Value::String(index) = index {
+                    for element in dict.iter_mut() {
+                        if element.0 != index {
+                            continue;
+                        }
+
+                        if indexes.len() == 1 {
+                            (*element).1 = set_to;
+                            return Value::Dictionary(dict);
+                        } else {
+                            indexes.remove(0);
+                            if let Value::Dictionary(inner) = &element.1 {
+                                (*element).1 =
+                                    self.aiafs(Value::Dictionary(inner.clone()), set_to, indexes);
+                                return Value::Dictionary(dict);
+                            }
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+        self.error = format!("aiafs failed: invalid operand types");
+        return Value::Null();
+    }
+
     pub fn execute_opcode(&mut self, opcode: &Opcode) {
         match opcode {
             Opcode::Call() => {
@@ -351,67 +407,56 @@ impl<'a> VM<'a> {
                 let value = Value::Dictionary(items);
                 self.stack.push(value);
             }
-            Opcode::Aiafs(name) => {
-                let value;
-                let index;
-                if let Some(value) = self.stack.pop() {
-                    index = value;
-                } else {
-                    self.error = format!("aiafs failed: no more values on stack for index");
-                    return;
-                }
-                if let Some(some_value) = self.stack.pop() {
-                    value = some_value;
-                } else {
-                    self.error = format!("aiafs failed: no more values on stack for array");
-                    return;
-                }
+            Opcode::Aiafs(name, indexes_count) => {
+                let set_value: Value;
+                let array: Value;
+                let mut indexes: Vec<Value> = Vec::new();
 
-                let array;
-                if let Some(scope) = self.scopes.last_mut() {
-                    if let Some(value) = scope.get_mut(name) {
-                        array = value;
+                {
+                    for _ in 0..*indexes_count {
+                        if let Some(value) = self.stack.pop() {
+                            indexes.insert(0, value);
+                        } else {
+                            self.error = format!("aiafs failed: no more values on stack for index");
+                            return;
+                        }
+                    }
+
+                    if let Some(some_value) = self.stack.pop() {
+                        set_value = some_value;
                     } else {
-                        self.error = format!("aiafs failed: no variable named {}", name);
+                        self.error = format!("aiafs failed: no more values on stack for array");
                         return;
                     }
-                } else {
-                    self.error = format!("aiafs failed: no scopes");
-                    return;
-                }
 
-                match array {
-                    Value::Array(array) => {
-                        if let Value::Number(index) = index {
-                            let usize_index = index as usize;
-                            if usize_index >= array.len() {
-                                self.error = format!(
-                                    "aiafs failed: index ({}) is larger or equal to array length ({})",
-                                    usize_index,
-                                    array.len()
-                                );
-                                return;
-                            }
-
-                            array[usize_index] = value;
+                    if let Some(scope) = self.scopes.last_mut() {
+                        if let Some(value) = scope.get_mut(name) {
+                            array = value.clone();
+                        } else {
+                            self.error = format!("aiafs failed: no variable named {}", name);
                             return;
                         }
+                    } else {
+                        self.error = format!("aiafs failed: no scopes");
+                        return;
                     }
-                    Value::Dictionary(dict) => {
-                        if let Value::String(index) = index {
-                            for element in dict.iter_mut() {
-                                if element.0 == index {
-                                    element.1 = value;
-                                    return;
-                                }
-                            }
-                            self.error = format!("aiafs failed: index ({}) does not exist", index,);
+                }
+
+                {
+                    let new = self.aiafs(array, set_value, indexes);
+
+                    if let Some(scope) = self.scopes.last_mut() {
+                        if let Some(value) = scope.get_mut(name) {
+                            *value = new;
+                        } else {
+                            self.error = format!("aiafs failed: no variable named {}", name);
                             return;
                         }
+                    } else {
+                        self.error = format!("aiafs failed: no scopes");
+                        return;
                     }
-                    _ => {}
                 }
-                self.error = format!("aiafs failed: invalid operand types");
             }
             Opcode::Bfas() => {
                 self.bfas_stack_start = self.stack.len() as i64;
