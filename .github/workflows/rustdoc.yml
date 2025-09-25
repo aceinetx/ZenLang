@@ -48,7 +48,8 @@ jobs:
         run: |
           cargo build
           cargo doc
-          cp target/doc/zenlang/* ./docs -r
+          mkdir docs
+          cp target/doc/zenlang/* ./docs/ -r
           cp target/doc/static.files ./docs/
           
       - name: Upload artifact
