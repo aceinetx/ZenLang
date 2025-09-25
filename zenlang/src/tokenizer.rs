@@ -3,13 +3,7 @@
 //! Tokenizes ZenLang code into tokens
 //!
 //! ### Example
-//! ```
-//! fn main {}
-//! ```
-//! tokenizes into
-//! ```
-//! Fn, Identifier(main), Lbrace, Rbrace
-//! ```
+//! `fn main {}` -> `Fn, Identifier(main), Lbrace, Rbrace`
 use crate::unescape;
 use alloc::string::*;
 use libm::pow;

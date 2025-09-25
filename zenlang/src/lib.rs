@@ -1,9 +1,9 @@
 //! ZenLang
 //!
 //! Primary programming language of ZenOS
-//! ```
+//! ```ignore
 //! fn main {
-//!     println("Hello from ZenLang");
+//!     println("Hello from ZenLang!");
 //!     return null;
 //! }
 //! ```

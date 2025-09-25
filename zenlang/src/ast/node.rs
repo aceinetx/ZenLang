@@ -11,7 +11,7 @@ pub trait Compile {
     /// Disable pushing for the current node
     ///
     /// This is needed in these cases, where with pushing would just flood the stack with unused data:
-    /// ```
+    /// ```ignore
     /// fn main {
     ///     123;
     /// }
