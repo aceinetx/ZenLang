@@ -1,6 +1,6 @@
 use crate::ast::node::Compile;
 use crate::module::Module;
-use crate::parser::parser::*;
+use crate::parser::*;
 use alloc::string::*;
 use alloc::vec::*;
 

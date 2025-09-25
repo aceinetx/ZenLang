@@ -1,6 +1,6 @@
-pub mod vm;
-pub mod vm_aiafs;
-pub mod vm_compute;
-pub mod vm_opcode;
-pub mod vmcall;
+mod vm;
+mod vm_aiafs;
+mod vm_compute;
+mod vm_opcode;
+mod vmcall;
 pub use vm::*;
