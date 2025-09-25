@@ -47,7 +47,7 @@ jobs:
       - name: Build documentation
         run: |
           cargo build
-          cargo doc
+          cargo doc --document-private-items
           mkdir docs
           echo '<meta http-equiv="refresh" content="0;url=zenlang/index.html">' > target/doc/index.html
           cp target/doc/* ./docs -r
