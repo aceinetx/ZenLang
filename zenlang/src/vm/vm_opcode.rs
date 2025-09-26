@@ -7,7 +7,7 @@ use alloc::format;
 use alloc::string::*;
 use alloc::vec::*;
 
-impl<'a> VM<'a> {
+impl VM {
     pub(crate) fn execute_opcode(&mut self, opcode: &Opcode) {
         match opcode {
             Opcode::Call() => {

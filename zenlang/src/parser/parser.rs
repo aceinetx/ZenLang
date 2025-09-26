@@ -198,8 +198,22 @@ impl<'a> Parser<'_> {
                         return Err(e);
                     }
                 }
+                Token::Mod => {
+                    let mut node = mod_stmt::AstMod::new();
+                    if let Token::Identifier(name) = self.next() {
+                        node.name = name;
+                    } else {
+                        return Err(self.error("expected identifier after mod"));
+                    }
+
+                    if !matches!(self.next(), Token::Semicolon) {
+                        return Err(self.error("expected semicolon after mod <name>"));
+                    }
+
+                    self.root.children.push(Box::new(node));
+                }
                 _ => {
-                    return Err(self.error("unexpected token, expected one of these: Fn"));
+                    return Err(self.error("unexpected token, expected one of these: Fn | Mod"));
                 }
             }
             token = self.next();

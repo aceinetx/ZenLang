@@ -15,6 +15,7 @@ pub mod func_call;
 pub mod function;
 pub mod if_chain;
 pub mod if_stmt;
+pub mod mod_stmt;
 pub mod node;
 pub mod null;
 pub mod number;

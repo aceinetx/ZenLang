@@ -2,7 +2,7 @@ use crate::value::*;
 use crate::vm::*;
 use alloc::format;
 
-impl<'a> VM<'a> {
+impl VM {
     /// Performs a vmcall
     ///
     /// ### VMCall indexes
@@ -34,6 +34,25 @@ impl<'a> VM<'a> {
                     let string = platform.get_string();
                     let value = Value::String(string.into());
                     self.stack.push(value);
+                }
+            }
+            4 => {
+                if let Some(platform) = &self.platform {
+                    if let Some(value) = self.stack.pop() {
+                        if let Value::String(name) = value {
+                            //platform.println(format!("{}", value));
+                            self.error = format!("module not found: {}", name);
+                            if let Some(module) = platform.get_module(name) {
+                                self.error.clear();
+
+                                let _ = self.load_module(&module);
+                            }
+                            return;
+                        } else {
+                            self.error = "vmcall: expected a string".into();
+                        }
+                    }
+                    self.error = "vmcall: no value on stack".into();
                 }
             }
             _ => {

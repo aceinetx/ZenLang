@@ -1,3 +1,5 @@
+mod stdlib;
+
 fn iter arr func {
 	let i = 0;
 	let item = arr[i];

@@ -1,3 +1,5 @@
+mod stdlib;
+
 // ZenLang is not object oriented - therefore it doesn't have classes
 // But you can make something similar
 fn class_new {

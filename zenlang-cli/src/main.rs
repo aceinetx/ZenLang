@@ -3,7 +3,7 @@ use std::{
     fs::{self},
     io::Read,
 };
-use zenlang::{compiler, module, parser, stdlib, strong_u64::U64BitsControl, tokenizer, vm};
+use zenlang::{compiler, module, parser, strong_u64::U64BitsControl, tokenizer, vm};
 
 mod platform;
 
@@ -52,13 +52,13 @@ fn run_code(code: String) {
     }
 
     let module = compiler.get_module();
-    //println!("{:?}", module);
 
     let mut vm = vm::VM::new();
 
-    let mut stdlib = stdlib::compile_stdlib_module();
-    vm.load_module(&mut stdlib);
-    vm.load_module(module);
+    if let Err(e) = vm.load_module(&module) {
+        println!("{}", e);
+    }
+
     run_vm(&mut vm);
 }
 
@@ -99,9 +99,9 @@ fn run_bytes(bytes: Vec<u8>) {
 
     let mut vm = vm::VM::new();
 
-    let mut stdlib = stdlib::compile_stdlib_module();
-    vm.load_module(&mut stdlib);
-    vm.load_module(&mut module);
+    if let Err(e) = vm.load_module(&module) {
+        println!("{}", e);
+    }
 
     run_vm(&mut vm);
 }

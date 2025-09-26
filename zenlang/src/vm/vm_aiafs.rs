@@ -3,7 +3,7 @@ use crate::vm::*;
 use alloc::format;
 use alloc::vec::*;
 
-impl<'a> VM<'a> {
+impl VM {
     /// Perform Aiafs operation
     ///
     /// The reason it's in a function (not in execute_opcode) is because it needs to be recursive

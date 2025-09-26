@@ -6,7 +6,7 @@ use alloc::vec::*;
 use bincode::*;
 
 /// Opcode
-#[derive(Encode, Decode, Debug)]
+#[derive(Encode, Decode, Debug, Clone)]
 pub enum Opcode {
     Call(),
     Vmcall(u8),

@@ -4,13 +4,15 @@ use crate::scope::Scope;
 use crate::strong_u64::*;
 use crate::value::*;
 use alloc::boxed::*;
+use alloc::format;
 use alloc::string::*;
 use alloc::vec::*;
 
 static MAX_STACK_SIZE: usize = 1000;
 
-pub struct VM<'a> {
-    pub modules: Vec<&'a mut Module>,
+pub struct VM {
+    pub modules: Vec<Module>,
+    pub owned_modules: Vec<Module>,
     pub pc: u64,
     pub stack: Vec<Value>,
     pub call_stack: Vec<u64>,
@@ -22,10 +24,11 @@ pub struct VM<'a> {
     pub(crate) bfas_stack_end: i64,
 }
 
-impl<'a> VM<'a> {
-    pub fn new() -> VM<'a> {
+impl VM {
+    pub fn new() -> VM {
         return VM {
             modules: Vec::new(),
+            owned_modules: Vec::new(),
             pc: 0,
             stack: Vec::new(),
             call_stack: Vec::new(),
@@ -38,8 +41,36 @@ impl<'a> VM<'a> {
         };
     }
 
-    pub fn load_module(&mut self, module: &'a mut Module) {
-        self.modules.push(module);
+    pub fn load_module(&mut self, module: &Module) -> Result<(), String> {
+        self.modules.push(module.clone());
+
+        for dependency in module.dependencies.iter() {
+            let name = dependency.to_string();
+
+            // check if the dependency is already loaded
+            for module in self.modules.iter_mut() {
+                if module.name == name {
+                    return Ok(());
+                }
+            }
+
+            if let Some(platform) = &self.platform {
+                if let Some(module) = platform.get_module(name) {
+                    self.modules.push(module);
+                } else {
+                    return Err(format!(
+                        "unresolved dependency {} (of module {}): not found",
+                        dependency, module.name
+                    ));
+                }
+            } else {
+                return Err(format!(
+                    "unresolved dependency {} (of module {}): self.platform is None",
+                    dependency, module.name
+                ));
+            }
+        }
+        return Ok(());
     }
 
     pub fn set_entry_function(&mut self, entry_fn_name: &str) -> Result<(), &'static str> {

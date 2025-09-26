@@ -22,7 +22,7 @@ fn main {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -56,7 +56,7 @@ fn main {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -89,7 +89,7 @@ fn main {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -123,7 +123,7 @@ fn main {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -158,7 +158,7 @@ fn main {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -192,7 +192,7 @@ fn main {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -225,7 +225,7 @@ fn main {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -259,7 +259,7 @@ fn main {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }

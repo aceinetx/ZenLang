@@ -15,7 +15,7 @@ fn vm_test_bitor() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -41,7 +41,7 @@ fn vm_test_bitand() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -67,7 +67,7 @@ fn vm_test_bitshr() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -93,7 +93,7 @@ fn vm_test_bitshl() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
