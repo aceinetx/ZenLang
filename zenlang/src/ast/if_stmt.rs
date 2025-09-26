@@ -1,10 +1,14 @@
 use crate::ast::node::Compile;
 use alloc::boxed::*;
+use alloc::string::*;
 use alloc::vec::*;
 
 pub struct AstIfStmt {
     pub value: Option<Box<dyn Compile>>,
     pub body: Vec<Box<dyn Compile>>,
+    pub if_let: bool,
+    pub if_let_name: String,
+    pub if_let_expr: Option<Box<dyn Compile>>,
 }
 
 impl AstIfStmt {
@@ -12,6 +16,9 @@ impl AstIfStmt {
         return Self {
             value: None,
             body: Vec::new(),
+            if_let: false,
+            if_let_name: String::new(),
+            if_let_expr: None,
         };
     }
 }

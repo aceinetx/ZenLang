@@ -17,47 +17,124 @@ impl<'a> Parser<'_> {
                         break;
                     }
 
-                    let mut node = if_stmt::AstIfStmt::new();
-                    match self.parse_expression(0, true) {
-                        Err(e) => {
-                            return Err(e);
+                    match self.next() {
+                        Token::Let => {
+                            let mut node = if_stmt::AstIfStmt::new();
+                            node.if_let = true;
+
+                            if let Token::Identifier(name) = self.next() {
+                                node.if_let_name = name;
+                            } else {
+                                return Err(self.error("expected identifier after if-let. Note: if-let is not like regular let, it doesn't support indexing, etc..."));
+                            }
+
+                            if !matches!(self.next(), Token::Assign) {
+                                return Err(
+                                    self.error("expected semicolon after if-let <identifier>")
+                                );
+                            }
+
+                            match self.parse_expression(0, true) {
+                                Err(e) => {
+                                    return Err(e);
+                                }
+                                Ok(expr) => {
+                                    node.if_let_expr = Some(expr);
+                                }
+                            }
+
+                            match self.parse_block() {
+                                Err(e) => {
+                                    return Err(e);
+                                }
+                                Ok(block) => {
+                                    node.body = block;
+                                }
+                            }
+                            self.next();
+                            chain.head = Some(node);
                         }
-                        Ok(expr) => {
-                            node.value = Some(expr);
+                        _ => {
+                            let mut node = if_stmt::AstIfStmt::new();
+                            match self.parse_expression(0, false) {
+                                Err(e) => {
+                                    return Err(e);
+                                }
+                                Ok(expr) => {
+                                    node.value = Some(expr);
+                                }
+                            }
+                            match self.parse_block() {
+                                Err(e) => {
+                                    return Err(e);
+                                }
+                                Ok(block) => {
+                                    node.body = block;
+                                }
+                            }
+                            self.next();
+                            chain.head = Some(node);
                         }
                     }
-                    match self.parse_block() {
-                        Err(e) => {
-                            return Err(e);
-                        }
-                        Ok(block) => {
-                            node.body = block;
-                        }
-                    }
-                    self.next();
-                    chain.head = Some(node);
                 }
-                Token::Elif => {
-                    let mut node = elif_stmt::AstElifStmt::new();
-                    match self.parse_expression(0, true) {
-                        Err(e) => {
-                            return Err(e);
+                Token::Elif => match self.next() {
+                    Token::Let => {
+                        let mut node = elif_stmt::AstElifStmt::new();
+                        node.elif_let = true;
+
+                        if let Token::Identifier(name) = self.next() {
+                            node.elif_let_name = name;
+                        } else {
+                            return Err(self.error("expected identifier after if-let. Note: if-let is not like regular let, it doesn't support indexing, etc..."));
                         }
-                        Ok(expr) => {
-                            node.value = Some(expr);
+
+                        if !matches!(self.next(), Token::Assign) {
+                            return Err(self.error("expected semicolon after if-let <identifier>"));
                         }
+
+                        match self.parse_expression(0, true) {
+                            Err(e) => {
+                                return Err(e);
+                            }
+                            Ok(expr) => {
+                                node.elif_let_expr = Some(expr);
+                            }
+                        }
+
+                        match self.parse_block() {
+                            Err(e) => {
+                                return Err(e);
+                            }
+                            Ok(block) => {
+                                node.body = block;
+                            }
+                        }
+
+                        self.next();
+                        chain.elifs.push(node);
                     }
-                    match self.parse_block() {
-                        Err(e) => {
-                            return Err(e);
+                    _ => {
+                        let mut node = elif_stmt::AstElifStmt::new();
+                        match self.parse_expression(0, false) {
+                            Err(e) => {
+                                return Err(e);
+                            }
+                            Ok(expr) => {
+                                node.value = Some(expr);
+                            }
                         }
-                        Ok(block) => {
-                            node.body = block;
+                        match self.parse_block() {
+                            Err(e) => {
+                                return Err(e);
+                            }
+                            Ok(block) => {
+                                node.body = block;
+                            }
                         }
+                        self.next();
+                        chain.elifs.push(node);
                     }
-                    self.next();
-                    chain.elifs.push(node);
-                }
+                },
                 Token::Else => {
                     let mut node = else_stmt::AstElseStmt::new();
                     self.next();
