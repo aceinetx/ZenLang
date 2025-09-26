@@ -7,7 +7,7 @@ fn main {
 }
 ```
 ### Roadmap
-- [ ] Error handling
+- [x] Error handling
 - [ ] File read/write functions
 - [x] Function attributes like #[naked]
 - [x] vmcall keyword
