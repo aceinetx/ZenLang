@@ -10,4 +10,4 @@ fn main {
 - [x] Function attributes like #[naked]
 - [x] vmcall keyword
 - [x] mod and dynmod keyword
-- [ ] module loading from files (depends on above)
+- [x] module loading from files (depends on above)
