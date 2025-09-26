@@ -78,32 +78,78 @@ impl Compile for AstIfChain {
         // compile expressions
         // * head
         {
-            if let Some(value) = &mut head.value {
-                if let Err(e) = value.compile(compiler) {
-                    return Err(e);
+            if !head.if_let {
+                // if
+                if let Some(value) = &mut head.value {
+                    if let Err(e) = value.compile(compiler) {
+                        return Err(e);
+                    }
+                } else {
+                    return Err("head.value is None".into());
                 }
+
+                let module = compiler.get_module();
+                branch_indexes.push(module.opcodes.len());
+
+                let opcode = Opcode::Bst(0);
+                module.opcodes.push(opcode);
+            } else {
+                // if let
+                if let Some(value) = &mut head.if_let_expr {
+                    if let Err(e) = value.compile(compiler) {
+                        return Err(e);
+                    }
+                } else {
+                    return Err("head.if_let_expr is None".into());
+                }
+
+                let module = compiler.get_module();
+                module
+                    .opcodes
+                    .push(Opcode::Storev(head.if_let_name.clone()));
+                module.opcodes.push(Opcode::Loadv(head.if_let_name.clone()));
+
+                branch_indexes.push(module.opcodes.len());
+                module.opcodes.push(Opcode::Bsnn(0));
             }
-
-            let module = compiler.get_module();
-            branch_indexes.push(module.opcodes.len());
-
-            let opcode = Opcode::Bst(0);
-            module.opcodes.push(opcode);
         }
 
         // * elifs
         for elif_node in self.elifs.iter_mut() {
-            if let Some(value) = &mut elif_node.value {
-                if let Err(e) = value.compile(compiler) {
-                    return Err(e);
+            if !elif_node.elif_let {
+                // elif
+                if let Some(value) = &mut elif_node.value {
+                    if let Err(e) = value.compile(compiler) {
+                        return Err(e);
+                    }
                 }
+
+                let module = compiler.get_module();
+                branch_indexes.push(module.opcodes.len());
+
+                let opcode = Opcode::Bst(0);
+                module.opcodes.push(opcode);
+            } else {
+                // elif let
+                if let Some(value) = &mut elif_node.elif_let_expr {
+                    if let Err(e) = value.compile(compiler) {
+                        return Err(e);
+                    }
+                } else {
+                    return Err("elif_node.elif_let_expr is None".into());
+                }
+
+                let module = compiler.get_module();
+                module
+                    .opcodes
+                    .push(Opcode::Storev(elif_node.elif_let_name.clone()));
+                module
+                    .opcodes
+                    .push(Opcode::Loadv(elif_node.elif_let_name.clone()));
+
+                branch_indexes.push(module.opcodes.len());
+                module.opcodes.push(Opcode::Bsnn(0));
             }
-
-            let module = compiler.get_module();
-            branch_indexes.push(module.opcodes.len());
-
-            let opcode = Opcode::Bst(0);
-            module.opcodes.push(opcode);
         }
 
         {
@@ -143,6 +189,9 @@ impl Compile for AstIfChain {
                 if let Opcode::Bst(bst_addr) = &mut module.opcodes[branch_indexes[0]] {
                     *bst_addr = addr as u32;
                 }
+                if let Opcode::Bsnn(bsnn_addr) = &mut module.opcodes[branch_indexes[0]] {
+                    *bsnn_addr = addr as u32;
+                }
             }
         }
 
@@ -174,6 +223,9 @@ impl Compile for AstIfChain {
                 let module = compiler.get_module();
                 if let Opcode::Bst(bst_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
                     *bst_addr = addr as u32;
+                }
+                if let Opcode::Bsnn(bsnn_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
+                    *bsnn_addr = addr as u32;
                 }
             }
         }
