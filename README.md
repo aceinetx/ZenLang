@@ -9,3 +9,5 @@ fn main {
 - [ ] File read/write functions
 - [x] Function attributes like #[naked]
 - [x] vmcall keyword
+- [ ] mod and dynmod keyword
+- [ ] module loading from files (depends on above)
