@@ -257,6 +257,16 @@ impl VM {
                     self.error = "bst failed: no value on stack".into();
                 }
             }
+            Opcode::Bsnn(addr) => {
+                if let Some(value) = self.stack.pop() {
+                    if let Value::Null() = value {
+                        return;
+                    }
+                    self.pc.set_low(*addr - 1);
+                } else {
+                    self.error = "bsnn failed: no value on stack".into();
+                }
+            }
             Opcode::Br(addr) => {
                 self.pc.set_low(*addr - 1);
             }

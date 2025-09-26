@@ -21,11 +21,12 @@ pub enum Opcode {
     Iafs(),             // Index array or dictionary from stack
     Cdfse(Vec<String>), // construct dictionary from stack elements
     Aiafs(String, u64),
-    Bfas(),   // Begin function arguments setup
-    Efas(),   // End function arguments setup
-    Pop(),    // pop from stack
-    Bst(u32), // branch stack true (branch if stack value is true)
-    Br(u32),  // branch
+    Bfas(),    // Begin function arguments setup
+    Efas(),    // End function arguments setup
+    Pop(),     // pop from stack
+    Bst(u32),  // branch stack true (branch if stack value is true)
+    Bsnn(u32), // branch stack non null
+    Br(u32),   // branch
     Add(),
     Sub(),
     Mul(),
