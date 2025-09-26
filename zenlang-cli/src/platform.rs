@@ -1,3 +1,4 @@
+use std::fs;
 use zenlang::module::Module;
 use zenlang::platform;
 use zenlang::stdlib::compile_stdlib_module;
@@ -28,7 +29,27 @@ impl platform::Platform for Platform {
         if name == "stdlib" {
             let module = compile_stdlib_module();
             return Some(module);
+        } else {
+            let filename = name + ".zenc";
+            if let Some(bytes) = self.read_file_bytes(filename) {
+                let mut module = Module::new();
+                if module.load(bytes).is_err() {
+                    return None;
+                }
+                return Some(module);
+            }
         }
         return None;
+    }
+
+    fn read_file_bytes(&self, name: String) -> Option<Vec<u8>> {
+        match fs::read(name) {
+            Err(_) => {
+                return None;
+            }
+            Ok(bytes) => {
+                return Some(bytes);
+            }
+        }
     }
 }

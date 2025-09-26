@@ -1,5 +1,6 @@
 use crate::module::Module;
 use alloc::string::*;
+use alloc::vec::*;
 
 /// Platform trait
 ///
@@ -14,4 +15,5 @@ pub trait Platform {
     fn get_module(&self, _name: String) -> Option<Module> {
         return None;
     }
+    fn read_file_bytes(&self, name: String) -> Option<Vec<u8>>;
 }

@@ -54,9 +54,12 @@ impl VM {
                 }
             }
 
+            // load the dependency
             if let Some(platform) = &self.platform {
                 if let Some(module) = platform.get_module(name) {
-                    self.modules.push(module);
+                    if let Err(e) = self.load_module(&module) {
+                        return Err(e);
+                    }
                 } else {
                     return Err(format!(
                         "unresolved dependency {} (of module {}): not found",
