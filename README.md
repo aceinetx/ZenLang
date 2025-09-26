@@ -7,7 +7,6 @@ fn main {
 }
 ```
 ### Roadmap
-<<<<<<< HEAD
 - [x] Error handling
 - [x] `if let` and `elif let`
 - [ ] File read/write functions
