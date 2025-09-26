@@ -13,7 +13,10 @@ impl VM {
                 let index = indexes[0].clone();
                 if let Value::Number(index) = index {
                     let usize_index = index as usize;
-                    if usize_index >= array.len() {
+                    if usize_index == array.len() {
+                        array.push(set_to);
+                        return Value::Array(array);
+                    } else if usize_index >= array.len() {
                         self.error = format!(
                             "aiafs failed: index ({}) is larger or equal to array length ({})",
                             usize_index,
