@@ -32,6 +32,7 @@ pub enum Token {
     Comma,
     Dot,
     Assign,
+    Hashtag,
     If,
     Elif,
     Else,
@@ -237,6 +238,9 @@ impl Tokenizer {
             } else if c == ']' {
                 self.pos += 1;
                 return Token::Rbracket;
+            } else if c == '#' {
+                self.pos += 1;
+                return Token::Hashtag;
             } else if c == '=' {
                 self.pos += 1;
                 if self.pos < self.code.len() {

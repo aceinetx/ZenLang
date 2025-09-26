@@ -117,9 +117,42 @@ impl<'a> Parser<'_> {
 
     /// Parses function
     pub(crate) fn parse_function(&mut self) -> Result<(), String> {
-        let token = self.next();
+        let mut function = function::AstFunction::new();
+
+        let mut token = self.next();
+        if matches!(token, Token::Hashtag) {
+            if !matches!(self.next(), Token::Lbracket) {
+                return Err(self.error("expected `[` after `#`"));
+            }
+            token = self.next();
+
+            loop {
+                if let Token::Identifier(name) = token {
+                    let attr = crate::FunctionAttribute::map(name);
+                    if let Some(attr) = attr {
+                        function.attrs.push(attr);
+                    } else {
+                        return Err(self.error("no such attribute"));
+                    }
+                } else {
+                    return Err(self.error("attribute name should be an identifier"));
+                }
+
+                token = self.next();
+                if matches!(token, Token::Rbracket) {
+                    token = self.next();
+                    break;
+                }
+
+                if !matches!(token, Token::Comma) {
+                    return Err(self.error("expected `,` attribute name"));
+                }
+
+                token = self.next();
+            }
+        }
+
         if let Token::Identifier(name) = token {
-            let mut function = function::AstFunction::new();
             function.name = name;
 
             // Parse function arguments

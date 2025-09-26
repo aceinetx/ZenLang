@@ -22,4 +22,7 @@ pub mod unescape;
 pub mod value;
 pub mod vm;
 
+mod func_attr;
+pub use func_attr::*;
+
 extern crate alloc;
