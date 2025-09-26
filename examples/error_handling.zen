@@ -9,14 +9,13 @@ fn test is_error {
 }
 
 fn main {
-    let result = test(false);
-    let error = get_err(result);
-    if error != null {
+    let result = test(true);
+    if let error = get_err(result) {
         print("Failure: ");
-        println(get_err(result));
-    } else {
+        println(error);
+    } elif let success = get_ok(result) {
         print("Success: ");
-        println(get_ok(result));
+        println(success);
     }
     return null;
 }
