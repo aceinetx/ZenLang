@@ -8,4 +8,4 @@ fn main {
 - [ ] Error handling
 - [ ] File read/write functions
 - [x] Function attributes like #[naked]
-- [ ] vmcall keyword
+- [x] vmcall keyword
