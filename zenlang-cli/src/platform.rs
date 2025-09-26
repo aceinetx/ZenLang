@@ -1,4 +1,6 @@
+use zenlang::module::Module;
 use zenlang::platform;
+use zenlang::stdlib::compile_stdlib_module;
 
 pub struct Platform {}
 
@@ -20,5 +22,13 @@ impl platform::Platform for Platform {
             Err(_) => {}
         }
         input.trim().to_string()
+    }
+
+    fn get_module(&self, name: String) -> Option<Module> {
+        if name == "stdlib" {
+            let module = compile_stdlib_module();
+            return Some(module);
+        }
+        return None;
     }
 }

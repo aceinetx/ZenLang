@@ -1,3 +1,4 @@
+use crate::module::Module;
 use alloc::string::*;
 
 /// Platform trait
@@ -10,4 +11,7 @@ pub trait Platform {
         self.print(s + "\n");
     }
     fn get_string(&self) -> String;
+    fn get_module(&self, _name: String) -> Option<Module> {
+        return None;
+    }
 }

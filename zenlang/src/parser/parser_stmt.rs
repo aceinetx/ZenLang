@@ -46,6 +46,25 @@ impl<'a> Parser<'_> {
 
                 return Ok(Some(Box::new(node)));
             }
+            Token::Dynmod => match self.parse_expression(0, true) {
+                Err(e) => {
+                    return Err(e);
+                }
+                Ok(node) => {
+                    // We expect a semicolon after the expression
+                    if !matches!(self.current_token, Token::Semicolon) {
+                        return Err(self.error_str(format!(
+                            "expected semicolon after dynmod, found {:?}",
+                            self.current_token
+                        )));
+                    }
+
+                    let mut dynmod = dynmod_stmt::AstDynmod::new();
+                    dynmod.name = Some(node);
+                    self.next();
+                    return Ok(Some(Box::new(dynmod)));
+                }
+            },
             Token::Let => {
                 let mut node = var_assign::AstAssign::new();
                 let name;

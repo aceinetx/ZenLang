@@ -13,7 +13,7 @@ use bincode::*;
 /// ModuleFunction
 ///
 /// Contains information about a module function
-#[derive(Encode, Decode, Serialize, Deserialize, Debug)]
+#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 pub struct ModuleFunction {
     /// Function name
     pub name: String,
@@ -36,12 +36,16 @@ impl ModuleFunction {
 /// Module
 ///
 /// Contains module information (code)
-#[derive(Encode, Decode, Debug)]
+#[derive(Encode, Decode, Debug, Clone)]
 pub struct Module {
     /// Opcodes of the module (entire code)
     pub opcodes: Vec<Opcode>,
     /// Function informations
     pub functions: Vec<ModuleFunction>,
+    /// Module dependencies
+    pub dependencies: Vec<String>,
+    /// Module name
+    pub name: String,
 }
 
 impl Module {
@@ -49,6 +53,8 @@ impl Module {
         return Module {
             opcodes: Vec::new(),
             functions: Vec::new(),
+            dependencies: Vec::new(),
+            name: String::new(),
         };
     }
 

@@ -15,7 +15,7 @@ fn vm_test_eq() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -41,7 +41,7 @@ fn vm_test_neq() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -67,7 +67,7 @@ fn vm_test_gt() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -93,7 +93,7 @@ fn vm_test_gt_false() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -119,7 +119,7 @@ fn vm_test_lt() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -145,7 +145,7 @@ fn vm_test_lt_false() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -171,7 +171,7 @@ fn vm_test_ge() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -197,7 +197,7 @@ fn vm_test_ge_false() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -223,7 +223,7 @@ fn vm_test_le() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }
@@ -249,7 +249,7 @@ fn vm_test_le_false() {
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
-    vm.load_module(module);
+    let _ = vm.load_module(module);
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
     }

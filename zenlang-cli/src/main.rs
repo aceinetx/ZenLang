@@ -2,14 +2,13 @@ use std::{
     env,
     fs::{self},
     io::Read,
+    path::Path,
 };
-use zenlang::{compiler, module, parser, stdlib, strong_u64::U64BitsControl, tokenizer, vm};
+use zenlang::{compiler, module, parser, strong_u64::U64BitsControl, tokenizer, vm};
 
 mod platform;
 
 fn run_vm(vm: &mut vm::VM) {
-    vm.platform = Some(Box::new(platform::Platform::new()));
-
     if let Err(e) = vm.set_entry_function("main") {
         println!("vm error: {}", e);
         return;
@@ -34,7 +33,7 @@ fn run_vm(vm: &mut vm::VM) {
     println!("returned {}", vm.ret);
 }
 
-fn run_code(code: String) {
+fn run_code(code: String, module_name: String) {
     let mut tokenizer = tokenizer::Tokenizer::new(code);
     let mut parser = parser::Parser::new(&mut tokenizer);
     let mut compiler = compiler::Compiler::new(&mut parser);
@@ -52,17 +51,20 @@ fn run_code(code: String) {
     }
 
     let module = compiler.get_module();
-    //println!("{:?}", module);
+    module.name = module_name;
 
     let mut vm = vm::VM::new();
+    vm.platform = Some(Box::new(platform::Platform::new()));
 
-    let mut stdlib = stdlib::compile_stdlib_module();
-    vm.load_module(&mut stdlib);
-    vm.load_module(module);
+    if let Err(e) = vm.load_module(&module) {
+        println!("{}", e);
+        return;
+    }
+
     run_vm(&mut vm);
 }
 
-fn compile_code(code: String, out_filename: String) {
+fn compile_code(code: String, module_name: String, out_filename: String) {
     let mut tokenizer = tokenizer::Tokenizer::new(code);
     let mut parser = parser::Parser::new(&mut tokenizer);
     let mut compiler = compiler::Compiler::new(&mut parser);
@@ -80,6 +82,7 @@ fn compile_code(code: String, out_filename: String) {
     }
 
     let module = compiler.get_module();
+    module.name = module_name;
     match module.compile() {
         Err(e) => {
             println!("module compile error: {}", e);
@@ -98,12 +101,24 @@ fn run_bytes(bytes: Vec<u8>) {
     }
 
     let mut vm = vm::VM::new();
+    vm.platform = Some(Box::new(platform::Platform::new()));
 
-    let mut stdlib = stdlib::compile_stdlib_module();
-    vm.load_module(&mut stdlib);
-    vm.load_module(&mut module);
+    if let Err(e) = vm.load_module(&module) {
+        println!("{}", e);
+        return;
+    }
 
     run_vm(&mut vm);
+}
+
+fn get_module_name_from_path(path: String) -> String {
+    let path = Path::new(&path);
+
+    if let Some(stem) = path.file_stem() {
+        let filename_without_extension = stem.to_string_lossy();
+        return filename_without_extension.to_string();
+    }
+    return path.to_string_lossy().to_string();
 }
 
 fn main() {
@@ -120,6 +135,7 @@ fn main() {
         }
     }
 
+    let module_name = get_module_name_from_path(args[1].clone());
     match fs::File::open(&args[1]) {
         Ok(mut file) => {
             if !compile {
@@ -129,7 +145,7 @@ fn main() {
                         println!("read error: {}", error);
                         return;
                     }
-                    run_code(text);
+                    run_code(text, module_name);
                 } else if args[1].ends_with(".zenc") {
                     let bytes: Vec<u8>;
                     match fs::read(&args[1]) {
@@ -149,7 +165,7 @@ fn main() {
                     println!("read error: {}", error);
                     return;
                 }
-                compile_code(text, "a.zenc".into());
+                compile_code(text, module_name, "a.zenc".into());
             }
         }
         Err(e) => {

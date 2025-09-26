@@ -2,7 +2,7 @@ use crate::ast::binop::*;
 use crate::value::*;
 use crate::vm::*;
 
-impl<'a> VM<'a> {
+impl VM {
     pub(crate) fn compute_values(&mut self, left: Value, right: Value, op: AstBinopOp) -> Value {
         match op {
             AstBinopOp::PLUS => {
