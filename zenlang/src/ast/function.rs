@@ -1,3 +1,4 @@
+use crate::FunctionAttribute;
 use crate::module::ModuleFunction;
 use crate::{ast::node::Compile, compiler::Compiler, opcode::Opcode};
 use alloc::format;
@@ -8,6 +9,7 @@ pub struct AstFunction {
     pub children: Vec<alloc::boxed::Box<dyn Compile>>,
     pub name: String,
     pub args: Vec<String>,
+    pub attrs: Vec<FunctionAttribute>,
 }
 
 impl AstFunction {
@@ -16,6 +18,7 @@ impl AstFunction {
             children: Vec::new(),
             name: String::new(),
             args: Vec::new(),
+            attrs: Vec::new(),
         };
     }
 }
@@ -69,8 +72,10 @@ impl Compile for AstFunction {
             ));
         }
 
-        for arg in self.args.iter().rev() {
-            module.opcodes.push(Opcode::Storev(arg.to_string()));
+        if !self.attrs.contains(&FunctionAttribute::Naked) {
+            for arg in self.args.iter().rev() {
+                module.opcodes.push(Opcode::Storev(arg.to_string()));
+            }
         }
 
         Ok(())
