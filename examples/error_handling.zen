@@ -1,0 +1,22 @@
+mod stdlib;
+
+fn test is_error {
+    if is_error {
+        return err("This is an error");
+    } else {
+        return ok("Ok!");
+    }
+}
+
+fn main {
+    let result = test(false);
+    let error = get_err(result);
+    if error != null {
+        print("Failure: ");
+        println(get_err(result));
+    } else {
+        print("Success: ");
+        println(get_ok(result));
+    }
+    return null;
+}
