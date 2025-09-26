@@ -5,6 +5,8 @@ use crate::{
 
 pub fn compile_stdlib_module() -> Module {
     let mut module = Module::new();
+    module.name = "stdlib".into();
+
     module.functions.push(ModuleFunction::new(
         "print".into(),
         module.opcodes.len() as u32,
