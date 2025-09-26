@@ -11,8 +11,8 @@ use alloc::vec::*;
 pub struct Compiler<'a> {
     parser: &'a mut Parser<'a>,
     module: Module,
-    pub while_stmts_break_indexes: Vec<Vec<usize>>,
-    pub while_stmts_continue_indexes: Vec<Vec<usize>>,
+    pub(crate) while_stmts_break_indexes: Vec<Vec<usize>>,
+    pub(crate) while_stmts_continue_indexes: Vec<Vec<usize>>,
     pub warnings: Vec<String>,
 }
 
