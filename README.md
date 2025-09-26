@@ -7,7 +7,8 @@ fn main {
 }
 ```
 ### Roadmap
-- [ ] Error handling
+<<<<<<< HEAD
+- [x] Error handling
 - [x] `if let` and `elif let`
 - [ ] File read/write functions
 - [x] Function attributes like #[naked]
