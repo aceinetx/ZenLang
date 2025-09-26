@@ -457,3 +457,35 @@ fn tokenizer_test_vmcall() {
     let token = tokenizer.next();
     assert!(matches!(token, Token::Number(1.0)));
 }
+
+#[test]
+fn tokenizer_test_mod() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 mod 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Mod));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}
+
+#[test]
+fn tokenizer_test_dynmod() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 dynmod 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Dynmod));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}

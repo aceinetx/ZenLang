@@ -40,6 +40,8 @@ pub enum Token {
     Break,
     Continue,
     Vmcall,
+    Mod,
+    Dynmod,
     EOF,
 }
 
@@ -186,6 +188,10 @@ impl Tokenizer {
                         token = Token::Continue;
                     } else if name == "vmcall" {
                         token = Token::Vmcall;
+                    } else if name == "mod" {
+                        token = Token::Mod;
+                    } else if name == "dynmod" {
+                        token = Token::Dynmod;
                     }
                 }
                 return token;
