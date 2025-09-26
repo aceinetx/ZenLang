@@ -34,6 +34,10 @@ impl VM {
                             array[usize_index] =
                                 self.aiafs(Value::Array(inner.clone()), set_to, indexes);
                             return Value::Array(array);
+                        } else if let Value::Dictionary(inner) = &array[usize_index] {
+                            array[usize_index] =
+                                self.aiafs(Value::Dictionary(inner.clone()), set_to, indexes);
+                            return Value::Array(array);
                         }
                     }
                 }
@@ -55,10 +59,15 @@ impl VM {
                                 (*element).1 =
                                     self.aiafs(Value::Dictionary(inner.clone()), set_to, indexes);
                                 return Value::Dictionary(dict);
+                            } else if let Value::Array(inner) = &element.1 {
+                                (*element).1 =
+                                    self.aiafs(Value::Array(inner.clone()), set_to, indexes);
+                                return Value::Dictionary(dict);
                             }
                         }
                     }
                 }
+                self.error = format!("aiafs failed: dictionary indexing failed");
             }
             _ => {}
         }
