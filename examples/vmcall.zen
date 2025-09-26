@@ -1,0 +1,9 @@
+fn #[naked] my_println str {
+	vmcall 2;
+	return null;
+}
+
+fn main {
+	my_println("Hello from my_println!");
+	return null;
+}

@@ -30,6 +30,22 @@ impl<'a> Parser<'_> {
                     return Ok(Some(Box::new(ret)));
                 }
             },
+            Token::Vmcall => {
+                let mut node = vmcall::AstVmcall::new();
+
+                if let Token::Number(id_f64) = self.next() {
+                    node.id = id_f64 as u8;
+                } else {
+                    return Err(self.error("expected number after vmcall"));
+                }
+
+                if !matches!(self.next(), Token::Semicolon) {
+                    return Err(self.error("expected semicolon after vmcall"));
+                }
+                self.next();
+
+                return Ok(Some(Box::new(node)));
+            }
             Token::Let => {
                 let mut node = var_assign::AstAssign::new();
                 let name;

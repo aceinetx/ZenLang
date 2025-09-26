@@ -39,6 +39,7 @@ pub enum Token {
     While,
     Break,
     Continue,
+    Vmcall,
     EOF,
 }
 
@@ -183,6 +184,8 @@ impl Tokenizer {
                         token = Token::Break;
                     } else if name == "continue" {
                         token = Token::Continue;
+                    } else if name == "vmcall" {
+                        token = Token::Vmcall;
                     }
                 }
                 return token;

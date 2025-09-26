@@ -23,4 +23,5 @@ pub mod root;
 pub mod string;
 pub mod var_assign;
 pub mod var_ref;
+pub mod vmcall;
 pub mod while_stmt;
