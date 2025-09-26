@@ -4,9 +4,9 @@
 //!
 //! ### Example
 //! `fn main {}` -> `Fn, Identifier(main), Lbrace, Rbrace`
-use crate::unescape;
 use alloc::string::*;
 use libm::pow;
+use unescape;
 
 #[derive(Debug, Clone)]
 pub enum Token {

@@ -1,6 +1,8 @@
 //! unescape
 //!
 //! Port of unescape-rs to no_std
+#![no_std]
+extern crate alloc;
 use alloc::collections::VecDeque;
 use alloc::string::*;
 
