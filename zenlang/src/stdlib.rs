@@ -29,6 +29,9 @@ fn get_err result {
 fn get_ok result {
     return result._ok;
 }
+fn array_last array {
+    return array[array_size(array) - 1];
+}
     "#,
     );
     let mut tokenizer = tokenizer::Tokenizer::new(code);
@@ -47,6 +50,54 @@ fn get_ok result {
         0,
     ));
     module.opcodes.push(Opcode::Vmcall(3));
+    module.opcodes.push(Opcode::Ret());
+
+    module.functions.push(ModuleFunction::new(
+        "array_size".into(),
+        module.opcodes.len() as u32,
+        1,
+    ));
+    module.opcodes.push(Opcode::Vmcall(5));
+    module.opcodes.push(Opcode::Ret());
+
+    module.functions.push(ModuleFunction::new(
+        "array_push".into(),
+        module.opcodes.len() as u32,
+        2,
+    ));
+    module.opcodes.push(Opcode::Vmcall(6));
+    module.opcodes.push(Opcode::Ret());
+
+    module.functions.push(ModuleFunction::new(
+        "array_pop".into(),
+        module.opcodes.len() as u32,
+        1,
+    ));
+    module.opcodes.push(Opcode::Vmcall(7));
+    module.opcodes.push(Opcode::Ret());
+
+    module.functions.push(ModuleFunction::new(
+        "array_remove".into(),
+        module.opcodes.len() as u32,
+        2,
+    ));
+    module.opcodes.push(Opcode::Vmcall(8));
+    module.opcodes.push(Opcode::Ret());
+
+    module.functions.push(ModuleFunction::new(
+        "array_insert".into(),
+        module.opcodes.len() as u32,
+        3,
+    ));
+    module.opcodes.push(Opcode::Vmcall(9));
+    module.opcodes.push(Opcode::Ret());
+
+    module.functions.push(ModuleFunction::new(
+        "str_split".into(),
+        module.opcodes.len() as u32,
+        2,
+    ));
+    module.opcodes.push(Opcode::Vmcall(10));
     module.opcodes.push(Opcode::Ret());
     return module.clone();
 }
