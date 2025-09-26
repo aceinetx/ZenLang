@@ -38,14 +38,14 @@ impl ModuleFunction {
 /// Contains module information (code)
 #[derive(Encode, Decode, Debug, Clone)]
 pub struct Module {
-    /// Opcodes of the module (entire code)
-    pub opcodes: Vec<Opcode>,
-    /// Function informations
-    pub functions: Vec<ModuleFunction>,
     /// Module dependencies
     pub dependencies: Vec<String>,
     /// Module name
     pub name: String,
+    /// Function informations
+    pub functions: Vec<ModuleFunction>,
+    /// Opcodes of the module (entire code)
+    pub opcodes: Vec<Opcode>,
 }
 
 impl Module {

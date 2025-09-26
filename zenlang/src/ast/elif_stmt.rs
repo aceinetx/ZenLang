@@ -1,10 +1,14 @@
 use crate::ast::node::Compile;
 use alloc::boxed::*;
+use alloc::string::*;
 use alloc::vec::*;
 
 pub struct AstElifStmt {
     pub value: Option<Box<dyn Compile>>,
     pub body: Vec<Box<dyn Compile>>,
+    pub elif_let: bool,
+    pub elif_let_name: String,
+    pub elif_let_expr: Option<Box<dyn Compile>>,
 }
 
 impl AstElifStmt {
@@ -12,6 +16,9 @@ impl AstElifStmt {
         return Self {
             value: None,
             body: Vec::new(),
+            elif_let: false,
+            elif_let_name: String::new(),
+            elif_let_expr: None,
         };
     }
 }

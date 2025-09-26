@@ -20,8 +20,8 @@ pub struct VM {
     pub error: String,
     pub ret: Value,
     pub platform: Option<Box<dyn Platform>>,
-    pub(crate) bfas_stack_start: i64,
-    pub(crate) bfas_stack_end: i64,
+    pub(crate) bfas_stack_start: Vec<i64>,
+    pub(crate) bfas_stack_end: Vec<i64>,
 }
 
 impl VM {
@@ -36,8 +36,8 @@ impl VM {
             error: String::new(),
             ret: Value::Null(),
             platform: None,
-            bfas_stack_start: 0,
-            bfas_stack_end: 0,
+            bfas_stack_start: Vec::new(),
+            bfas_stack_end: Vec::new(),
         };
     }
 

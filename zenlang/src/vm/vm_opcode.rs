@@ -19,11 +19,16 @@ impl VM {
                         self.pc.sub_low(1);
                         self.add_scope();
 
-                        let diff = self.bfas_stack_end - self.bfas_stack_start;
+                        let start = self.bfas_stack_start.pop().unwrap();
+                        let end = self.bfas_stack_end.pop().unwrap();
+                        let diff = end - start;
                         if diff != args_count as i64 {
                             self.error = format!(
-                                "call: expected exactly {} arguments, but provided {}",
-                                args_count, diff
+                                "call: expected exactly {} arguments, but provided {} (trying to call a function at {}:{})",
+                                args_count,
+                                diff,
+                                self.pc.get_low(),
+                                self.pc.get_high(),
                             );
                         }
                     } else {
@@ -225,10 +230,10 @@ impl VM {
                 }
             }
             Opcode::Bfas() => {
-                self.bfas_stack_start = self.stack.len() as i64;
+                self.bfas_stack_start.push(self.stack.len() as i64);
             }
             Opcode::Efas() => {
-                self.bfas_stack_end = self.stack.len() as i64;
+                self.bfas_stack_end.push(self.stack.len() as i64);
             }
             Opcode::Pop() => {
                 if self.stack.is_empty() {
@@ -255,6 +260,16 @@ impl VM {
                     self.error = "bst failed: value on stack is not of an acceptable type".into();
                 } else {
                     self.error = "bst failed: no value on stack".into();
+                }
+            }
+            Opcode::Bsnn(addr) => {
+                if let Some(value) = self.stack.pop() {
+                    if let Value::Null() = value {
+                        return;
+                    }
+                    self.pc.set_low(*addr - 1);
+                } else {
+                    self.error = "bsnn failed: no value on stack".into();
                 }
             }
             Opcode::Br(addr) => {

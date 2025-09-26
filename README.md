@@ -1,11 +1,14 @@
 ```rust
+mod stdlib;
+
 fn main {
     println("Welcome to the ZenLang github repo!");
     return null;
 }
 ```
 ### Roadmap
-- [ ] Error handling
+- [x] Error handling
+- [x] `if let` and `elif let`
 - [ ] File read/write functions
 - [x] Function attributes like #[naked]
 - [x] vmcall keyword

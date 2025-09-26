@@ -2,12 +2,16 @@ name: Rust docs
 
 on:
   push:
+    branches:
+      - '**'
     paths:
       - 'zenlang/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/**'
   pull_request:
+    branches:
+      - '**'
     paths:
       - 'zenlang/**'
       - 'Cargo.toml'
