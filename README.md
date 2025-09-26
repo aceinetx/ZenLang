@@ -8,7 +8,7 @@ fn main {
 ```
 ### Roadmap
 - [ ] Error handling
-- [ ] `if let` and `elif let`
+- [x] `if let` and `elif let`
 - [ ] File read/write functions
 - [x] Function attributes like #[naked]
 - [x] vmcall keyword
