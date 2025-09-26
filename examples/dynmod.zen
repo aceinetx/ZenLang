@@ -1,0 +1,8 @@
+fn main {
+	let old = println;
+	dynmod "stdlib";
+	let new = println;
+	println(old);
+	println(new);
+	return null;
+}

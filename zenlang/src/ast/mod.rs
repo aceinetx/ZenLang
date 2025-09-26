@@ -9,6 +9,7 @@ pub mod boolean;
 pub mod break_stmt;
 pub mod continue_stmt;
 pub mod dict;
+pub mod dynmod_stmt;
 pub mod elif_stmt;
 pub mod else_stmt;
 pub mod func_call;
