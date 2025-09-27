@@ -8,7 +8,7 @@ use alloc::format;
 use alloc::string::*;
 use alloc::vec::*;
 
-static MAX_STACK_SIZE: usize = 1000;
+pub static MAX_STACK_SIZE: usize = 1000;
 
 pub struct VM {
     pub modules: Vec<Module>,
