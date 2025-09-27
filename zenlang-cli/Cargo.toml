@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 zenlang = { version = "0.1.0", path = "../zenlang" }
-zenlang_platform_std = { version = "0.1.0", path = "../zenlang_platform_std" }
+zenlang-platform-std = { version = "0.1.0", path = "../zenlang-platform-std" }
