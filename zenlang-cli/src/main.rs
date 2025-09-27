@@ -19,13 +19,15 @@ fn run_vm(vm: &mut vm::VM) {
         }
     }
     if !vm.error.is_empty() {
+        let mut pc = vm.pc;
+        pc.sub_low(1);
+
         println!("\n-- begin runtime error --");
         println!("{}", vm.error);
-        println!(
-            "runtime error at pc = {}:{}",
-            vm.pc.get_low() - 1,
-            vm.pc.get_high(),
-        );
+        if let Some(name) = vm.get_function_name_from_pc(pc) {
+            println!("runtime error in function {}", name,);
+        }
+        println!("runtime error at pc = {}:{}", pc.get_low(), pc.get_high(),);
         println!("-- end runtime error --");
         return;
     }

@@ -108,6 +108,21 @@ impl VM {
         self.scopes.pop();
     }
 
+    pub fn get_function_name_from_pc(&mut self, pc: u64) -> Option<String> {
+        let module_index = pc.get_high() as usize;
+        let opcode_index = pc.get_low();
+        if module_index >= self.modules.len() {
+            return None;
+        }
+        let module = &self.modules[module_index];
+        for function in module.functions.iter().rev() {
+            if opcode_index >= function.addr {
+                return Some(function.name.clone());
+            }
+        }
+        return None;
+    }
+
     pub fn step(&mut self) -> bool {
         if !self.error.is_empty() {
             return false;
