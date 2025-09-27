@@ -1,16 +1,12 @@
 mod stdlib;
 
 fn iter arr func {
-	let i = 0;
-	let item = arr[i];
-
-	while item != null {
-		if func(item) == false {
+	while array_size(arr) > 0 {
+		if func(arr[0]) == false {
 			return null;
 		}
 
-		let i = i + 1;
-		let item = arr[i];
+		let arr = array_remove(arr, 0);
 	}
 	return null;
 }
