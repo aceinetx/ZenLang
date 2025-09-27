@@ -282,13 +282,15 @@ impl VM {
                     if let Value::Null() = value {
                         return;
                     }
-                    self.pc.set_low(*addr - 1);
+                    self.pc.set_low(*addr);
+                    self.pc.sub_low(1);
                 } else {
                     self.error = "bsnn failed: no value on stack".into();
                 }
             }
             Opcode::Br(addr) => {
-                self.pc.set_low(*addr - 1);
+                self.pc.set_low(*addr);
+                self.pc.sub_low(1);
             }
             Opcode::Add() => {
                 let value = self.compute_stack_values(AstBinopOp::PLUS);
