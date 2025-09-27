@@ -20,5 +20,3 @@ fn main {
   - [ ] number (convert str to number)
   - [ ] stringify (convert any to string)
   - [ ] boolean (convert str to boolean)
-- [ ] debug info
-- [ ] (not planned) cli debugger
