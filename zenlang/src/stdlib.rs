@@ -32,6 +32,26 @@ fn get_ok result {
 fn array_last array {
     return array[array_size(array) - 1];
 }
+fn read_file_bytes path {
+    if let bytes = read_file_bytes_raw(path){
+        return ok(bytes);
+    }
+    return err("Read failed");
+}
+fn read_file path {
+    if let bytes = read_file_raw(path){
+        return ok(bytes);
+    }
+    return err("Read failed");
+}
+fn #[naked] write_file_bytes path bytes {
+    vmcall 13;
+    return null;
+}
+fn #[naked] write_file path bytes {
+    vmcall 14;
+    return null;
+}
     "#,
     );
     let mut tokenizer = tokenizer::Tokenizer::new(code);
@@ -98,6 +118,22 @@ fn array_last array {
         2,
     ));
     module.opcodes.push(Opcode::Vmcall(10));
+    module.opcodes.push(Opcode::Ret());
+
+    module.functions.push(ModuleFunction::new(
+        "read_file_bytes_raw".into(),
+        module.opcodes.len() as u32,
+        1,
+    ));
+    module.opcodes.push(Opcode::Vmcall(11));
+    module.opcodes.push(Opcode::Ret());
+
+    module.functions.push(ModuleFunction::new(
+        "read_file_raw".into(),
+        module.opcodes.len() as u32,
+        1,
+    ));
+    module.opcodes.push(Opcode::Vmcall(12));
     module.opcodes.push(Opcode::Ret());
     return module.clone();
 }

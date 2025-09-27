@@ -53,4 +53,8 @@ impl platform::Platform for Platform {
             }
         }
     }
+
+    fn write_file_bytes(&self, name: String, bytes: Vec<u8>) {
+        let _ = fs::write(name, bytes);
+    }
 }
