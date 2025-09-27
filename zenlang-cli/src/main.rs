@@ -5,8 +5,7 @@ use std::{
     path::Path,
 };
 use zenlang::{compiler, module, parser, strong_u64::U64BitsControl, tokenizer, vm};
-
-mod platform;
+use zenlang_platform_std::*;
 
 fn run_vm(vm: &mut vm::VM) {
     if let Err(e) = vm.set_entry_function("main") {
@@ -54,7 +53,7 @@ fn run_code(code: String, module_name: String) {
     module.name = module_name;
 
     let mut vm = vm::VM::new();
-    vm.platform = Some(Box::new(platform::Platform::new()));
+    vm.platform = Some(Box::new(Platform::new()));
 
     if let Err(e) = vm.load_module(&module) {
         println!("{}", e);
@@ -101,7 +100,7 @@ fn run_bytes(bytes: Vec<u8>) {
     }
 
     let mut vm = vm::VM::new();
-    vm.platform = Some(Box::new(platform::Platform::new()));
+    vm.platform = Some(Box::new(Platform::new()));
 
     if let Err(e) = vm.load_module(&module) {
         println!("{}", e);

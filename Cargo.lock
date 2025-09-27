@@ -124,4 +124,12 @@ name = "zenlang-cli"
 version = "0.1.0"
 dependencies = [
  "zenlang",
+ "zenlang_platform_std",
+]
+
+[[package]]
+name = "zenlang_platform_std"
+version = "0.1.0"
+dependencies = [
+ "zenlang",
 ]
