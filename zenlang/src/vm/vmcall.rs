@@ -440,7 +440,13 @@ impl VM {
                 }
             }
             _ => {
-                self.error = format!("vmcall: invalid vmcall index {}", index);
+                if let Some(mut platform) = self.platform.take() {
+                    let result = platform.as_mut().vmcall(self, index);
+                    if !result {
+                        self.error = format!("vmcall: invalid vmcall index {}", index);
+                    }
+                    self.platform = Some(platform);
+                }
             }
         }
     }
