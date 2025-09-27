@@ -234,6 +234,64 @@ impl VM {
                 }
                 self.stack.push(Value::Array(array));
             }
+            11 => {
+                // read file bytess
+                let name;
+
+                if let Some(value) = self.stack.pop() {
+                    if let Value::String(value) = value {
+                        name = value;
+                    } else {
+                        self.error = "vmcall: expected a string".into();
+                        return;
+                    }
+                } else {
+                    self.error = "vmcall: no value on stack".into();
+                    return;
+                }
+
+                if let Some(platform) = &self.platform {
+                    if let Some(bytes) = platform.read_file_bytes(name) {
+                        let mut array: Vec<Value> = Vec::new();
+                        for byte in bytes {
+                            array.push(Value::Number(byte as f64));
+                        }
+
+                        self.stack.push(Value::Array(array));
+                    } else {
+                        self.stack.push(Value::Null());
+                    }
+                }
+            }
+            12 => {
+                // read file str
+                let name;
+
+                if let Some(value) = self.stack.pop() {
+                    if let Value::String(value) = value {
+                        name = value;
+                    } else {
+                        self.error = "vmcall: expected a string".into();
+                        return;
+                    }
+                } else {
+                    self.error = "vmcall: no value on stack".into();
+                    return;
+                }
+
+                if let Some(platform) = &self.platform {
+                    if let Some(bytes) = platform.read_file_bytes(name) {
+                        let mut string = String::new();
+                        for byte in bytes {
+                            string.push(byte as char);
+                        }
+
+                        self.stack.push(Value::String(string));
+                    } else {
+                        self.stack.push(Value::Null());
+                    }
+                }
+            }
             _ => {
                 self.error = format!("vmcall: invalid vmcall index {}", index);
             }
