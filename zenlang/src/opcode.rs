@@ -10,6 +10,7 @@ use bincode::*;
 pub enum Opcode {
     Call(),
     Vmcall(u8),
+    Dynvmcall(),
     Loadcn(f64),        // load contant number
     Loadcnu(),          // load constant null
     Loadcb(bool),       // load constant boolean

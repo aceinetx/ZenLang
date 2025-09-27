@@ -106,7 +106,7 @@ impl Tokenizer {
         let mut identifier = String::new();
         while self.pos < self.code.len() {
             let c = self.code.chars().nth(self.pos).unwrap();
-            if !self.is_identifier_letter(c) {
+            if !self.is_identifier_letter(c) && !self.is_digit(c) {
                 break;
             }
 

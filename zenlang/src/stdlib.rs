@@ -17,6 +17,27 @@ fn #[naked] println str {
     vmcall 2;
     return null;
 } 
+fn get_string {
+    return _vmcall_ret_unsafe_1(3);
+}
+fn array_size array {
+    return _vmcall_ret_unsafe_2(array, 5);
+}
+fn array_push array element {
+    return _vmcall_ret_unsafe_3(array, element, 6);
+}
+fn array_pop array {
+    return _vmcall_ret_unsafe_2(array, 7);
+}
+fn array_remove array index {
+    return _vmcall_ret_unsafe_3(array, index, 8);
+}
+fn array_insert array index element {
+    return _vmcall_ret_unsafe_4(array, index, element, 9);
+}
+fn str_split str delimiter {
+    return _vmcall_ret_unsafe_3(str, delimiter, 10);
+}
 fn err value {
     return {"_err" = value, "_ok" = null};
 }
@@ -33,13 +54,13 @@ fn array_last array {
     return array[array_size(array) - 1];
 }
 fn read_file_bytes path {
-    if let bytes = read_file_bytes_raw(path){
+    if let bytes = _vmcall_ret_unsafe_2(path, 11){
         return ok(bytes);
     }
     return err("Read failed");
 }
 fn read_file path {
-    if let bytes = read_file_raw(path){
+    if let bytes = _vmcall_ret_unsafe_2(path, 12){
         return ok(bytes);
     }
     return err("Read failed");
@@ -51,6 +72,30 @@ fn #[naked] write_file_bytes path bytes {
 fn #[naked] write_file path bytes {
     vmcall 14;
     return null;
+}
+fn boolean str {
+    if str == "true" {
+        return true;
+    } elif str == "false" {
+        return false;
+    }
+    return null;
+}
+fn ord ch {
+    if ch == "" {
+        return err("ch is empty");
+    }
+
+    return ok(_vmcall_ret_unsafe_2(ch, 15));
+}
+fn chr ch {
+    return _vmcall_ret_unsafe_2(ch, 16);
+}
+fn stringify any {
+    return _vmcall_ret_unsafe_2(any, 17);
+}
+fn number str {
+    return _vmcall_ret_unsafe_2(str, 18);
 }
     "#,
     );
@@ -65,75 +110,36 @@ fn #[naked] write_file path bytes {
     module.name = "stdlib".into();
 
     module.functions.push(ModuleFunction::new(
-        "get_string".into(),
-        module.opcodes.len() as u32,
-        0,
-    ));
-    module.opcodes.push(Opcode::Vmcall(3));
-    module.opcodes.push(Opcode::Ret());
-
-    module.functions.push(ModuleFunction::new(
-        "array_size".into(),
+        "_vmcall_ret_unsafe_1".into(),
         module.opcodes.len() as u32,
         1,
     ));
-    module.opcodes.push(Opcode::Vmcall(5));
+    module.opcodes.push(Opcode::Dynvmcall());
     module.opcodes.push(Opcode::Ret());
 
     module.functions.push(ModuleFunction::new(
-        "array_push".into(),
+        "_vmcall_ret_unsafe_2".into(),
         module.opcodes.len() as u32,
         2,
     ));
-    module.opcodes.push(Opcode::Vmcall(6));
+    module.opcodes.push(Opcode::Dynvmcall());
     module.opcodes.push(Opcode::Ret());
 
     module.functions.push(ModuleFunction::new(
-        "array_pop".into(),
-        module.opcodes.len() as u32,
-        1,
-    ));
-    module.opcodes.push(Opcode::Vmcall(7));
-    module.opcodes.push(Opcode::Ret());
-
-    module.functions.push(ModuleFunction::new(
-        "array_remove".into(),
-        module.opcodes.len() as u32,
-        2,
-    ));
-    module.opcodes.push(Opcode::Vmcall(8));
-    module.opcodes.push(Opcode::Ret());
-
-    module.functions.push(ModuleFunction::new(
-        "array_insert".into(),
+        "_vmcall_ret_unsafe_3".into(),
         module.opcodes.len() as u32,
         3,
     ));
-    module.opcodes.push(Opcode::Vmcall(9));
+    module.opcodes.push(Opcode::Dynvmcall());
     module.opcodes.push(Opcode::Ret());
 
     module.functions.push(ModuleFunction::new(
-        "str_split".into(),
+        "_vmcall_ret_unsafe_4".into(),
         module.opcodes.len() as u32,
-        2,
+        4,
     ));
-    module.opcodes.push(Opcode::Vmcall(10));
+    module.opcodes.push(Opcode::Dynvmcall());
     module.opcodes.push(Opcode::Ret());
 
-    module.functions.push(ModuleFunction::new(
-        "read_file_bytes_raw".into(),
-        module.opcodes.len() as u32,
-        1,
-    ));
-    module.opcodes.push(Opcode::Vmcall(11));
-    module.opcodes.push(Opcode::Ret());
-
-    module.functions.push(ModuleFunction::new(
-        "read_file_raw".into(),
-        module.opcodes.len() as u32,
-        1,
-    ));
-    module.opcodes.push(Opcode::Vmcall(12));
-    module.opcodes.push(Opcode::Ret());
     return module.clone();
 }

@@ -41,6 +41,21 @@ impl VM {
             Opcode::Vmcall(index) => {
                 self.vmcall(*index);
             }
+            Opcode::Dynvmcall() => {
+                let index;
+                if let Some(value) = self.stack.pop() {
+                    if let Value::Number(value) = value {
+                        index = value as i64 as u8;
+                    } else {
+                        self.error = format!("dynvmcall failed: value on stack is not a number");
+                        return;
+                    }
+                } else {
+                    self.error = format!("dynvmcall failed: no more values on stack");
+                    return;
+                }
+                self.vmcall(index);
+            }
             Opcode::Loadcn(value) => {
                 let value = Value::Number(*value);
                 self.stack.push(value);

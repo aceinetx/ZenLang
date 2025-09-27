@@ -1,3 +1,4 @@
+use crate::interop::*;
 use crate::value::*;
 use crate::vm::*;
 use alloc::format;
@@ -364,6 +365,78 @@ impl VM {
 
                 if let Some(platform) = &self.platform {
                     platform.write_file_bytes(name, bytes);
+                }
+            }
+            15 => {
+                // ord
+                let ch;
+
+                if let Some(value) = self.stack.pop() {
+                    if let Value::String(value) = value {
+                        ch = value;
+                    } else {
+                        self.error = "vmcall: expected a string".into();
+                        return;
+                    }
+                } else {
+                    self.error = "vmcall: no value on stack".into();
+                    return;
+                }
+
+                if ch.is_empty() {
+                    self.stack.push(Value::Null());
+                } else {
+                    self.stack
+                        .push(Value::Number(ch.chars().nth(0).unwrap() as i64 as f64));
+                }
+            }
+            16 => {
+                // chr
+                let ch;
+
+                if let Some(value) = self.stack.pop() {
+                    if let Value::Number(value) = value {
+                        ch = value as i64 as u8;
+                    } else {
+                        self.error = "vmcall: expected a number".into();
+                        return;
+                    }
+                } else {
+                    self.error = "vmcall: no value on stack".into();
+                    return;
+                }
+
+                self.stack
+                    .push(Value::String(String::from_utf8_lossy(&[ch]).to_string()));
+            }
+            17 => {
+                // stringify
+                if let Some(value) = self.stack.pop() {
+                    self.stack.push(Value::String(format!("{}", value)));
+                } else {
+                    self.error = "vmcall: no value on stack".into();
+                    return;
+                }
+            }
+            18 => {
+                // number
+                if let Some(value) = self.stack.pop() {
+                    if let Value::String(num_str) = value {
+                        match num_str.parse::<f64>() {
+                            Err(e) => {
+                                self.stack.push(interop_err(Value::String(e.to_string())));
+                            }
+                            Ok(num) => {
+                                self.stack.push(interop_ok(Value::Number(num)));
+                            }
+                        }
+                    } else {
+                        self.error = "vmcall: expected a string".into();
+                        return;
+                    }
+                } else {
+                    self.error = "vmcall: no value on stack".into();
+                    return;
                 }
             }
             _ => {

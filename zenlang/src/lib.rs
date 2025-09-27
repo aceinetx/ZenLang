@@ -2,6 +2,7 @@
 //!
 //! Primary programming language of ZenOS
 //! ```ignore
+//! mod stdlib;
 //! fn main {
 //!     println("Hello from ZenLang!");
 //!     return null;
@@ -10,6 +11,7 @@
 #![no_std]
 pub mod ast;
 pub mod compiler;
+pub mod interop;
 pub mod module;
 pub mod opcode;
 pub mod parser;

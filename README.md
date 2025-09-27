@@ -14,9 +14,9 @@ fn main {
 - [x] vmcall keyword
 - [x] mod and dynmod keyword
 - [x] module loading from files (depends on above)
-- [ ] more stdlib functions
-  - [ ] ord
-  - [ ] chr
-  - [ ] number (convert str to number)
-  - [ ] stringify (convert any to string)
-  - [ ] boolean (convert str to boolean)
+- [x] more stdlib functions
+  - [x] ord
+  - [x] chr
+  - [x] number (convert str to number)
+  - [x] stringify (convert any to string)
+  - [x] boolean (convert str to boolean)
