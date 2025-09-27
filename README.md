@@ -14,3 +14,11 @@ fn main {
 - [x] vmcall keyword
 - [x] mod and dynmod keyword
 - [x] module loading from files (depends on above)
+- [ ] more stdlib functions
+  - [ ] ord
+  - [ ] chr
+  - [ ] number (convert str to number)
+  - [ ] stringify (convert any to string)
+  - [ ] boolean (convert str to boolean)
+- [ ] debug info
+- [ ] (not planned) cli debugger
