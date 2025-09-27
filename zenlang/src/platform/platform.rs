@@ -16,4 +16,5 @@ pub trait Platform {
         return None;
     }
     fn read_file_bytes(&self, name: String) -> Option<Vec<u8>>;
+    fn write_file_bytes(&self, name: String, bytes: Vec<u8>);
 }

@@ -44,6 +44,14 @@ fn read_file path {
     }
     return err("Read failed");
 }
+fn #[naked] write_file_bytes path bytes {
+    vmcall 13;
+    return null;
+}
+fn #[naked] write_file path bytes {
+    vmcall 14;
+    return null;
+}
     "#,
     );
     let mut tokenizer = tokenizer::Tokenizer::new(code);

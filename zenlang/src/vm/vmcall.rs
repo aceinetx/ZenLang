@@ -235,7 +235,7 @@ impl VM {
                 self.stack.push(Value::Array(array));
             }
             11 => {
-                // read file bytess
+                // read file bytes
                 let name;
 
                 if let Some(value) = self.stack.pop() {
@@ -290,6 +290,80 @@ impl VM {
                     } else {
                         self.stack.push(Value::Null());
                     }
+                }
+            }
+            13 => {
+                // write file bytes
+                let name;
+                let mut bytes: Vec<u8> = Vec::new();
+
+                if let Some(value) = self.stack.pop() {
+                    if let Value::Array(array) = value {
+                        for value in array.iter() {
+                            if let Value::Number(byte) = value {
+                                bytes.push(*byte as u8);
+                            } else {
+                                self.error = "vmcall: expected non number in a byte array".into();
+                            }
+                        }
+                    } else {
+                        self.error = "vmcall: expected a byte array".into();
+                        return;
+                    }
+                } else {
+                    self.error = "vmcall: no value on stack".into();
+                    return;
+                }
+
+                if let Some(value) = self.stack.pop() {
+                    if let Value::String(value) = value {
+                        name = value;
+                    } else {
+                        self.error = "vmcall: expected a string".into();
+                        return;
+                    }
+                } else {
+                    self.error = "vmcall: no value on stack".into();
+                    return;
+                }
+
+                if let Some(platform) = &self.platform {
+                    platform.write_file_bytes(name, bytes);
+                }
+            }
+            14 => {
+                // write file str
+                let name;
+                let mut bytes: Vec<u8> = Vec::new();
+
+                if let Some(value) = self.stack.pop() {
+                    if let Value::String(string) = value {
+                        for ch in string.chars() {
+                            bytes.push(ch as u8);
+                        }
+                    } else {
+                        self.error = "vmcall: expected a string".into();
+                        return;
+                    }
+                } else {
+                    self.error = "vmcall: no value on stack".into();
+                    return;
+                }
+
+                if let Some(value) = self.stack.pop() {
+                    if let Value::String(value) = value {
+                        name = value;
+                    } else {
+                        self.error = "vmcall: expected a string".into();
+                        return;
+                    }
+                } else {
+                    self.error = "vmcall: no value on stack".into();
+                    return;
+                }
+
+                if let Some(platform) = &self.platform {
+                    platform.write_file_bytes(name, bytes);
                 }
             }
             _ => {
