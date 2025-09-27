@@ -1,0 +1,34 @@
+mod stdlib;
+
+fn stack_new {
+    return {"data" = []};
+}
+
+fn stack_top self {
+    return array_last(self.data);
+}
+
+fn stack_push self element {
+    let self.data = array_push(self.data, element);
+    return self;
+}
+
+fn stack_pop self {
+    let self.data = array_pop(self.data);
+    return self;
+}
+
+fn stack_size self {
+    return array_size(self.data);
+}
+
+fn stack_is_empty self {
+    return stack_size(self) == 0;
+}
+
+fn main {
+    let stack = stack_new();
+    let stack = stack_push(stack, 69);
+    println(stack_top(stack));
+    return stack_is_empty(stack);
+}
