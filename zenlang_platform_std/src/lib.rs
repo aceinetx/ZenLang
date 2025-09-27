@@ -1,4 +1,4 @@
-//! ZenLang Platform implementation for rust's stamdard librar6
+//! ZenLang Platform implementation for rust's standard library
 use std::fs;
 use zenlang::module::Module;
 use zenlang::platform;
