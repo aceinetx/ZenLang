@@ -17,7 +17,7 @@ on:
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/**'
-      
+
 env:
   CARGO_TERM_COLOR: always
 

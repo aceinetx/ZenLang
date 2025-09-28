@@ -175,6 +175,16 @@ impl VM {
                             return;
                         }
                     }
+                    Value::String(string) => {
+                        if let Value::Number(index) = index {
+                            if let Some(ch) = string.chars().nth(index as usize) {
+                                self.stack.push(Value::String(String::from(ch)));
+                            } else {
+                                self.stack.push(Value::Null());
+                            }
+                            return;
+                        }
+                    }
                     _ => {}
                 }
                 self.error = format!("iafs failed: invalid operand types");
