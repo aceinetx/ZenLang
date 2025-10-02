@@ -148,3 +148,35 @@ fn main {
     assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Number(2.0)));
 }
+
+#[test]
+fn vm_test_unique_5() {
+    let mut tokenizer = Tokenizer::new(
+        r#"
+fn main {
+    return ((15 + 3) * (8 >> 2) - (4 * (7 + 1) / 2)) - ((6 << 1) & (25 - (3 * 4)));
+}"#
+        .into(),
+    );
+    let mut parser = Parser::new(&mut tokenizer);
+    let mut compiler = Compiler::new(&mut parser);
+    if let Err(e) = compiler.compile() {
+        assert_eq!(e, "");
+    }
+    let mut vm = VM::new();
+    let module = compiler.get_module();
+    println!("{:?}", module);
+    let _ = vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
+
+    loop {
+        if !vm.step() {
+            break;
+        }
+    }
+
+    assert_eq!(vm.error, "");
+    assert!(matches!(vm.ret, Value::Number(8.0)));
+}
