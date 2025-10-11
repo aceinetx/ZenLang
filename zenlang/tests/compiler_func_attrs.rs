@@ -15,7 +15,7 @@ fn compiler_test_func_naked() {
     let module = compiler.get_module();
     assert_eq!(module.opcodes.len(), 2);
     assert_eq!(module.functions.len(), 1);
-    assert!(matches!(module.opcodes[0], Opcode::Loadcnu()));
+    assert!(matches!(module.opcodes[0], Opcode::LoadNull()));
     assert!(matches!(module.opcodes[1], Opcode::Ret()));
 }
 
@@ -32,6 +32,6 @@ fn compiler_test_func_naked_vmcall() {
     assert_eq!(module.opcodes.len(), 3);
     assert_eq!(module.functions.len(), 1);
     assert!(matches!(module.opcodes[0], Opcode::Vmcall(1)));
-    assert!(matches!(module.opcodes[1], Opcode::Loadcnu()));
+    assert!(matches!(module.opcodes[1], Opcode::LoadNull()));
     assert!(matches!(module.opcodes[2], Opcode::Ret()));
 }

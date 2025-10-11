@@ -56,25 +56,25 @@ impl VM {
                 }
                 self.vmcall(index);
             }
-            Opcode::Loadcn(value) => {
+            Opcode::LoadConstant(value) => {
                 let value = Value::Number(*value);
                 self.stack.push(value);
                 self.check_stack_overflow();
             }
-            Opcode::Loadcnu() => {
+            Opcode::LoadNull() => {
                 self.stack.push(Value::Null());
                 self.check_stack_overflow();
             }
-            Opcode::Loadcb(flag) => {
+            Opcode::LoadBool(flag) => {
                 self.stack.push(Value::Boolean(*flag));
                 self.check_stack_overflow();
             }
-            Opcode::Loadcs(value) => {
+            Opcode::LoadStr(value) => {
                 let value = Value::String(value.to_string());
                 self.stack.push(value);
                 self.check_stack_overflow();
             }
-            Opcode::Loadv(name) => {
+            Opcode::LoadVar(name) => {
                 // do something with the clone here
                 if let Some(scope) = self.scopes.last() {
                     if let Some(value) = scope.get(name) {
@@ -99,7 +99,7 @@ impl VM {
                 }
                 self.stack.push(Value::Null());
             }
-            Opcode::Storev(name) => {
+            Opcode::StoreVar(name) => {
                 // do something with the clone here
                 if let Some(store_value) = self.stack.pop() {
                     if let Some(scope) = self.scopes.last_mut() {
@@ -117,7 +117,7 @@ impl VM {
                     return;
                 }
             }
-            Opcode::Pushret() => {
+            Opcode::PushRet() => {
                 // do smth with the clone
                 self.stack.push(self.ret.clone());
             }
@@ -254,10 +254,10 @@ impl VM {
                     }
                 }
             }
-            Opcode::Bfas() => {
+            Opcode::BeginFnArgs() => {
                 self.bfas_stack_start.push(self.stack.len() as i64);
             }
-            Opcode::Efas() => {
+            Opcode::EndFnArgs() => {
                 self.bfas_stack_end.push(self.stack.len() as i64);
             }
             Opcode::Pop() => {
@@ -267,7 +267,7 @@ impl VM {
                     self.stack.pop();
                 }
             }
-            Opcode::Bst(addr) => {
+            Opcode::BranchTrue(addr) => {
                 if let Some(value) = self.stack.pop() {
                     if let Value::Boolean(flag) = value {
                         if flag {
@@ -287,7 +287,7 @@ impl VM {
                     self.error = "bst failed: no value on stack".into();
                 }
             }
-            Opcode::Bsnn(addr) => {
+            Opcode::BranchNonNull(addr) => {
                 if let Some(value) = self.stack.pop() {
                     if let Value::Null() = value {
                         return;
@@ -298,7 +298,7 @@ impl VM {
                     self.error = "bsnn failed: no value on stack".into();
                 }
             }
-            Opcode::Br(addr) => {
+            Opcode::Branch(addr) => {
                 self.pc.set_low(*addr);
                 self.pc.sub_low(1);
             }

@@ -50,7 +50,7 @@ fn compiler_test_return() {
 
     let module = compiler.get_module();
     assert_eq!(module.opcodes.len(), 2);
-    assert!(matches!(module.opcodes[0], Opcode::Loadcnu()));
+    assert!(matches!(module.opcodes[0], Opcode::LoadNull()));
     assert!(matches!(module.opcodes[1], Opcode::Ret()));
     assert_eq!(module.functions.len(), 1);
     assert_eq!(module.functions[0].addr, 0);
@@ -69,8 +69,8 @@ fn compiler_test_return_add() {
 
     let module = compiler.get_module();
     assert_eq!(module.opcodes.len(), 4);
-    assert!(matches!(module.opcodes[0], Opcode::Loadcn(2.0)));
-    assert!(matches!(module.opcodes[1], Opcode::Loadcn(3.0)));
+    assert!(matches!(module.opcodes[0], Opcode::LoadConstant(2.0)));
+    assert!(matches!(module.opcodes[1], Opcode::LoadConstant(3.0)));
     assert!(matches!(module.opcodes[2], Opcode::Add()));
     assert!(matches!(module.opcodes[3], Opcode::Ret()));
     assert_eq!(module.functions.len(), 1);
@@ -90,12 +90,12 @@ fn compiler_test_let() {
 
     let module = compiler.get_module();
     assert_eq!(module.opcodes.len(), 8);
-    assert!(matches!(module.opcodes[0], Opcode::Loadcn(1.0)));
-    assert!(matches!(module.opcodes[1], Opcode::Loadcn(2.0)));
-    assert!(matches!(module.opcodes[2], Opcode::Loadcn(3.0)));
+    assert!(matches!(module.opcodes[0], Opcode::LoadConstant(1.0)));
+    assert!(matches!(module.opcodes[1], Opcode::LoadConstant(2.0)));
+    assert!(matches!(module.opcodes[2], Opcode::LoadConstant(3.0)));
     assert!(matches!(module.opcodes[3], Opcode::Mul()));
     assert!(matches!(module.opcodes[4], Opcode::Add()));
-    if let Opcode::Storev(s) = &module.opcodes[5] {
+    if let Opcode::StoreVar(s) = &module.opcodes[5] {
         assert_eq!(s.to_string(), "x");
     } else {
         assert!(false);
@@ -118,17 +118,17 @@ fn compiler_test_varref() {
     let module = compiler.get_module();
     assert_eq!(module.opcodes.len(), 8);
     println!("{:?}", module.opcodes);
-    assert!(matches!(module.opcodes[0], Opcode::Loadcn(1.0)));
-    assert!(matches!(module.opcodes[1], Opcode::Loadcn(2.0)));
-    assert!(matches!(module.opcodes[2], Opcode::Loadcn(3.0)));
+    assert!(matches!(module.opcodes[0], Opcode::LoadConstant(1.0)));
+    assert!(matches!(module.opcodes[1], Opcode::LoadConstant(2.0)));
+    assert!(matches!(module.opcodes[2], Opcode::LoadConstant(3.0)));
     assert!(matches!(module.opcodes[3], Opcode::Mul()));
     assert!(matches!(module.opcodes[4], Opcode::Add()));
-    if let Opcode::Storev(s) = &module.opcodes[5] {
+    if let Opcode::StoreVar(s) = &module.opcodes[5] {
         assert_eq!(s.to_string(), "x");
     } else {
         assert!(false);
     }
-    if let Opcode::Loadv(s) = &module.opcodes[6] {
+    if let Opcode::LoadVar(s) = &module.opcodes[6] {
         assert_eq!(s.to_string(), "x");
     } else {
         assert!(false);
@@ -152,24 +152,24 @@ fn compiler_test_func_call() {
     let module = compiler.get_module();
     assert_eq!(module.opcodes.len(), 12);
 
-    assert!(matches!(module.opcodes[0], Opcode::Bfas()));
-    assert!(matches!(module.opcodes[1], Opcode::Efas()));
-    if let Opcode::Loadv(s) = &module.opcodes[2] {
+    assert!(matches!(module.opcodes[0], Opcode::BeginFnArgs()));
+    assert!(matches!(module.opcodes[1], Opcode::EndFnArgs()));
+    if let Opcode::LoadVar(s) = &module.opcodes[2] {
         assert_eq!(s.to_string(), "main");
     } else {
         assert!(false);
     }
     assert!(matches!(module.opcodes[3], Opcode::Call()));
-    assert!(matches!(module.opcodes[4], Opcode::Pushret()));
-    if let Opcode::Storev(s) = &module.opcodes[5] {
+    assert!(matches!(module.opcodes[4], Opcode::PushRet()));
+    if let Opcode::StoreVar(s) = &module.opcodes[5] {
         assert_eq!(s.to_string(), "x");
     } else {
         assert!(false);
     }
 
-    assert!(matches!(module.opcodes[6], Opcode::Bfas()));
-    assert!(matches!(module.opcodes[7], Opcode::Efas()));
-    if let Opcode::Loadv(s) = &module.opcodes[8] {
+    assert!(matches!(module.opcodes[6], Opcode::BeginFnArgs()));
+    assert!(matches!(module.opcodes[7], Opcode::EndFnArgs()));
+    if let Opcode::LoadVar(s) = &module.opcodes[8] {
         assert_eq!(s.to_string(), "main");
     } else {
         assert!(false);
@@ -194,7 +194,7 @@ fn compiler_test_load_string() {
     let module = compiler.get_module();
     assert_eq!(module.opcodes.len(), 2);
 
-    if let Opcode::Loadcs(s) = &module.opcodes[0] {
+    if let Opcode::LoadStr(s) = &module.opcodes[0] {
         assert_eq!(s.to_string(), "Hello");
     } else {
         assert!(false);

@@ -31,7 +31,7 @@ impl Compile for AstVarRef {
     ) -> Result<(), alloc::string::String> {
         let module = compiler.get_module();
         if self.do_push {
-            module.opcodes.push(Opcode::Loadv(self.name.clone()));
+            module.opcodes.push(Opcode::LoadVar(self.name.clone()));
         }
         Ok(())
     }

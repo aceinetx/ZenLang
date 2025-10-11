@@ -27,7 +27,7 @@ impl Compile for AstBoolean {
     ) -> Result<(), alloc::string::String> {
         let module = compiler.get_module();
         if self.do_push {
-            module.opcodes.push(Opcode::Loadcb(self.flag));
+            module.opcodes.push(Opcode::LoadBool(self.flag));
         }
 
         Ok(())

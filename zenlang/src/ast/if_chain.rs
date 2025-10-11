@@ -91,7 +91,7 @@ impl Compile for AstIfChain {
                 let module = compiler.get_module();
                 branch_indexes.push(module.opcodes.len());
 
-                let opcode = Opcode::Bst(0);
+                let opcode = Opcode::BranchTrue(0);
                 module.opcodes.push(opcode);
             } else {
                 // if let
@@ -106,11 +106,11 @@ impl Compile for AstIfChain {
                 let module = compiler.get_module();
                 module
                     .opcodes
-                    .push(Opcode::Storev(head.if_let_name.clone()));
-                module.opcodes.push(Opcode::Loadv(head.if_let_name.clone()));
+                    .push(Opcode::StoreVar(head.if_let_name.clone()));
+                module.opcodes.push(Opcode::LoadVar(head.if_let_name.clone()));
 
                 branch_indexes.push(module.opcodes.len());
-                module.opcodes.push(Opcode::Bsnn(0));
+                module.opcodes.push(Opcode::BranchNonNull(0));
             }
         }
 
@@ -127,7 +127,7 @@ impl Compile for AstIfChain {
                 let module = compiler.get_module();
                 branch_indexes.push(module.opcodes.len());
 
-                let opcode = Opcode::Bst(0);
+                let opcode = Opcode::BranchTrue(0);
                 module.opcodes.push(opcode);
             } else {
                 // elif let
@@ -142,13 +142,13 @@ impl Compile for AstIfChain {
                 let module = compiler.get_module();
                 module
                     .opcodes
-                    .push(Opcode::Storev(elif_node.elif_let_name.clone()));
+                    .push(Opcode::StoreVar(elif_node.elif_let_name.clone()));
                 module
                     .opcodes
-                    .push(Opcode::Loadv(elif_node.elif_let_name.clone()));
+                    .push(Opcode::LoadVar(elif_node.elif_let_name.clone()));
 
                 branch_indexes.push(module.opcodes.len());
-                module.opcodes.push(Opcode::Bsnn(0));
+                module.opcodes.push(Opcode::BranchNonNull(0));
             }
         }
 
@@ -156,7 +156,7 @@ impl Compile for AstIfChain {
             let module = compiler.get_module();
             branch_indexes.push(module.opcodes.len());
 
-            let opcode = Opcode::Br(0);
+            let opcode = Opcode::Branch(0);
             module.opcodes.push(opcode);
         }
 
@@ -180,16 +180,16 @@ impl Compile for AstIfChain {
                 let module = compiler.get_module();
                 end_branch_indexes.push(module.opcodes.len());
 
-                let opcode = Opcode::Br(0);
+                let opcode = Opcode::Branch(0);
                 module.opcodes.push(opcode);
             }
 
             {
                 let module = compiler.get_module();
-                if let Opcode::Bst(bst_addr) = &mut module.opcodes[branch_indexes[0]] {
+                if let Opcode::BranchTrue(bst_addr) = &mut module.opcodes[branch_indexes[0]] {
                     *bst_addr = addr as u32;
                 }
-                if let Opcode::Bsnn(bsnn_addr) = &mut module.opcodes[branch_indexes[0]] {
+                if let Opcode::BranchNonNull(bsnn_addr) = &mut module.opcodes[branch_indexes[0]] {
                     *bsnn_addr = addr as u32;
                 }
             }
@@ -215,16 +215,16 @@ impl Compile for AstIfChain {
                 let module = compiler.get_module();
                 end_branch_indexes.push(module.opcodes.len());
 
-                let opcode = Opcode::Br(0);
+                let opcode = Opcode::Branch(0);
                 module.opcodes.push(opcode);
             }
 
             {
                 let module = compiler.get_module();
-                if let Opcode::Bst(bst_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
+                if let Opcode::BranchTrue(bst_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
                     *bst_addr = addr as u32;
                 }
-                if let Opcode::Bsnn(bsnn_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
+                if let Opcode::BranchNonNull(bsnn_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
                     *bsnn_addr = addr as u32;
                 }
             }
@@ -251,7 +251,7 @@ impl Compile for AstIfChain {
             // ? I'm not sure about this, but this made every test pass
             let module = compiler.get_module();
             let opcode = &mut module.opcodes[*branch_indexes.last().unwrap()];
-            if let Opcode::Br(addr) = opcode {
+            if let Opcode::Branch(addr) = opcode {
                 *addr = else_addr as u32;
             }
         }
@@ -268,7 +268,7 @@ impl Compile for AstIfChain {
         for index in end_branch_indexes.iter() {
             let module = compiler.get_module();
             let opcode = &mut module.opcodes[*index];
-            if let Opcode::Br(addr) = opcode {
+            if let Opcode::Branch(addr) = opcode {
                 *addr = len as u32;
             }
         }

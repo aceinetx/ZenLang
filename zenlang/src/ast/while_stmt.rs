@@ -44,9 +44,9 @@ impl Compile for AstWhileStmt {
         {
             let module = compiler.get_module();
             let body_index = module.opcodes.len() + 2;
-            module.opcodes.push(Opcode::Bst(body_index as u32));
+            module.opcodes.push(Opcode::BranchTrue(body_index as u32));
             br_exit_opcode_index = module.opcodes.len();
-            module.opcodes.push(Opcode::Br(0));
+            module.opcodes.push(Opcode::Branch(0));
         }
 
         // * compile body
@@ -62,11 +62,11 @@ impl Compile for AstWhileStmt {
         {
             let module = compiler.get_module();
             exit_addr = module.opcodes.len() + 1;
-            if let Opcode::Br(addr) = &mut module.opcodes[br_exit_opcode_index] {
+            if let Opcode::Branch(addr) = &mut module.opcodes[br_exit_opcode_index] {
                 *addr = exit_addr as u32;
             }
 
-            module.opcodes.push(Opcode::Br(cmp_addr as u32));
+            module.opcodes.push(Opcode::Branch(cmp_addr as u32));
         }
 
         // break statementss
@@ -79,7 +79,7 @@ impl Compile for AstWhileStmt {
             {
                 let module = compiler.get_module();
                 for index in last.iter() {
-                    if let Opcode::Br(addr) = &mut module.opcodes[*index] {
+                    if let Opcode::Branch(addr) = &mut module.opcodes[*index] {
                         *addr = exit_addr as u32;
                     }
                 }
@@ -102,7 +102,7 @@ impl Compile for AstWhileStmt {
             {
                 let module = compiler.get_module();
                 for index in last.iter() {
-                    if let Opcode::Br(addr) = &mut module.opcodes[*index] {
+                    if let Opcode::Branch(addr) = &mut module.opcodes[*index] {
                         *addr = cmp_addr as u32;
                     }
                 }

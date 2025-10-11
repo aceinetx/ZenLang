@@ -34,7 +34,7 @@ impl Compile for AstAssign {
         }
 
         let module = compiler.get_module();
-        module.opcodes.push(Opcode::Storev(self.name.clone()));
+        module.opcodes.push(Opcode::StoreVar(self.name.clone()));
 
         Ok(())
     }

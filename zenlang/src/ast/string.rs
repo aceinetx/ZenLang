@@ -28,7 +28,7 @@ impl Compile for AstString {
     ) -> Result<(), alloc::string::String> {
         let module = compiler.get_module();
         if self.do_push {
-            module.opcodes.push(Opcode::Loadcs(self.string.to_string()));
+            module.opcodes.push(Opcode::LoadStr(self.string.to_string()));
         }
 
         Ok(())

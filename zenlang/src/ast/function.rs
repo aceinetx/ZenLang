@@ -46,7 +46,7 @@ impl Compile for AstFunction {
 
         let module = compiler.get_module();
         if module.opcodes.len() == 0 || !matches!(module.opcodes.last().unwrap(), Opcode::Ret()) {
-            module.opcodes.push(Opcode::Loadcnu());
+            module.opcodes.push(Opcode::LoadNull());
             module.opcodes.push(Opcode::Ret());
 
             compiler
@@ -74,7 +74,7 @@ impl Compile for AstFunction {
 
         if !self.attrs.contains(&FunctionAttribute::Naked) {
             for arg in self.args.iter().rev() {
-                module.opcodes.push(Opcode::Storev(arg.to_string()));
+                module.opcodes.push(Opcode::StoreVar(arg.to_string()));
             }
         }
 

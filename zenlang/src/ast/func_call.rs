@@ -33,7 +33,7 @@ impl Compile for AstFuncCall {
     ) -> Result<(), alloc::string::String> {
         {
             let module = compiler.get_module();
-            module.opcodes.push(Opcode::Bfas());
+            module.opcodes.push(Opcode::BeginFnArgs());
         }
 
         for arg in self.args.iter_mut() {
@@ -44,7 +44,7 @@ impl Compile for AstFuncCall {
 
         {
             let module = compiler.get_module();
-            module.opcodes.push(Opcode::Efas());
+            module.opcodes.push(Opcode::EndFnArgs());
         }
 
         {
@@ -61,7 +61,7 @@ impl Compile for AstFuncCall {
             let module = compiler.get_module();
             module.opcodes.push(Opcode::Call());
             if self.do_push {
-                module.opcodes.push(Opcode::Pushret());
+                module.opcodes.push(Opcode::PushRet());
             }
         }
 

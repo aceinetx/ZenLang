@@ -31,7 +31,7 @@ impl Compile for AstContinue {
 
         {
             let module = compiler.get_module();
-            module.opcodes.push(Opcode::Br(0));
+            module.opcodes.push(Opcode::Branch(0));
         }
 
         Ok(())

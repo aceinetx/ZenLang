@@ -27,7 +27,7 @@ impl Compile for AstNumber {
     ) -> Result<(), alloc::string::String> {
         let module = compiler.get_module();
         if self.do_push {
-            module.opcodes.push(Opcode::Loadcn(self.number));
+            module.opcodes.push(Opcode::LoadConstant(self.number));
         }
 
         Ok(())
