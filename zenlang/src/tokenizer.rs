@@ -42,6 +42,7 @@ pub enum Token {
     Vmcall,
     Mod,
     Dynmod,
+    Defer,
     EOF,
 }
 
@@ -192,6 +193,8 @@ impl Tokenizer {
                         token = Token::Mod;
                     } else if name == "dynmod" {
                         token = Token::Dynmod;
+                    } else if name == "defer" {
+                        token = Token::Defer;
                     }
                 }
                 return token;

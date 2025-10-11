@@ -188,7 +188,7 @@ impl<'a> Parser<'_> {
                 let node = continue_stmt::AstContinue::new();
                 self.next();
                 if !matches!(self.current_token, Token::Semicolon) {
-                    return Err(self.error("expected semicolon after contin7e"));
+                    return Err(self.error("expected semicolon after defer"));
                 }
                 return Ok(Some(Box::new(node)));
             }
@@ -208,6 +208,43 @@ impl<'a> Parser<'_> {
                 }
                 self.next();
                 return Ok(Some(Box::new(node)));
+            }
+            Token::Lbrace => match self.parse_block() {
+                Err(e) => return Err(e),
+                Ok(nodes) => {
+                    let mut block = block::AstBlock::new();
+                    block.body = nodes;
+                    self.next();
+                    return Ok(Some(Box::new(block)));
+                }
+            },
+            Token::Defer => {
+                match self.next() {
+                    Token::Lparen => match self.parse_block() {
+                        Err(e) => return Err(e),
+                        Ok(nodes) => {
+                            let mut defer = defer::AstDefer::new();
+                            defer.body = nodes;
+                            if !matches!(self.next(), Token::Semicolon) {
+                                return Err(self.error("expected semicolon after defer"));
+                            }
+                            return Ok(Some(Box::new(defer)));
+                        }
+                    },
+                    _ => {
+                        // assume it's a single statement
+                        match self.parse_statement() {
+                            Err(e) => return Err(e),
+                            Ok(node) => {
+                                let mut defer = defer::AstDefer::new();
+                                if let Some(node) = node {
+                                    defer.body.push(node);
+                                }
+                                return Ok(Some(Box::new(defer)));
+                            }
+                        }
+                    }
+                }
             }
             _ => match self.parse_expression(0, false) {
                 Err(e) => {

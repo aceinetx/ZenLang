@@ -1,3 +1,5 @@
+use core::any::TypeId;
+
 use crate::ast::*;
 use crate::tokenizer::*;
 use alloc::boxed::*;
@@ -91,6 +93,7 @@ impl<'a> Parser<'_> {
     /// Parses a code block
     pub(crate) fn parse_block(&mut self) -> Result<Vec<Box<dyn node::Compile>>, String> {
         let mut vec: Vec<Box<dyn node::Compile>> = Vec::new();
+        let mut defers: Vec<Box<dyn node::Compile>> = Vec::new();
 
         self.next();
         loop {
@@ -105,11 +108,25 @@ impl<'a> Parser<'_> {
                 }
                 Ok(node_option) => {
                     // parse_statement can return None in case if the statement was one semicolon (valid syntax)
-                    if let Some(node) = node_option {
+                    /*if let Some(node) = node_option {
+                        if let Ok(_) = node.downcast::<defer::AstDefer>() {
+                            defer_indexes.push(vec.len());
+                        }
                         vec.push(node);
+                    }*/
+                    if let Some(node) = node_option {
+                        if TypeId::of::<defer::AstDefer>() == node.type_id() {
+                            defers.push(node);
+                        } else {
+                            vec.push(node);
+                        }
                     }
                 }
             }
+        }
+
+        while !defers.is_empty() {
+            vec.push(defers.pop().unwrap());
         }
 
         Ok(vec)
@@ -213,7 +230,10 @@ impl<'a> Parser<'_> {
                     self.root.children.push(Box::new(node));
                 }
                 _ => {
-                    return Err(self.error("unexpected token, expected one of these: Fn | Mod"));
+                    return Err(self.error_str(format!(
+                        "unexpected token, expected one of these: Fn | Mod, found, {:?}",
+                        token
+                    )));
                 }
             }
             token = self.next();

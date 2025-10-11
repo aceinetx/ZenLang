@@ -2,9 +2,10 @@ use crate::compiler::Compiler;
 use alloc::boxed::*;
 use alloc::string::String;
 use alloc::vec::*;
+use downcast::*;
 
 /// Trait implemented by all ast nodes
-pub trait Compile {
+pub trait Compile: Any {
     /// Get the children vector
     fn get_children(&mut self) -> Option<&mut Vec<Box<dyn Compile>>>;
 

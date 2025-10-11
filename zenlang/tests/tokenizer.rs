@@ -489,3 +489,19 @@ fn tokenizer_test_dynmod() {
     let token = tokenizer.next();
     assert!(matches!(token, Token::Number(1.0)));
 }
+
+#[test]
+fn tokenizer_test_defer() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 defer 1 + 2; }".into());
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    tokenizer.next();
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Defer));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+}
