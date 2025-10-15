@@ -1,10 +1,65 @@
 //! Value
 //!
 //! ZenLang variable value
+use crate::rawvec::RawVec;
 use crate::strong_u64::U64BitsControl;
 use alloc::string::*;
 use alloc::vec::*;
+use core::alloc::Layout;
 use core::fmt::Display;
+
+/// Object
+pub enum Object {
+    Array(RawVec<Value>),
+    Dictionary(RawVec<(String, Value)>),
+}
+
+impl Object {
+    pub unsafe fn alloc() -> *mut Object {
+        unsafe {
+            let p = alloc::alloc::alloc_zeroed(Layout::new::<Object>());
+            return p as *mut Object;
+        }
+    }
+
+    pub unsafe fn alloc_array(array: Vec<Value>) -> *mut Object {
+        unsafe {
+            let p = Self::alloc();
+            *p = Object::Array(RawVec::from_regular(&array));
+
+            return p;
+        }
+    }
+
+    pub unsafe fn alloc_dict(dict: Vec<(String, Value)>) -> *mut Object {
+        unsafe {
+            let p = Self::alloc();
+            *p = Object::Dictionary(RawVec::from_regular(&dict));
+
+            return p;
+        }
+    }
+
+    pub unsafe fn free(obj: *mut Object) {
+        unsafe {
+            alloc::alloc::dealloc(obj as *mut u8, Layout::new::<Object>());
+        }
+    }
+
+    pub unsafe fn free_and_drop(obj: *mut Object) {
+        unsafe {
+            match &mut *obj {
+                Object::Array(array) => {
+                    array.dealloc();
+                }
+                Object::Dictionary(dict) => {
+                    dict.dealloc();
+                }
+            }
+            Self::free(obj);
+        }
+    }
+}
 
 /// Value
 #[derive(Clone, Debug)]
@@ -12,9 +67,8 @@ pub enum Value {
     Number(f64),
     String(String),
     Boolean(bool),
-    Array(Vec<Value>),
     FunctionRef(u64, u64),
-    Dictionary(Vec<(String, Value)>),
+    Object(*mut Object),
     Null(),
 }
 
@@ -65,31 +119,42 @@ impl Value {
             (Value::Number(x), Value::Number(y)) => x == y,
             (Value::String(a), Value::String(b)) => a == b,
             (Value::Boolean(a), Value::Boolean(b)) => a == b,
-            (Value::Array(a), Value::Array(b)) => {
-                if a.len() != b.len() {
-                    return false;
-                }
-                for i in 0..a.len() {
-                    if !a[i].equal(&b[i]) {
+            (Value::Object(obja), Value::Object(objb)) => unsafe {
+                match (obja.read(), objb.read()) {
+                    (Object::Array(a), Object::Array(b)) => {
+                        if a.len() != b.len() {
+                            return false;
+                        }
+                        for i in 0..a.len() {
+                            if !a[i].equal(&b[i]) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                    (Object::Dictionary(a), Object::Dictionary(b)) => {
+                        if a.len() != b.len() {
+                            return false;
+                        }
+
+                        for i in 0..a.len() {
+                            if a[i].0 != b[i].0 {
+                                return false;
+                            }
+                            if !a[i].1.equal(&b[i].1) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                    (Object::Dictionary(_), Object::Array(_)) => {
+                        return false;
+                    }
+                    (Object::Array(_), Object::Dictionary(_)) => {
                         return false;
                     }
                 }
-                return true;
-            }
-            (Value::Dictionary(a), Value::Dictionary(b)) => {
-                if a.len() != b.len() {
-                    return false;
-                }
-                for i in 0..a.len() {
-                    if a[i].0 != b[i].0 {
-                        return false;
-                    }
-                    if !a[i].1.equal(&b[i].1) {
-                        return false;
-                    }
-                }
-                return true;
-            }
+            },
             (Value::FunctionRef(a, b), Value::FunctionRef(c, d)) => {
                 return a == c && b == d;
             }
@@ -113,47 +178,51 @@ impl Display for Value {
             Value::Boolean(boolean) => {
                 return write!(f, "{}", boolean);
             }
-            Value::Array(array) => {
-                let _ = write!(f, "[");
+            Value::Object(obj) => unsafe {
+                match obj.read() {
+                    Object::Array(array) => {
+                        let _ = write!(f, "[");
 
-                let len = array.len();
-                for i in 0..len {
-                    if let Value::String(_) = array[i] {
-                        let _ = write!(f, "\"{}\"", array[i]);
-                    } else {
-                        let _ = write!(f, "{}", array[i]);
+                        let len = array.len();
+                        for i in 0..len {
+                            if let Value::String(_) = array[i] {
+                                let _ = write!(f, "\"{}\"", array[i]);
+                            } else {
+                                let _ = write!(f, "{}", array[i]);
+                            }
+
+                            if i != len - 1 {
+                                let _ = write!(f, ", ");
+                            }
+                        }
+
+                        let _ = write!(f, "]");
+                        Ok(())
                     }
+                    Object::Dictionary(dict) => {
+                        let _ = write!(f, "{{");
 
-                    if i != len - 1 {
-                        let _ = write!(f, ", ");
+                        let len = dict.len();
+                        for i in 0..len {
+                            let entry = &dict[i];
+                            let _ = write!(f, "{} = ", entry.0);
+
+                            if let Value::String(_) = entry.1 {
+                                let _ = write!(f, "\"{}\"", entry.1);
+                            } else {
+                                let _ = write!(f, "{}", entry.1);
+                            }
+
+                            if i != len - 1 {
+                                let _ = write!(f, ", ");
+                            }
+                        }
+
+                        let _ = write!(f, "}}");
+                        Ok(())
                     }
                 }
-
-                let _ = write!(f, "]");
-                Ok(())
-            }
-            Value::Dictionary(dict) => {
-                let _ = write!(f, "{{");
-
-                let len = dict.len();
-                for i in 0..len {
-                    let entry = &dict[i];
-                    let _ = write!(f, "{} = ", entry.0);
-
-                    if let Value::String(_) = entry.1 {
-                        let _ = write!(f, "\"{}\"", entry.1);
-                    } else {
-                        let _ = write!(f, "{}", entry.1);
-                    }
-
-                    if i != len - 1 {
-                        let _ = write!(f, ", ");
-                    }
-                }
-
-                let _ = write!(f, "}}");
-                Ok(())
-            }
+            },
             Value::FunctionRef(addr, args_count) => {
                 return write!(
                     f,

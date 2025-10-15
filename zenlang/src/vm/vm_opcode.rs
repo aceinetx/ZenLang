@@ -3,6 +3,7 @@ use crate::opcode::*;
 use crate::strong_u64::U64BitsControl;
 use crate::value::*;
 use crate::vm::*;
+use alloc::boxed::*;
 use alloc::format;
 use alloc::string::*;
 use alloc::vec::*;
@@ -131,8 +132,13 @@ impl VM {
                         return;
                     }
                 }
-                let value = Value::Array(vec);
-                self.stack.push(value);
+                unsafe {
+                    let obj = Object::alloc_array(vec);
+                    self.allocated_objs.push(obj);
+
+                    let value = Value::Object(obj);
+                    self.stack.push(value);
+                }
             }
             Opcode::Iafs() => {
                 let array;
@@ -151,30 +157,34 @@ impl VM {
                 }
 
                 match array {
-                    Value::Array(array) => {
-                        if let Value::Number(index) = index {
-                            let usize_index = index as usize;
-                            if usize_index >= array.len() {
-                                self.stack.push(Value::Null());
-                                return;
-                            }
+                    Value::Object(obj) => unsafe {
+                        match obj.read() {
+                            Object::Array(array) => {
+                                if let Value::Number(index) = index {
+                                    let usize_index = index as usize;
+                                    if usize_index >= array.len() {
+                                        self.stack.push(Value::Null());
+                                        return;
+                                    }
 
-                            self.stack.push(array[usize_index].clone());
-                            return;
-                        }
-                    }
-                    Value::Dictionary(dict) => {
-                        if let Value::String(index) = index {
-                            for element in dict {
-                                if element.0 == index {
-                                    self.stack.push(element.1.clone());
+                                    self.stack.push(array[usize_index].clone());
                                     return;
                                 }
                             }
-                            self.stack.push(Value::Null());
-                            return;
+                            Object::Dictionary(dict) => {
+                                if let Value::String(index) = index {
+                                    for element in dict.iter() {
+                                        if element.0 == index {
+                                            self.stack.push(element.1.clone());
+                                            return;
+                                        }
+                                    }
+                                    self.stack.push(Value::Null());
+                                    return;
+                                }
+                            }
                         }
-                    }
+                    },
                     Value::String(string) => {
                         if let Value::Number(index) = index {
                             if let Some(ch) = string.chars().nth(index as usize) {
@@ -200,8 +210,13 @@ impl VM {
                         return;
                     }
                 }
-                let value = Value::Dictionary(items);
-                self.stack.push(value);
+                unsafe {
+                    let obj = Object::alloc_dict(items);
+                    self.allocated_objs.push(obj);
+
+                    let value = Value::Object(obj);
+                    self.stack.push(value);
+                }
             }
             Opcode::Aiafs(name, indexes_count) => {
                 let set_value: Value;

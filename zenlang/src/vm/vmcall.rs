@@ -13,6 +13,8 @@ impl VM {
     /// - 2: println
     /// - 3: get_string
     pub fn vmcall(&mut self, index: u8) {
+        // DISABLED FOR NOW
+        /*
         match index {
             1 => {
                 // print
@@ -65,8 +67,14 @@ impl VM {
             5 => {
                 // array size
                 if let Some(value) = self.stack.pop() {
-                    if let Value::Array(array) = value {
-                        self.stack.push(Value::Number(array.len() as f64));
+                    if let Value::Object(obj) = value {
+                        unsafe {
+                            if let Object::Array(array) = obj.read() {
+                                self.stack.push(Value::Number(array.len() as f64));
+                            } else {
+                                self.error = "vmcall: expected an array".into();
+                            }
+                        }
                     } else {
                         self.error = "vmcall: expected an array".into();
                     }
@@ -449,5 +457,6 @@ impl VM {
                 }
             }
         }
+        */
     }
 }

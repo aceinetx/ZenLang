@@ -20,6 +20,9 @@ pub struct VM {
     pub error: String,
     pub ret: Value,
     pub platform: Option<Box<dyn Platform>>,
+    pub allocated_objs: Vec<*mut Object>,
+    pub gc_current_countdown: usize,
+    pub gc_countdown: usize,
     pub(crate) bfas_stack_start: Vec<i64>,
     pub(crate) bfas_stack_end: Vec<i64>,
 }
@@ -36,6 +39,9 @@ impl VM {
             error: String::new(),
             ret: Value::Null(),
             platform: None,
+            allocated_objs: Vec::new(),
+            gc_countdown: 10,
+            gc_current_countdown: 10,
             bfas_stack_start: Vec::new(),
             bfas_stack_end: Vec::new(),
         };
@@ -125,17 +131,20 @@ impl VM {
 
     pub fn step(&mut self) -> bool {
         if !self.error.is_empty() {
+            self.gc();
             return false;
         }
 
         let module_index = self.pc.get_high() as usize;
         let opcode_index = self.pc.get_low();
         if module_index >= self.modules.len() {
+            self.gc();
             return false;
         }
 
         let opcodes = core::mem::take(&mut self.modules[module_index].opcodes);
         if opcode_index >= opcodes.len() as u32 {
+            self.gc();
             return false;
         }
 
@@ -146,6 +155,12 @@ impl VM {
         self.modules[module_index].opcodes = opcodes;
 
         self.pc.add_low(1);
+
+        if self.gc_current_countdown == 0 || !self.error.is_empty() {
+            self.gc();
+            self.gc_current_countdown = self.gc_countdown;
+        }
+        self.gc_current_countdown -= 1;
 
         return true;
     }

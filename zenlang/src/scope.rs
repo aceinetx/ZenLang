@@ -11,7 +11,7 @@ use alloc::vec::*;
 /// Contains variables values and names
 #[derive(Debug)]
 pub struct Scope {
-    vars: Vec<(String, Value)>,
+    pub(crate) vars: Vec<(String, Value)>,
 }
 
 impl Scope {
