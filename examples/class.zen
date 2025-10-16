@@ -9,12 +9,12 @@ fn class_new {
 
 fn class_add_a self n {
     let self.a = self.a + n;
-    return self;
+    return null;
 }
 
 fn class_add_b self n {
     let self.b = self.b + n;
-    return self;
+    return null;
 }
 
 fn class_print self {
@@ -25,8 +25,8 @@ fn class_print self {
 
 fn main {
     let class = class_new();
-    let class = class_add_a(class, 42);
-    let class = class_add_b(class, 69);
+    class_add_a(class, 42);
+    class_add_b(class, 69);
     class_print(class);
     return null;
 }

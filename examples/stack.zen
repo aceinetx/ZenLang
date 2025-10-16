@@ -10,12 +10,12 @@ fn stack_top self {
 
 fn stack_push self element {
     let self.data = array_push(self.data, element);
-    return self;
+    return null;
 }
 
 fn stack_pop self {
     let self.data = array_pop(self.data);
-    return self;
+    return null;
 }
 
 fn stack_size self {
@@ -28,7 +28,7 @@ fn stack_is_empty self {
 
 fn main {
     let stack = stack_new();
-    let stack = stack_push(stack, 69);
+  	stack_push(stack, 69);
     println(stack_top(stack));
     return stack_is_empty(stack);
 }
