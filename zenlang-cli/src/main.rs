@@ -31,7 +31,16 @@ fn run_vm(vm: &mut vm::VM) {
         println!("-- end runtime error --");
         return;
     }
+
+    vm.gc();
     println!("returned {}", vm.ret);
+
+    if !vm.objects.is_empty() {
+        println!("leaked {} objects!", vm.objects.len());
+        vm.free_all();
+    } else {
+        println!("nothing leaked");
+    }
 }
 
 fn run_code(code: String, module_name: String) {

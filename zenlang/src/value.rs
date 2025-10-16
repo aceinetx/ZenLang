@@ -1,64 +1,16 @@
 //! Value
 //!
 //! ZenLang variable value
-use crate::rawvec::RawVec;
 use crate::strong_u64::U64BitsControl;
+use crate::vm::VM;
 use alloc::string::*;
 use alloc::vec::*;
-use core::alloc::Layout;
 use core::fmt::Display;
 
 /// Object
 pub enum Object {
-    Array(RawVec<Value>),
-    Dictionary(RawVec<(String, Value)>),
-}
-
-impl Object {
-    pub unsafe fn alloc() -> *mut Object {
-        unsafe {
-            let p = alloc::alloc::alloc_zeroed(Layout::new::<Object>());
-            return p as *mut Object;
-        }
-    }
-
-    pub unsafe fn alloc_array(array: Vec<Value>) -> *mut Object {
-        unsafe {
-            let p = Self::alloc();
-            *p = Object::Array(RawVec::from_regular(&array));
-
-            return p;
-        }
-    }
-
-    pub unsafe fn alloc_dict(dict: Vec<(String, Value)>) -> *mut Object {
-        unsafe {
-            let p = Self::alloc();
-            *p = Object::Dictionary(RawVec::from_regular(&dict));
-
-            return p;
-        }
-    }
-
-    pub unsafe fn free(obj: *mut Object) {
-        unsafe {
-            alloc::alloc::dealloc(obj as *mut u8, Layout::new::<Object>());
-        }
-    }
-
-    pub unsafe fn free_and_drop(obj: *mut Object) {
-        unsafe {
-            match &mut *obj {
-                Object::Array(array) => {
-                    array.dealloc();
-                }
-                Object::Dictionary(dict) => {
-                    dict.dealloc();
-                }
-            }
-            Self::free(obj);
-        }
-    }
+    Array(Vec<Value>),
+    Dictionary(Vec<(String, Value)>),
 }
 
 /// Value
@@ -68,7 +20,7 @@ pub enum Value {
     String(String),
     Boolean(bool),
     FunctionRef(u64, u64),
-    Object(*mut Object),
+    Object(usize),
     Null(),
 }
 
@@ -114,25 +66,25 @@ impl Value {
     }
 
     /// Perform an equal (==) operation. All operands are valid
-    pub fn equal(&self, other: &Value) -> bool {
+    pub fn equal(&self, other: &Value, vm: &VM) -> bool {
         match (self, other) {
             (Value::Number(x), Value::Number(y)) => x == y,
             (Value::String(a), Value::String(b)) => a == b,
             (Value::Boolean(a), Value::Boolean(b)) => a == b,
-            (Value::Object(obja), Value::Object(objb)) => unsafe {
-                match (obja.read(), objb.read()) {
-                    (Object::Array(a), Object::Array(b)) => {
+            (Value::Object(obja), Value::Object(objb)) => {
+                match (vm.get_object(*obja), vm.get_object(*objb)) {
+                    (Some(Object::Array(a)), Some(Object::Array(b))) => {
                         if a.len() != b.len() {
                             return false;
                         }
                         for i in 0..a.len() {
-                            if !a[i].equal(&b[i]) {
+                            if !a[i].equal(&b[i], vm) {
                                 return false;
                             }
                         }
                         return true;
                     }
-                    (Object::Dictionary(a), Object::Dictionary(b)) => {
+                    (Some(Object::Dictionary(a)), Some(Object::Dictionary(b))) => {
                         if a.len() != b.len() {
                             return false;
                         }
@@ -141,20 +93,15 @@ impl Value {
                             if a[i].0 != b[i].0 {
                                 return false;
                             }
-                            if !a[i].1.equal(&b[i].1) {
+                            if !a[i].1.equal(&b[i].1, vm) {
                                 return false;
                             }
                         }
                         return true;
                     }
-                    (Object::Dictionary(_), Object::Array(_)) => {
-                        return false;
-                    }
-                    (Object::Array(_), Object::Dictionary(_)) => {
-                        return false;
-                    }
+                    _ => return false,
                 }
-            },
+            }
             (Value::FunctionRef(a, b), Value::FunctionRef(c, d)) => {
                 return a == c && b == d;
             }
@@ -178,8 +125,9 @@ impl Display for Value {
             Value::Boolean(boolean) => {
                 return write!(f, "{}", boolean);
             }
-            Value::Object(obj) => unsafe {
-                match obj.read() {
+            Value::Object(obj) => {
+                return write!(f, "[object at 0x{:?}]", obj);
+                /*                match obj.read() {
                     Object::Array(array) => {
                         let _ = write!(f, "[");
 
@@ -222,7 +170,8 @@ impl Display for Value {
                         Ok(())
                     }
                 }
-            },
+                */
+            }
             Value::FunctionRef(addr, args_count) => {
                 return write!(
                     f,

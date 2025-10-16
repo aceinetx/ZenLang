@@ -16,7 +16,6 @@ pub mod module;
 pub mod opcode;
 pub mod parser;
 pub mod platform;
-pub mod rawvec;
 pub mod scope;
 pub mod stdlib;
 pub mod strong_u64;

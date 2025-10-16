@@ -20,9 +20,9 @@ pub struct VM {
     pub error: String,
     pub ret: Value,
     pub platform: Option<Box<dyn Platform>>,
-    pub allocated_objs: Vec<*mut Object>,
     pub gc_current_countdown: usize,
     pub gc_countdown: usize,
+    pub objects: Vec<Object>,
     pub(crate) bfas_stack_start: Vec<i64>,
     pub(crate) bfas_stack_end: Vec<i64>,
 }
@@ -39,9 +39,9 @@ impl VM {
             error: String::new(),
             ret: Value::Null(),
             platform: None,
-            allocated_objs: Vec::new(),
             gc_countdown: 10,
             gc_current_countdown: 10,
+            objects: Vec::new(),
             bfas_stack_start: Vec::new(),
             bfas_stack_end: Vec::new(),
         };
@@ -127,6 +127,14 @@ impl VM {
             }
         }
         return None;
+    }
+
+    pub fn get_object(&self, ptr: usize) -> Option<&Object> {
+        return self.objects.get(ptr);
+    }
+
+    pub fn get_object_mut(&mut self, ptr: usize) -> Option<&mut Object> {
+        return self.objects.get_mut(ptr);
     }
 
     pub fn step(&mut self) -> bool {

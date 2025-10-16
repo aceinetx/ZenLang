@@ -76,10 +76,10 @@ impl VM {
                 }
             }
             AstBinopOp::EQ => {
-                return Value::Boolean(left.equal(&right));
+                return Value::Boolean(left.equal(&right, self));
             }
             AstBinopOp::NEQ => {
-                return Value::Boolean(!left.equal(&right));
+                return Value::Boolean(!left.equal(&right, self));
             }
             AstBinopOp::LT => {
                 return Value::Boolean(left.lt(&right));
