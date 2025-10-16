@@ -3,7 +3,7 @@ name: Rust docs
 on:
   push:
     branches:
-      - '**'
+      - 'master'
     paths:
       - 'zenlang/**'
       - 'Cargo.toml'
@@ -11,7 +11,7 @@ on:
       - '.github/**'
   pull_request:
     branches:
-      - '**'
+      - 'master'
     paths:
       - 'zenlang/**'
       - 'Cargo.toml'
