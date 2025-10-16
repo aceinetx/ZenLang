@@ -28,6 +28,11 @@ impl Compile for AstArrayAssign {
         &mut self,
         compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
+        {
+            let module = compiler.get_module();
+            module.opcodes.push(Opcode::LoadVar(self.name.clone()));
+        }
+
         let len = self.indexes.len();
         for (i, index) in self.indexes.iter_mut().enumerate() {
             if i == len - 1 {
@@ -40,11 +45,6 @@ impl Compile for AstArrayAssign {
 
             let module = compiler.get_module();
             module.opcodes.push(Opcode::Iafs());
-        }
-
-        {
-            let module = compiler.get_module();
-            module.opcodes.push(Opcode::LoadVar(self.name.clone()));
         }
 
         if let Some(expr) = &mut self.expr {

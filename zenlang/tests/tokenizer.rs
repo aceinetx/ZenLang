@@ -505,3 +505,32 @@ fn tokenizer_test_defer() {
     let token = tokenizer.next();
     assert!(matches!(token, Token::Number(1.0)));
 }
+
+// let x.1.0 = 69;
+
+#[test]
+fn tokenizer_test_let_dotted() {
+    let mut tokenizer = Tokenizer::new("let x.1 . 0 = 69;".into());
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Let));
+
+    tokenizer.next();
+
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Dot));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.0)));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Dot));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(0.0)));
+
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Assign));
+
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(69.0)));
+
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Semicolon));
+}

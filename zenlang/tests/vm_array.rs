@@ -46,8 +46,8 @@ fn vm_test_array_dotted_nested_set() {
         r#"
 fn main {
     let x = [0, [0]];
-    let x.1.0 = 69;
-    return x.1.0;
+    let x.1 .0 = 69;
+    return x.1 .0;
 }
     "#
         .into(),
