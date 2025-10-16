@@ -33,14 +33,23 @@ fn run_vm(vm: &mut vm::VM) {
         return;
     }
 
-    vm.gc();
     println!("returned {}", vm.ret);
 
+    if !vm.stack.is_empty() {
+        println!("{} values remained on stack!", vm.stack.len());
+    } else {
+        println!("no values leaked on stack");
+    }
+
+    vm.gc();
     if !vm.objects.is_empty() {
         println!("leaked {} objects!", vm.objects.len());
-        vm.free_all();
+        println!("objects:");
+        for pair in vm.objects.iter() {
+            println!("  {:?}", pair.1);
+        }
     } else {
-        println!("nothing leaked");
+        println!("no objects leaked");
     }
 }
 

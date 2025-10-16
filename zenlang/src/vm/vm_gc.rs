@@ -81,25 +81,21 @@ impl VM {
 
     /// Collects garbage
     pub fn gc(&mut self) {
-        let mut deleted_idxs: Vec<usize> = Vec::new();
+        let mut deleted_ptrs: Vec<usize> = Vec::new();
         let mut ptrs: Vec<usize> = Vec::new();
 
-        for (index, _) in self.objects.iter().enumerate() {
-            ptrs.push(index);
+        for (ptr, _) in self.objects.iter() {
+            ptrs.push(*ptr);
         }
 
         for ptr in ptrs.iter() {
             if !self.gc_is_reachable(*ptr) {
-                deleted_idxs.push(*ptr);
+                deleted_ptrs.push(*ptr);
             }
         }
 
-        for index in deleted_idxs.iter().rev() {
-            self.objects.remove(*index);
+        for ptr in deleted_ptrs.iter() {
+            self.remove_object(*ptr);
         }
-    }
-
-    pub fn free_all(&mut self) {
-        //self.objects.clear();
     }
 }

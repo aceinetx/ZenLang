@@ -108,8 +108,7 @@ impl VM {
                 }
 
                 array.push(element);
-                let ptr = self.objects.len();
-                self.objects.push(Object::Array(array));
+                let ptr = self.add_object(Object::Array(array));
                 self.stack.push(Value::Object(ptr));
             }
             7 => {
@@ -134,8 +133,7 @@ impl VM {
                 }
 
                 array.pop();
-                let ptr = self.objects.len();
-                self.objects.push(Object::Array(array));
+                let ptr = self.add_object(Object::Array(array));
                 self.stack.push(Value::Object(ptr));
             }
             8 => {
@@ -178,8 +176,7 @@ impl VM {
                 }
 
                 array.remove(at);
-                let ptr = self.objects.len();
-                self.objects.push(Object::Array(array));
+                let ptr = self.add_object(Object::Array(array));
                 self.stack.push(Value::Object(ptr));
             }
             9 => {
@@ -229,8 +226,7 @@ impl VM {
                     return;
                 }
                 array.insert(at, element);
-                let ptr = self.objects.len();
-                self.objects.push(Object::Array(array));
+                let ptr = self.add_object(Object::Array(array));
                 self.stack.push(Value::Object(ptr));
             }
             10 => {
@@ -267,8 +263,7 @@ impl VM {
                     array.push(Value::String(String::from(part)))
                 }
 
-                let ptr = self.objects.len();
-                self.objects.push(Object::Array(array));
+                let ptr = self.add_object(Object::Array(array));
                 self.stack.push(Value::Object(ptr));
             }
             11 => {
@@ -294,8 +289,7 @@ impl VM {
                             array.push(Value::Number(byte as f64));
                         }
 
-                        let ptr = self.objects.len();
-                        self.objects.push(Object::Array(array));
+                        let ptr = self.add_object(Object::Array(array));
                         self.stack.push(Value::Object(ptr));
                     } else {
                         self.stack.push(Value::Null());

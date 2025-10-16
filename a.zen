@@ -1,5 +1,6 @@
 mod stdlib;
 
 fn main {
+	println(array_push([1, 2, 3], 4)[3]);
 	println(array_pop([1, 2, 3])[1]);
 }

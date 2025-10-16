@@ -131,10 +131,9 @@ impl VM {
                         return;
                     }
                 }
-                let value = Value::Object(self.objects.len());
-                self.stack.push(value);
                 let obj = Object::Array(vec);
-                self.objects.push(obj);
+                let v = Value::Object(self.add_object(obj));
+                self.stack.push(v);
             }
             Opcode::Iafs() => {
                 let array;
@@ -213,10 +212,9 @@ impl VM {
                     }
                 }
 
-                let value = Value::Object(self.objects.len());
-                self.stack.push(value);
                 let obj = Object::Dictionary(items);
-                self.objects.push(obj);
+                let v = Value::Object(self.add_object(obj));
+                self.stack.push(v);
             }
             Opcode::Aiafs() => {
                 let set_value: Value;
