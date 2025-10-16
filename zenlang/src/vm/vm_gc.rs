@@ -4,7 +4,7 @@ use crate::value::*;
 use crate::vm::*;
 
 impl VM {
-    pub(crate) fn gc_is_reachable_array(&mut self, ptr: usize, array_ptr: usize) -> bool {
+    pub(crate) fn gc_is_reachable_obj(&mut self, ptr: usize, array_ptr: usize) -> bool {
         let mut test_reachable: Vec<usize> = Vec::new();
         if let Some(array) = self.get_object(array_ptr) {
             if let Object::Array(array) = array {
@@ -17,11 +17,21 @@ impl VM {
                         test_reachable.push(*obj);
                     }
                 }
+            } else if let Object::Dictionary(dict) = array {
+                for pair in dict.iter() {
+                    if let Value::Object(obj) = pair.1 {
+                        if obj == ptr {
+                            return true;
+                        }
+
+                        test_reachable.push(obj);
+                    }
+                }
             }
         }
 
         for p in test_reachable.iter() {
-            if self.gc_is_reachable_array(ptr, *p) {
+            if self.gc_is_reachable_obj(ptr, *p) {
                 return true;
             }
         }
@@ -49,7 +59,7 @@ impl VM {
                         return true;
                     }
 
-                    if self.gc_is_reachable_array(ptr, obj) {
+                    if self.gc_is_reachable_obj(ptr, obj) {
                         self.scopes = scopes;
                         return true;
                     }

@@ -1,5 +1,9 @@
+fn modify x {
+    let x.num = 69;
+}
+
 fn main {
-    let x = [0, [0]];
-    let x.1 .0 = 69;
-    return x.1 . 0;
+    let dict = {"f" = 1, "t" = 5};
+    modify(dict);
+    return dict.num;
 }

@@ -1,7 +1,7 @@
 use crate::value::*;
 use crate::vm::*;
 use alloc::format;
-use alloc::vec::*;
+use alloc::string::String;
 
 impl VM {
     /// Perform Aiafs operation
@@ -27,7 +27,23 @@ impl VM {
 
                     array[usz_index] = set_to;
                 }
-                Some(Object::Dictionary(dict)) => {}
+                Some(Object::Dictionary(dict)) => {
+                    let s_index: String;
+                    if let Value::String(s) = index {
+                        s_index = s;
+                    } else {
+                        self.error =
+                            format!("aiafs failed: expected string when indexing a dictionary");
+                        return;
+                    }
+
+                    for pair in dict.iter_mut() {
+                        if pair.0 == s_index {
+                            pair.1 = set_to;
+                            return;
+                        }
+                    }
+                }
                 _ => {
                     self.error =
                         format!("aiafs failed: invalid reference: referencing 0x{:x}", *obj);
