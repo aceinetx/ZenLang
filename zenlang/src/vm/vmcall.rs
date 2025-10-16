@@ -478,6 +478,28 @@ impl VM {
                     return;
                 }
             }
+            19 => {
+                // clone
+                if let Some(value) = self.stack.pop() {
+                    if let Value::Object(obj) = value {
+                        if let Some(obj) = self.get_object(obj) {
+                            let new = self.add_object(obj.clone());
+                            self.stack.push(Value::Object(new));
+                        } else {
+                            self.error =
+                                format!("vmcall: invalid reference: referencing 0x{:?}", obj)
+                                    .into();
+                            return;
+                        }
+                    } else {
+                        self.error = "vmcall: expected an object".into();
+                        return;
+                    }
+                } else {
+                    self.error = "vmcall: no value on stack".into();
+                    return;
+                }
+            }
             _ => {
                 if let Some(mut platform) = self.platform.take() {
                     let result = platform.as_mut().vmcall(self, index);

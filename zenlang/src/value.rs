@@ -8,7 +8,7 @@ use alloc::vec::*;
 use core::fmt::Display;
 
 /// Object
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Object {
     Array(Vec<Value>),
     Dictionary(Vec<(String, Value)>),

@@ -97,6 +97,9 @@ fn stringify any {
 fn number str {
     return _vmcall_ret_unsafe_2(str, 18);
 }
+fn clone obj {
+    return _vmcall_ret_unsafe_2(obj, 19);
+}
     "#,
     );
     let mut tokenizer = tokenizer::Tokenizer::new(code);

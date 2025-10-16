@@ -1,11 +1,9 @@
 mod stdlib;
 
 fn main {
-	let array = [1,2,3];
-	println(array_push(array, 4)[3]);
-	println(array);
-	println(array_pop(array)[1]);
-
-	let x = [2,3,4];
-	return x;
+	let x = [0,1,2];
+	let y = clone(x);
+	println(x);
+	println(y);
+	return null;
 }
