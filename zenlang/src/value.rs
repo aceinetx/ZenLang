@@ -127,7 +127,7 @@ impl Display for Value {
                 return write!(f, "{}", boolean);
             }
             Value::Object(obj) => {
-                return write!(f, "[object at 0x{:?}]", obj);
+                return write!(f, "[object at 0x{:x}]", obj);
                 /*                match obj.read() {
                     Object::Array(array) => {
                         let _ = write!(f, "[");
