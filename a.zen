@@ -1,9 +1,17 @@
 mod stdlib;
 
-fn main {
+fn f {
 	let x = [0,1,2];
 	let y = clone(x);
 	println(x);
 	println(y);
-	return null;
+	return [x,y];
+}
+
+fn f2 {
+	return [f(), [f()]];
+}
+
+fn main {
+	return [f2(), f2()];
 }
