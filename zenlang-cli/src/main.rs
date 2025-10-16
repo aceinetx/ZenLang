@@ -12,7 +12,7 @@ fn run_vm(vm: &mut vm::VM) {
         println!("vm error: {}", e);
         return;
     }
-    println!("{:?}", vm.modules);
+    //println!("{:?}", vm.modules);
 
     loop {
         if !vm.step() {
@@ -41,7 +41,6 @@ fn run_vm(vm: &mut vm::VM) {
         println!("no values leaked on stack");
     }
 
-    vm.gc();
     if !vm.objects.is_empty() {
         println!("leaked {} objects!", vm.objects.len());
         println!("objects:");
