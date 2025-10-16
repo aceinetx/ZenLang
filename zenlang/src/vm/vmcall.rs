@@ -13,8 +13,6 @@ impl VM {
     /// - 2: println
     /// - 3: get_string
     pub fn vmcall(&mut self, index: u8) {
-        // DISABLED FOR NOW
-        /*
         match index {
             1 => {
                 // print
@@ -68,15 +66,13 @@ impl VM {
                 // array size
                 if let Some(value) = self.stack.pop() {
                     if let Value::Object(obj) = value {
-                        unsafe {
-                            if let Object::Array(array) = obj.read() {
-                                self.stack.push(Value::Number(array.len() as f64));
-                            } else {
-                                self.error = "vmcall: expected an array".into();
-                            }
+                        if let Some(Object::Array(array)) = self.get_object(obj) {
+                            self.stack.push(Value::Number(array.len() as f64));
+                        } else {
+                            self.error = "vmcall: expected an array".into();
                         }
                     } else {
-                        self.error = "vmcall: expected an array".into();
+                        self.error = "vmcall: expected an object".into();
                     }
                 } else {
                     self.error = "vmcall: no value on stack".into();
@@ -95,10 +91,15 @@ impl VM {
                 }
 
                 if let Some(value) = self.stack.pop() {
-                    if let Value::Array(value) = value {
-                        array = value;
+                    if let Value::Object(obj) = value {
+                        if let Some(Object::Array(value)) = self.get_object(obj) {
+                            array = value.clone();
+                        } else {
+                            self.error = "vmcall: expected an array".into();
+                            return;
+                        }
                     } else {
-                        self.error = "vmcall: expected an array".into();
+                        self.error = "vmcall: expected an object".into();
                         return;
                     }
                 } else {
@@ -107,17 +108,24 @@ impl VM {
                 }
 
                 array.push(element);
-                self.stack.push(Value::Array(array));
+                let ptr = self.objects.len();
+                self.objects.push(Object::Array(array));
+                self.stack.push(Value::Object(ptr));
             }
             7 => {
                 // array pop
                 let mut array;
 
                 if let Some(value) = self.stack.pop() {
-                    if let Value::Array(value) = value {
-                        array = value;
+                    if let Value::Object(obj) = value {
+                        if let Some(Object::Array(value)) = self.get_object(obj) {
+                            array = value.clone();
+                        } else {
+                            self.error = "vmcall: expected an array".into();
+                            return;
+                        }
                     } else {
-                        self.error = "vmcall: expected an array".into();
+                        self.error = "vmcall: expected an object".into();
                         return;
                     }
                 } else {
@@ -126,7 +134,9 @@ impl VM {
                 }
 
                 array.pop();
-                self.stack.push(Value::Array(array));
+                let ptr = self.objects.len();
+                self.objects.push(Object::Array(array));
+                self.stack.push(Value::Object(ptr));
             }
             8 => {
                 // array remove
@@ -146,10 +156,15 @@ impl VM {
                 }
 
                 if let Some(value) = self.stack.pop() {
-                    if let Value::Array(value) = value {
-                        array = value;
+                    if let Value::Object(obj) = value {
+                        if let Some(Object::Array(value)) = self.get_object(obj) {
+                            array = value.clone();
+                        } else {
+                            self.error = "vmcall: expected an array".into();
+                            return;
+                        }
                     } else {
-                        self.error = "vmcall: expected an array".into();
+                        self.error = "vmcall: expected an object".into();
                         return;
                     }
                 } else {
@@ -161,8 +176,11 @@ impl VM {
                     self.stack.push(Value::Null());
                     return;
                 }
+
                 array.remove(at);
-                self.stack.push(Value::Array(array));
+                let ptr = self.objects.len();
+                self.objects.push(Object::Array(array));
+                self.stack.push(Value::Object(ptr));
             }
             9 => {
                 // array insert
@@ -190,10 +208,15 @@ impl VM {
                 }
 
                 if let Some(value) = self.stack.pop() {
-                    if let Value::Array(value) = value {
-                        array = value;
+                    if let Value::Object(obj) = value {
+                        if let Some(Object::Array(value)) = self.get_object(obj) {
+                            array = value.clone();
+                        } else {
+                            self.error = "vmcall: expected an array".into();
+                            return;
+                        }
                     } else {
-                        self.error = "vmcall: expected an array".into();
+                        self.error = "vmcall: expected an object".into();
                         return;
                     }
                 } else {
@@ -206,7 +229,9 @@ impl VM {
                     return;
                 }
                 array.insert(at, element);
-                self.stack.push(Value::Array(array));
+                let ptr = self.objects.len();
+                self.objects.push(Object::Array(array));
+                self.stack.push(Value::Object(ptr));
             }
             10 => {
                 // string split
@@ -241,7 +266,10 @@ impl VM {
                 for part in string.split(&delimiter) {
                     array.push(Value::String(String::from(part)))
                 }
-                self.stack.push(Value::Array(array));
+
+                let ptr = self.objects.len();
+                self.objects.push(Object::Array(array));
+                self.stack.push(Value::Object(ptr));
             }
             11 => {
                 // read file bytes
@@ -266,7 +294,9 @@ impl VM {
                             array.push(Value::Number(byte as f64));
                         }
 
-                        self.stack.push(Value::Array(array));
+                        let ptr = self.objects.len();
+                        self.objects.push(Object::Array(array));
+                        self.stack.push(Value::Object(ptr));
                     } else {
                         self.stack.push(Value::Null());
                     }
@@ -307,16 +337,23 @@ impl VM {
                 let mut bytes: Vec<u8> = Vec::new();
 
                 if let Some(value) = self.stack.pop() {
-                    if let Value::Array(array) = value {
-                        for value in array.iter() {
-                            if let Value::Number(byte) = value {
-                                bytes.push(*byte as u8);
-                            } else {
-                                self.error = "vmcall: expected non number in a byte array".into();
+                    if let Value::Object(obj) = value {
+                        if let Some(Object::Array(array)) = self.get_object(obj) {
+                            for value in array.iter() {
+                                if let Value::Number(byte) = value {
+                                    bytes.push(*byte as u8);
+                                } else {
+                                    self.error =
+                                        "vmcall: expected non number in a byte array".into();
+                                    return;
+                                }
                             }
+                        } else {
+                            self.error = "vmcall: expected a byte array".into();
+                            return;
                         }
                     } else {
-                        self.error = "vmcall: expected a byte array".into();
+                        self.error = "vmcall: expected an object".into();
                         return;
                     }
                 } else {
@@ -457,6 +494,5 @@ impl VM {
                 }
             }
         }
-        */
     }
 }

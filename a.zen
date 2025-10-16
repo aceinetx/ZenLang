@@ -1,9 +1,5 @@
-fn modify x {
-    let x.num = 69;
-}
+mod stdlib;
 
 fn main {
-    let dict = {"f" = 1, "t" = 5};
-    modify(dict);
-    return dict.num;
+	println(array_pop([1, 2, 3])[1]);
 }

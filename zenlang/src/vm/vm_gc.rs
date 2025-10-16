@@ -49,6 +49,13 @@ impl VM {
             }
         }
 
+        // In ret?
+        if let Value::Object(obj) = self.ret {
+            if obj == ptr {
+                return true;
+            }
+        }
+
         // Test if the value is in scopes
         let scopes = core::mem::take(&mut self.scopes);
         for scope in scopes.iter() {
