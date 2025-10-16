@@ -194,7 +194,10 @@ impl VM {
                         }
                     }
                     _ => {
-                        self.error = format!("iafs failed: invalid operand types");
+                        self.error = format!(
+                            "iafs failed: invalid operand types: {:?} {:?}",
+                            array, index
+                        );
                     }
                 }
             }
@@ -209,63 +212,39 @@ impl VM {
                         return;
                     }
                 }
-                unsafe {
-                    let value = Value::Object(self.objects.len());
-                    self.stack.push(value);
-                    let obj = Object::Dictionary(items);
-                    self.objects.push(obj);
-                }
+
+                let value = Value::Object(self.objects.len());
+                self.stack.push(value);
+                let obj = Object::Dictionary(items);
+                self.objects.push(obj);
             }
-            Opcode::Aiafs(name, indexes_count) => {
+            Opcode::Aiafs() => {
                 let set_value: Value;
-                let array: Value;
-                let mut indexes: Vec<Value> = Vec::new();
+                let index: Value;
+                let mut object: Value;
 
-                {
-                    for _ in 0..*indexes_count {
-                        if let Some(value) = self.stack.pop() {
-                            indexes.insert(0, value);
-                        } else {
-                            self.error = format!("aiafs failed: no more values on stack for index");
-                            return;
-                        }
-                    }
-
-                    if let Some(some_value) = self.stack.pop() {
-                        set_value = some_value;
-                    } else {
-                        self.error = format!("aiafs failed: no more values on stack for array");
-                        return;
-                    }
-
-                    if let Some(scope) = self.scopes.last_mut() {
-                        if let Some(value) = scope.get_mut(name) {
-                            array = value.clone();
-                        } else {
-                            self.error = format!("aiafs failed: no variable named {}", name);
-                            return;
-                        }
-                    } else {
-                        self.error = format!("aiafs failed: no scopes");
-                        return;
-                    }
+                if let Some(value) = self.stack.pop() {
+                    index = value;
+                } else {
+                    self.error = format!("aiafs failed: no more values on stack for index");
+                    return;
                 }
 
-                {
-                    let new = self.aiafs(array, set_value, indexes);
-
-                    if let Some(scope) = self.scopes.last_mut() {
-                        if let Some(value) = scope.get_mut(name) {
-                            *value = new;
-                        } else {
-                            self.error = format!("aiafs failed: no variable named {}", name);
-                            return;
-                        }
-                    } else {
-                        self.error = format!("aiafs failed: no scopes");
-                        return;
-                    }
+                if let Some(value) = self.stack.pop() {
+                    set_value = value;
+                } else {
+                    self.error = format!("aiafs failed: no more values on stack for set value");
+                    return;
                 }
+
+                if let Some(value) = self.stack.pop() {
+                    object = value;
+                } else {
+                    self.error = format!("aiafs failed: no more values on stack for object");
+                    return;
+                }
+
+                self.aiafs(&mut object, set_value, index);
             }
             Opcode::BeginFnArgs() => {
                 self.bfas_stack_start.push(self.stack.len() as i64);

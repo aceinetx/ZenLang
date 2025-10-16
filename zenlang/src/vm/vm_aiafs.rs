@@ -7,88 +7,36 @@ impl VM {
     /// Perform Aiafs operation
     ///
     /// The reason it's in a function (not in execute_opcode) is because it needs to be recursive
-    pub(crate) fn aiafs(&mut self, value: Value, set_to: Value, mut indexes: Vec<Value>) -> Value {
-        // DISABLED FOR NOW
-        /*
+    pub(crate) fn aiafs(&mut self, value: &mut Value, set_to: Value, index: Value) {
         match value {
-            Value::Object(obj) => unsafe {
-                match obj.read() {
-                    Object::Array(array) => {
-                        let index = indexes[0].clone();
-                        if let Value::Number(index) = index {
-                            let usize_index = index as usize;
-                            if usize_index == array.len() {
-                                array.push(set_to);
-                                return Value::Object(obj);
-                            } else if usize_index >= array.len() {
-                                self.error = format!(
-                                    "aiafs failed: index ({}) is larger or equal to array length ({})",
-                                    usize_index,
-                                    array.len()
-                                );
-                                return Value::Null();
-                            }
-
-                            if indexes.len() == 1 {
-                                array[usize_index] = set_to;
-                                return Value::Array(array);
-                            } else {
-                                indexes.remove(0);
-                                if let Value::Array(inner) = &array[usize_index] {
-                                    array[usize_index] =
-                                        self.aiafs(Value::Array(inner.clone()), set_to, indexes);
-                                    return Value::Array(array);
-                                } else if let Value::Dictionary(inner) = &array[usize_index] {
-                                    array[usize_index] = self.aiafs(
-                                        Value::Dictionary(inner.clone()),
-                                        set_to,
-                                        indexes,
-                                    );
-                                    return Value::Array(array);
-                                }
-                            }
-                        }
+            Value::Object(obj) => match self.get_object_mut(*obj) {
+                Some(Object::Array(array)) => {
+                    let usz_index: usize;
+                    if let Value::Number(index) = index {
+                        usz_index = index as usize;
+                    } else {
+                        self.error =
+                            format!("aiafs failed: expected number when indexing an array");
+                        return;
                     }
-                    Object::Dictionary(mut dict) => {
-                        let index = indexes[0].clone();
-                        if let Value::String(index) = index {
-                            for element in dict.iter_mut() {
-                                if element.0 != index {
-                                    continue;
-                                }
 
-                                if indexes.len() == 1 {
-                                    (*element).1 = set_to;
-                                    return Value::Dictionary(dict);
-                                } else {
-                                    indexes.remove(0);
-                                    if let Value::Dictionary(inner) = &element.1 {
-                                        (*element).1 = self.aiafs(
-                                            Value::Dictionary(inner.clone()),
-                                            set_to,
-                                            indexes,
-                                        );
-                                        return Value::Dictionary(dict);
-                                    } else if let Value::Array(inner) = &element.1 {
-                                        (*element).1 = self.aiafs(
-                                            Value::Array(inner.clone()),
-                                            set_to,
-                                            indexes,
-                                        );
-                                        return Value::Dictionary(dict);
-                                    }
-                                }
-                            }
-                        }
-                        self.error = format!("aiafs failed: dictionary indexing failed");
+                    if usz_index >= array.len() {
+                        self.error = format!("aiafs failed: index outside bounds");
+                        return;
                     }
-                    _ => {}
+
+                    array[usz_index] = set_to;
+                }
+                Some(Object::Dictionary(dict)) => {}
+                _ => {
+                    self.error =
+                        format!("aiafs failed: invalid reference: referencing 0x{:x}", *obj);
                 }
             },
-            _ => {}
+            _ => {
+                self.error = format!("aiafs failed: value is not an object");
+            }
         }
-        self.error = format!("aiafs failed: invalid operand types");
-        */
-        return Value::Null();
+        return;
     }
 }

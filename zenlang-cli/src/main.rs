@@ -133,7 +133,9 @@ fn get_module_name_from_path(path: String) -> String {
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let mut args: Vec<String> = env::args().collect();
+    args.push("/home/aceinet/ZenLang/a.zen".into());
+
     if args.len() < 2 {
         println!("zenlang: no filename provided");
         return;

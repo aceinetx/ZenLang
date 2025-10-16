@@ -28,6 +28,25 @@ impl Compile for AstArrayAssign {
         &mut self,
         compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
+        let len = self.indexes.len();
+        for (i, index) in self.indexes.iter_mut().enumerate() {
+            if i == len - 1 {
+                break;
+            }
+
+            if let Err(e) = index.compile(compiler) {
+                return Err(e);
+            }
+
+            let module = compiler.get_module();
+            module.opcodes.push(Opcode::Iafs());
+        }
+
+        {
+            let module = compiler.get_module();
+            module.opcodes.push(Opcode::LoadVar(self.name.clone()));
+        }
+
         if let Some(expr) = &mut self.expr {
             if let Err(e) = expr.compile(compiler) {
                 return Err(e);
@@ -35,16 +54,13 @@ impl Compile for AstArrayAssign {
         } else {
             return Err("expr is None".into());
         }
-        for index in self.indexes.iter_mut() {
-            if let Err(e) = index.compile(compiler) {
-                return Err(e);
-            }
+
+        if let Err(e) = self.indexes.last_mut().unwrap().compile(compiler) {
+            return Err(e);
         }
 
         let module = compiler.get_module();
-        module
-            .opcodes
-            .push(Opcode::Aiafs(self.name.clone(), self.indexes.len() as u64));
+        module.opcodes.push(Opcode::Aiafs());
 
         Ok(())
     }

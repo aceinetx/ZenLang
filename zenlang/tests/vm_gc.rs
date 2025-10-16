@@ -32,7 +32,8 @@ fn main {
         }
     }
     assert_eq!(vm.error, "");
-    assert!(vm.allocated_objs.is_empty());
+
+    assert!(vm.objects.is_empty());
 }
 
 #[test]
@@ -65,7 +66,7 @@ fn main {
     }
     assert_eq!(vm.error, "");
 
-    assert!(vm.allocated_objs.is_empty());
+    assert!(vm.objects.is_empty());
 }
 
 #[test]
@@ -99,5 +100,5 @@ fn main {
     }
     assert_eq!(vm.error, "");
 
-    assert!(vm.allocated_objs.is_empty());
+    assert!(vm.objects.is_empty());
 }
