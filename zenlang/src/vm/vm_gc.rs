@@ -52,7 +52,7 @@ impl VM {
         // In ret?
         if let Value::Object(obj) = self.ret {
             if obj == ptr {
-                return true;
+                //return true;
             }
         }
 

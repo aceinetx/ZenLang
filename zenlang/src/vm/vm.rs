@@ -4,7 +4,6 @@ use crate::scope::Scope;
 use crate::strong_u64::*;
 use crate::value::*;
 use alloc::boxed::*;
-use alloc::collections::BTreeMap;
 use alloc::format;
 use alloc::string::*;
 use alloc::vec::*;
@@ -23,7 +22,7 @@ pub struct VM {
     pub platform: Option<Box<dyn Platform>>,
     pub gc_current_countdown: usize,
     pub gc_countdown: usize,
-    pub objects: BTreeMap<usize, Object>,
+    pub objects: Vec<(usize, Object)>,
     pub(crate) obj_next_addr: usize,
     pub(crate) bfas_stack_start: Vec<i64>,
     pub(crate) bfas_stack_end: Vec<i64>,
@@ -43,7 +42,7 @@ impl VM {
             platform: None,
             gc_countdown: 10,
             gc_current_countdown: 10,
-            objects: BTreeMap::new(),
+            objects: Vec::new(),
             obj_next_addr: 0,
             bfas_stack_start: Vec::new(),
             bfas_stack_end: Vec::new(),
@@ -134,8 +133,8 @@ impl VM {
 
     pub fn get_object(&self, ptr: usize) -> Option<&Object> {
         for pair in self.objects.iter() {
-            if *pair.0 == ptr {
-                return Some(pair.1);
+            if pair.0 == ptr {
+                return Some(&pair.1);
             }
         }
         return None;
@@ -143,24 +142,32 @@ impl VM {
 
     pub fn get_object_mut(&mut self, ptr: usize) -> Option<&mut Object> {
         for pair in self.objects.iter_mut() {
-            if *pair.0 == ptr {
-                return Some(pair.1);
+            if pair.0 == ptr {
+                return Some(&mut pair.1);
             }
         }
         return None;
     }
 
     pub fn add_object(&mut self, obj: Object) -> usize {
-        self.objects.insert(self.obj_next_addr, obj);
+        self.objects.push((self.obj_next_addr, obj));
         self.obj_next_addr += 1;
         return self.obj_next_addr - 1;
     }
 
     pub fn remove_object(&mut self, ptr: usize) {
-        if self.objects.contains_key(&ptr) {
-            self.error = format!("trying to remove an object at 0x{:x} (doesn't exist)", ptr)
+        if self.get_object(ptr).is_none() {
+            self.error = format!("trying to remove an object at 0x{:x} (doesn't exist)", ptr);
+            return;
         }
-        self.objects.remove(&ptr);
+        let mut idx: usize = 0;
+        for (i, pair) in self.objects.iter_mut().enumerate() {
+            if pair.0 == ptr {
+                idx += i;
+                break;
+            }
+        }
+        self.objects.remove(idx);
     }
 
     pub fn step(&mut self) -> bool {
