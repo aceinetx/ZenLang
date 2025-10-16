@@ -1,6 +1,11 @@
 mod stdlib;
 
 fn main {
-        println(array_push([1, 2, 3], 4)[3]);
-        println(array_pop([1, 2, 3])[1]);
+	let array = [1,2,3];
+	println(array_push(array, 4)[3]);
+	println(array);
+	println(array_pop(array)[1]);
+
+	let x = [2,3,4];
+	return x;
 }
