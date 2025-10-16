@@ -20,8 +20,11 @@ impl VM {
                         return;
                     }
 
-                    if usz_index >= array.len() {
+                    if usz_index > array.len() {
                         self.error = format!("aiafs failed: index outside bounds");
+                        return;
+                    } else if usz_index == array.len() {
+                        array.push(set_to);
                         return;
                     }
 
@@ -43,6 +46,8 @@ impl VM {
                             return;
                         }
                     }
+
+                    dict.push((s_index, set_to));
                 }
                 _ => {
                     self.error =
