@@ -12,6 +12,7 @@ fn run_vm(vm: &mut vm::VM) {
         println!("vm error: {}", e);
         return;
     }
+    println!("{:?}", vm.modules);
 
     loop {
         if !vm.step() {

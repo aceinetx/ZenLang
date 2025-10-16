@@ -4,6 +4,22 @@ use crate::value::*;
 use crate::vm::*;
 
 impl VM {
+    pub(crate) fn gc_is_reachable_array(&mut self, ptr: usize, array: &Object) -> bool {
+        if let Object::Array(array) = array {
+            for value in array.iter() {
+                if let Value::Object(obj) = value {
+                    if *obj == ptr {
+                        return true;
+                    }
+
+                    if let Some(obj) = self.get_object(ptr) {
+                        self.gc_is_reachable_array(ptr, obj);
+                    }
+                }
+            }
+        }
+        return false;
+    }
     /// Check if a value is reachable
     pub(crate) fn gc_is_reachable(&mut self, ptr: usize) -> bool {
         // Test if the value is in stack
@@ -23,14 +39,8 @@ impl VM {
                         return true;
                     }
 
-                    if let Some(Object::Array(array)) = self.get_object(ptr) {
-                        for value in array.iter() {
-                            if let Value::Object(obj) = value {
-                                if *obj == ptr {
-                                    return true;
-                                }
-                            }
-                        }
+                    if let Some(obj) = self.get_object(ptr) {
+                        self.gc_is_reachable_array(ptr, obj);
                     }
                 }
             }

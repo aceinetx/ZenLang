@@ -179,7 +179,8 @@ impl VM {
                             }
                         }
                         _ => {
-                            self.error = format!("iafs failed: dangling reference");
+                            self.error =
+                                format!("iafs failed: invalid reference: referencing 0x{:?}", obj);
                         }
                     },
                     Value::String(string) => {
@@ -192,9 +193,10 @@ impl VM {
                             return;
                         }
                     }
-                    _ => {}
+                    _ => {
+                        self.error = format!("iafs failed: invalid operand types");
+                    }
                 }
-                self.error = format!("iafs failed: invalid operand types");
             }
             Opcode::Cdfse(names) => {
                 let mut items = Vec::<(String, Value)>::new();
