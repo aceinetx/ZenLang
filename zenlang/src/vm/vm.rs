@@ -77,11 +77,10 @@ impl VM {
 
         for func in module.functions.iter() {
             if func.ctor {
-                self.pc.set_low((func.addr - 1) as u32);
+                self.pc.set_low((func.addr) as u32);
                 self.pc.set_high((self.modules.len() - 1) as u32);
-                self.add_scope();
 
-                loop {
+                while !self.halted {
                     if !self.step() {
                         break;
                     }
@@ -90,6 +89,7 @@ impl VM {
                 self.scopes.clear();
 
                 if !self.error.is_empty() {
+                    self.halted = true;
                     return Err(format!(
                         "in constructor of module {}: {}",
                         module.name, self.error

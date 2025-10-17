@@ -9,6 +9,8 @@ use alloc::string::*;
 pub fn compile_stdlib_module() -> Module {
     let code = String::from(
         r#"
+let File;
+
 fn #[naked] print str {
     vmcall 1;
     return null;
@@ -100,6 +102,16 @@ fn number str {
 fn clone obj {
     return _vmcall_ret_unsafe_2(obj, 19);
 }
+fn #[ctor] stdlib_init {
+    println("ctor");
+    let File = {
+        "read" = read_file,
+        "read_bytes" = read_file_bytes,
+        "write" = write_file, 
+        "write_bytes" = write_file_bytes,
+        "test" = 123
+    };
+}
     "#,
     );
     let mut tokenizer = tokenizer::Tokenizer::new(code);
@@ -152,6 +164,7 @@ fn clone obj {
         "gc".into(),
         module.opcodes.len() as u32,
         0,
+        false,
     ));
     module.opcodes.push(Opcode::Gc());
     module.opcodes.push(Opcode::Ret());
@@ -160,6 +173,7 @@ fn clone obj {
         "gcoff".into(),
         module.opcodes.len() as u32,
         0,
+        false,
     ));
     module.opcodes.push(Opcode::Gcoff());
     module.opcodes.push(Opcode::Ret());
@@ -168,6 +182,7 @@ fn clone obj {
         "gcon".into(),
         module.opcodes.len() as u32,
         0,
+        false,
     ));
     module.opcodes.push(Opcode::Gcon());
     module.opcodes.push(Opcode::Ret());

@@ -1,7 +1,8 @@
 mod stdlib;
-let x;
 
 fn main {
-	let x = [1,2,3];
-	return x;
+	println("main");
+	println(get_ok(File.read("a.zen")));
+	println(File.a);
+	return null;
 }
