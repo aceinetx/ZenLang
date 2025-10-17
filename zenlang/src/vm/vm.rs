@@ -188,6 +188,7 @@ impl VM {
 
     pub fn step(&mut self) -> bool {
         if self.halted {
+            self.gc();
             return false;
         }
 
@@ -195,12 +196,14 @@ impl VM {
         let opcode_index = self.pc.get_low();
         if module_index >= self.modules.len() {
             self.halted = true;
+            self.gc();
             return false;
         }
 
         let opcodes = core::mem::take(&mut self.modules[module_index].opcodes);
         if opcode_index >= opcodes.len() as u32 {
             self.halted = true;
+            self.gc();
             return false;
         }
 
