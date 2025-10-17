@@ -144,5 +144,29 @@ fn clone obj {
     module.opcodes.push(Opcode::Dynvmcall());
     module.opcodes.push(Opcode::Ret());
 
+    module.functions.push(ModuleFunction::new(
+        "gc".into(),
+        module.opcodes.len() as u32,
+        0,
+    ));
+    module.opcodes.push(Opcode::Gc());
+    module.opcodes.push(Opcode::Ret());
+
+    module.functions.push(ModuleFunction::new(
+        "gcoff".into(),
+        module.opcodes.len() as u32,
+        0,
+    ));
+    module.opcodes.push(Opcode::Gcoff());
+    module.opcodes.push(Opcode::Ret());
+
+    module.functions.push(ModuleFunction::new(
+        "gcon".into(),
+        module.opcodes.len() as u32,
+        0,
+    ));
+    module.opcodes.push(Opcode::Gcon());
+    module.opcodes.push(Opcode::Ret());
+
     return module.clone();
 }

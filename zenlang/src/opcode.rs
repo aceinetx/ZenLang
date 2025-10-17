@@ -28,6 +28,9 @@ pub enum Opcode {
     BranchTrue(u32),    // branch stack true (branch if stack value is true)
     BranchNonNull(u32), // branch stack non null
     Branch(u32),        // branch
+    Gc(),               // Do garbage collection
+    Gcoff(),            // Disable automatic garbage collection
+    Gcon(),             // Enable automatic garbage collection
     Add(),
     Sub(),
     Mul(),

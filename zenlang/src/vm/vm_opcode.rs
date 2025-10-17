@@ -302,6 +302,15 @@ impl VM {
                 self.pc.set_low(*addr);
                 self.pc.sub_low(1);
             }
+            Opcode::Gc() => {
+                self.gc();
+            }
+            Opcode::Gcoff() => {
+                self.gc_enabled = true;
+            }
+            Opcode::Gcon() => {
+                self.gc_enabled = true;
+            }
             Opcode::Add() => {
                 let value = self.compute_stack_values(AstBinopOp::PLUS);
                 self.stack.push(value);

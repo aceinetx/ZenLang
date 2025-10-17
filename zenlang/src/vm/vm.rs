@@ -22,6 +22,7 @@ pub struct VM {
     pub platform: Option<Box<dyn Platform>>,
     pub gc_current_countdown: usize,
     pub gc_countdown: usize,
+    pub gc_enabled: bool,
     pub objects: Vec<(usize, Object)>,
     pub(crate) obj_next_addr: usize,
     pub global_scope: Scope,
@@ -43,6 +44,7 @@ impl VM {
             platform: None,
             gc_countdown: 10,
             gc_current_countdown: 10,
+            gc_enabled: true,
             objects: Vec::new(),
             obj_next_addr: 0,
             global_scope: Scope::new(),
@@ -209,7 +211,7 @@ impl VM {
 
         self.pc.add_low(1);
 
-        if self.gc_current_countdown == 0 || !self.error.is_empty() {
+        if (self.gc_current_countdown == 0 || !self.error.is_empty()) && self.gc_enabled {
             self.gc();
             self.gc_current_countdown = self.objects.len() + 5;
         }
