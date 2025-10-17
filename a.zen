@@ -1,15 +1,7 @@
 mod stdlib;
+let x;
 
 fn main {
-	println(array_push([1,2,3], 69)[3]);
-	println(array_pop([1,2,3])[1]);
-	println(array_size([1,2,3]));
-	println(array_insert([1,2,3], 1, 69)[1]);
-	println(array_remove([1,2,3], 1)[1]);
-	if let text = get_ok(read_file("a.zen")) {
-		println(text);
-	}
-	if let b = get_ok(read_file_bytes("a.zen")) {
-		println(b);
-	}
+	let x = [1,2,3];
+	return x;
 }
