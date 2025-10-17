@@ -116,6 +116,7 @@ fn clone obj {
         "_vmcall_ret_unsafe_1".into(),
         module.opcodes.len() as u32,
         1,
+        false,
     ));
     module.opcodes.push(Opcode::Dynvmcall());
     module.opcodes.push(Opcode::Ret());
@@ -124,6 +125,7 @@ fn clone obj {
         "_vmcall_ret_unsafe_2".into(),
         module.opcodes.len() as u32,
         2,
+        false,
     ));
     module.opcodes.push(Opcode::Dynvmcall());
     module.opcodes.push(Opcode::Ret());
@@ -132,6 +134,7 @@ fn clone obj {
         "_vmcall_ret_unsafe_3".into(),
         module.opcodes.len() as u32,
         3,
+        false,
     ));
     module.opcodes.push(Opcode::Dynvmcall());
     module.opcodes.push(Opcode::Ret());
@@ -140,6 +143,7 @@ fn clone obj {
         "_vmcall_ret_unsafe_4".into(),
         module.opcodes.len() as u32,
         4,
+        false,
     ));
     module.opcodes.push(Opcode::Dynvmcall());
     module.opcodes.push(Opcode::Ret());

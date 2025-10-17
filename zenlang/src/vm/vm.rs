@@ -56,7 +56,37 @@ impl VM {
     }
 
     pub fn load_module(&mut self, module: &Module) -> Result<(), String> {
+        // check if already loaded
+        for m in self.modules.iter_mut() {
+            if m.name == module.name {
+                return Ok(());
+            }
+        }
+
         self.modules.push(module.clone());
+
+        for func in module.functions.iter() {
+            if func.ctor {
+                self.check_stack_overflow();
+                self.pc.set_low(func.addr);
+                self.pc.set_high((self.modules.len() - 1) as u32);
+                self.add_scope();
+
+                loop {
+                    if !self.step() {
+                        break;
+                    }
+                }
+
+                if !self.error.is_empty() {
+                    return Err(format!(
+                        "in constructor of module {}: {}",
+                        module.name, self.error
+                    ));
+                }
+                self.halted = false;
+            }
+        }
 
         for var in module.globals.iter() {
             if self.global_scope.get(var).is_some() {

@@ -65,10 +65,12 @@ impl Compile for AstFunction {
         let module = compiler.get_module();
         {
             let name = self.name.to_string();
+            let ctor = self.attrs.contains(&FunctionAttribute::Ctor);
             module.functions.push(ModuleFunction::new(
                 name,
                 module.opcodes.len() as u32,
                 self.args.len() as u64,
+                ctor,
             ));
         }
 

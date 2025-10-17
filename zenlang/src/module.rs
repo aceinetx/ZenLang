@@ -21,14 +21,17 @@ pub struct ModuleFunction {
     pub addr: u32,
     /// Argument count
     pub args_count: u64,
+    /// Is a constructor function
+    pub ctor: bool,
 }
 
 impl ModuleFunction {
-    pub fn new(name: String, addr: u32, args_count: u64) -> ModuleFunction {
+    pub fn new(name: String, addr: u32, args_count: u64, ctor: bool) -> ModuleFunction {
         return ModuleFunction {
             name: name,
             addr: addr,
             args_count: args_count,
+            ctor: ctor,
         };
     }
 }
