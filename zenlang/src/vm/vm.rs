@@ -65,6 +65,16 @@ impl VM {
 
         self.modules.push(module.clone());
 
+        for var in module.globals.iter() {
+            if self.global_scope.get(var).is_some() {
+                return Err(format!(
+                    "multiple definition of global {} (second definition in module {})",
+                    var, module.name
+                ));
+            }
+            self.global_scope.create_if_doesnt_exist(var);
+        }
+
         for func in module.functions.iter() {
             if func.ctor {
                 self.check_stack_overflow();
@@ -86,16 +96,6 @@ impl VM {
                 }
                 self.halted = false;
             }
-        }
-
-        for var in module.globals.iter() {
-            if self.global_scope.get(var).is_some() {
-                return Err(format!(
-                    "multiple definition of global {} (second definition in module {})",
-                    var, module.name
-                ));
-            }
-            self.global_scope.create_if_doesnt_exist(var);
         }
 
         for dependency in module.dependencies.iter() {
