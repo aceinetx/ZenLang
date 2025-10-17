@@ -77,7 +77,7 @@ impl VM {
 
         for func in module.functions.iter() {
             if func.ctor {
-                self.pc.set_low((func.addr) as u32);
+                self.pc.set_low(func.addr as u32);
                 self.pc.set_high((self.modules.len() - 1) as u32);
 
                 while !self.halted {
