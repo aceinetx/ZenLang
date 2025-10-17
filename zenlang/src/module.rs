@@ -46,6 +46,8 @@ pub struct Module {
     pub functions: Vec<ModuleFunction>,
     /// Opcodes of the module (entire code)
     pub opcodes: Vec<Opcode>,
+    /// Global variables
+    pub globals: Vec<String>,
 }
 
 impl Module {
@@ -55,6 +57,7 @@ impl Module {
             functions: Vec::new(),
             dependencies: Vec::new(),
             name: String::new(),
+            globals: Vec::new(),
         };
     }
 

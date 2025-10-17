@@ -16,6 +16,7 @@ pub mod elif_stmt;
 pub mod else_stmt;
 pub mod func_call;
 pub mod function;
+pub mod global_var;
 pub mod if_chain;
 pub mod if_stmt;
 pub mod mod_stmt;
