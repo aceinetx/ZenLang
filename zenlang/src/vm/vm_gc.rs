@@ -75,6 +75,23 @@ impl VM {
         }
         self.scopes = scopes;
 
+        // Test if the value is in global scope
+        let global_scope = core::mem::take(&mut self.global_scope);
+        for var in global_scope.vars.iter() {
+            if let Value::Object(obj) = var.1 {
+                if obj == ptr {
+                    self.global_scope = global_scope;
+                    return true;
+                }
+
+                if self.gc_is_reachable_obj(ptr, obj) {
+                    self.global_scope = global_scope;
+                    return true;
+                }
+            }
+        }
+        self.global_scope = global_scope;
+
         // Unreachable
         return false;
     }
