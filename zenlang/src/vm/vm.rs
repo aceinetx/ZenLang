@@ -21,6 +21,7 @@ pub struct VM {
     pub ret: Value,
     pub platform: Option<Box<dyn Platform>>,
     pub global_scope: Scope,
+    pub halted: bool,
     pub(crate) bfas_stack_start: Vec<i64>,
     pub(crate) bfas_stack_end: Vec<i64>,
 }
@@ -38,6 +39,7 @@ impl VM {
             ret: Value::Null(),
             platform: None,
             global_scope: Scope::new(),
+            halted: false,
             bfas_stack_start: Vec::new(),
             bfas_stack_end: Vec::new(),
         };
@@ -136,19 +138,19 @@ impl VM {
     }
 
     pub fn step(&mut self) -> bool {
-        if !self.error.is_empty() {
+        if self.halted {
             return false;
         }
 
         let module_index = self.pc.get_high() as usize;
         let opcode_index = self.pc.get_low();
         if module_index >= self.modules.len() {
-            return false;
+            self.halted = true;
         }
 
         let opcodes = core::mem::take(&mut self.modules[module_index].opcodes);
         if opcode_index >= opcodes.len() as u32 {
-            return false;
+            self.halted = true;
         }
 
         let opcode = &opcodes[opcode_index as usize];
