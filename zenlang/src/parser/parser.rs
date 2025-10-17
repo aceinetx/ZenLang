@@ -215,6 +215,20 @@ impl<'a> Parser<'_> {
                         return Err(e);
                     }
                 }
+                Token::Let => {
+                    let mut node = global_var::AstGlobalVar::new();
+                    if let Token::Identifier(name) = self.next() {
+                        node.name = name;
+                    } else {
+                        return Err(self.error("expected identifier after global let"));
+                    }
+
+                    if !matches!(self.next(), Token::Semicolon) {
+                        return Err(self.error("expected semicolon after global let <name>"));
+                    }
+
+                    self.root.children.push(Box::new(node));
+                }
                 Token::Mod => {
                     let mut node = mod_stmt::AstMod::new();
                     if let Token::Identifier(name) = self.next() {

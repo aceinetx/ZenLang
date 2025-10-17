@@ -75,13 +75,18 @@ impl VM {
                 self.check_stack_overflow();
             }
             Opcode::LoadVar(name) => {
-                // do something with the clone here
                 if let Some(scope) = self.scopes.last() {
                     if let Some(value) = scope.get(name) {
                         self.stack.push(value.clone());
                         self.check_stack_overflow();
                         return;
                     }
+                }
+
+                if let Some(value) = self.global_scope.get(name) {
+                    self.stack.push(value.clone());
+                    self.check_stack_overflow();
+                    return;
                 }
 
                 for module_i in 0..self.modules.len() {
@@ -102,6 +107,11 @@ impl VM {
             Opcode::StoreVar(name) => {
                 // do something with the clone here
                 if let Some(store_value) = self.stack.pop() {
+                    if let Some(value) = self.global_scope.get_mut(name) {
+                        *value = store_value;
+                        return;
+                    }
+
                     if let Some(scope) = self.scopes.last_mut() {
                         scope.create_if_doesnt_exist(name);
                         if let Some(value) = scope.get_mut(name) {
