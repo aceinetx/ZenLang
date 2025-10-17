@@ -377,13 +377,12 @@ impl VM {
                 if !self.call_stack.is_empty() {
                     self.pc = self.call_stack.pop().unwrap();
                 } else {
-                    self.pc.set_high(u32::MAX);
-
                     if let Value::Object(ret) = self.ret {
                         if self.get_object(ret).is_some() {
                             self.remove_object(ret);
                         }
                     }
+                    self.halted = true;
                 }
             }
         }

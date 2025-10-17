@@ -26,6 +26,7 @@ pub struct VM {
     pub objects: Vec<(usize, Object)>,
     pub(crate) obj_next_addr: usize,
     pub global_scope: Scope,
+    pub halted: bool,
     pub(crate) bfas_stack_start: Vec<i64>,
     pub(crate) bfas_stack_end: Vec<i64>,
 }
@@ -48,6 +49,7 @@ impl VM {
             objects: Vec::new(),
             obj_next_addr: 0,
             global_scope: Scope::new(),
+            halted: false,
             bfas_stack_start: Vec::new(),
             bfas_stack_end: Vec::new(),
         };
@@ -185,21 +187,20 @@ impl VM {
     }
 
     pub fn step(&mut self) -> bool {
-        if !self.error.is_empty() {
-            self.gc();
+        if self.halted {
             return false;
         }
 
         let module_index = self.pc.get_high() as usize;
         let opcode_index = self.pc.get_low();
         if module_index >= self.modules.len() {
-            self.gc();
+            self.halted = true;
             return false;
         }
 
         let opcodes = core::mem::take(&mut self.modules[module_index].opcodes);
         if opcode_index >= opcodes.len() as u32 {
-            self.gc();
+            self.halted = true;
             return false;
         }
 
