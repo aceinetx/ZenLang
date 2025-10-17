@@ -2,7 +2,6 @@ mod stdlib;
 
 fn main {
 	println(get_ok(File.read("a.zen")));
-	File.write("a", "hello");
 
 	Gc.off();
 	Gc.on();
