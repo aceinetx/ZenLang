@@ -79,6 +79,7 @@ impl VM {
             if func.ctor {
                 self.pc.set_low(func.addr as u32);
                 self.pc.set_high((self.modules.len() - 1) as u32);
+                self.add_scope();
 
                 while !self.halted {
                     if !self.step() {

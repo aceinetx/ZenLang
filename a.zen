@@ -1,8 +1,12 @@
 mod stdlib;
 
 fn main {
-	println("main");
 	println(get_ok(File.read("a.zen")));
-	println(File.a);
+	File.write("a", "hello");
+
+	Gc.off();
+	Gc.on();
+	Gc.collect();
+
 	return null;
 }

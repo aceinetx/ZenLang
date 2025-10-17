@@ -10,6 +10,7 @@ pub fn compile_stdlib_module() -> Module {
     let code = String::from(
         r#"
 let File;
+let Gc;
 
 fn #[naked] print str {
     vmcall 1;
@@ -109,7 +110,11 @@ fn #[ctor] stdlib_init {
         "read_bytes" = read_file_bytes,
         "write" = write_file, 
         "write_bytes" = write_file_bytes,
-        "test" = 123
+    };
+    let Gc = {
+        "collect" = gc,
+        "off" = gcoff,
+        "on" = gcon,
     };
 }
     "#,
