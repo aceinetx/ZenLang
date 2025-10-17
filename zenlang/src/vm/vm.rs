@@ -67,8 +67,7 @@ impl VM {
 
         for func in module.functions.iter() {
             if func.ctor {
-                self.check_stack_overflow();
-                self.pc.set_low(func.addr);
+                self.pc.set_low((func.addr - 1) as u32);
                 self.pc.set_high((self.modules.len() - 1) as u32);
                 self.add_scope();
 
@@ -77,6 +76,8 @@ impl VM {
                         break;
                     }
                 }
+
+                self.scopes.clear();
 
                 if !self.error.is_empty() {
                     return Err(format!(
