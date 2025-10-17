@@ -20,6 +20,7 @@ pub struct VM {
     pub error: String,
     pub ret: Value,
     pub platform: Option<Box<dyn Platform>>,
+    pub global_scope: Scope,
     pub(crate) bfas_stack_start: Vec<i64>,
     pub(crate) bfas_stack_end: Vec<i64>,
 }
@@ -36,6 +37,7 @@ impl VM {
             error: String::new(),
             ret: Value::Null(),
             platform: None,
+            global_scope: Scope::new(),
             bfas_stack_start: Vec::new(),
             bfas_stack_end: Vec::new(),
         };
@@ -43,6 +45,16 @@ impl VM {
 
     pub fn load_module(&mut self, module: &Module) -> Result<(), String> {
         self.modules.push(module.clone());
+
+        for var in module.globals.iter() {
+            if self.global_scope.get(var).is_some() {
+                return Err(format!(
+                    "multiple definition of global {} (second definition in module {})",
+                    var, module.name
+                ));
+            }
+            self.global_scope.create_if_doesnt_exist(var);
+        }
 
         for dependency in module.dependencies.iter() {
             let name = dependency.to_string();

@@ -26,6 +26,7 @@ impl Compile for AstGlobalVar {
         compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
         let module = compiler.get_module();
+        module.globals.push(self.name.clone());
         Ok(())
     }
 }
