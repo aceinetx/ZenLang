@@ -199,7 +199,7 @@ impl VM {
 
         if self.gc_current_countdown == 0 || !self.error.is_empty() {
             self.gc();
-            self.gc_current_countdown = self.gc_countdown;
+            self.gc_current_countdown = self.objects.len() + 5;
         }
         self.gc_current_countdown -= 1;
 
