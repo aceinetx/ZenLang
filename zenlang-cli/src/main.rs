@@ -14,11 +14,8 @@ fn run_vm(vm: &mut vm::VM) {
     }
     //println!("{:?}", vm.modules);
 
-    loop {
-        if !vm.step() {
-            break;
-        }
-    }
+    vm.run_until_halt();
+
     if !vm.error.is_empty() {
         let mut pc = vm.pc;
         pc.sub_low(1);

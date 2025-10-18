@@ -27,11 +27,7 @@ fn expect_to_return(code: String, value: Value) {
         assert_eq!(e, "");
     }
 
-    loop {
-        if !vm.step() {
-            break;
-        }
-    }
+    vm.run_until_halt();
 
     println!("vm.ret: {:?}", vm.ret);
     assert_eq!(vm.error, "");
@@ -56,11 +52,7 @@ fn expect_to_return_obj(code: String, object: Object) {
         assert_eq!(e, "");
     }
 
-    loop {
-        if !vm.step() {
-            break;
-        }
-    }
+    vm.run_until_halt();
 
     println!("vm.ret: {}", vm.ret);
     assert_eq!(vm.error, "");

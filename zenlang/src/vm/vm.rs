@@ -167,6 +167,12 @@ impl VM {
         return None;
     }
 
+    pub fn run_until_halt(&mut self) {
+        while !self.halted {
+            self.step();
+        }
+    }
+
     pub fn step(&mut self) -> bool {
         if self.halted {
             return false;
