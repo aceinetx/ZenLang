@@ -10,7 +10,6 @@ pub fn compile_stdlib_module() -> Module {
     let code = String::from(
         r#"
 let File;
-let Gc;
 
 fn #[naked] print str {
     vmcall 1;
@@ -51,6 +50,9 @@ fn array_count array element {
     }
     return count;
 }
+fn array_last array {
+    return array[array_size(array) - 1];
+}
 fn str_split str delimiter {
     return _vmcall_ret_unsafe_3(str, delimiter, 10);
 }
@@ -65,9 +67,6 @@ fn get_err result {
 }
 fn get_ok result {
     return result._ok;
-}
-fn array_last array {
-    return array[array_size(array) - 1];
 }
 fn read_file_bytes path {
     if let bytes = _vmcall_ret_unsafe_2(path, 11){
