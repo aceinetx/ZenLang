@@ -4,8 +4,10 @@ use crate::strong_u64::U64BitsControl;
 use crate::value::*;
 use crate::vm::*;
 use alloc::format;
+use alloc::rc::*;
 use alloc::string::*;
 use alloc::vec::*;
+use core::cell::*;
 
 impl VM {
     pub(crate) fn execute_opcode(&mut self, opcode: &Opcode) {
@@ -141,8 +143,10 @@ impl VM {
                         return;
                     }
                 }
-                let obj = Object::Array(vec);
-                let v = Value::Object(self.add_object(obj));
+                let obj = Rc::new(RefCell::new(Object::Array(vec)));
+
+                let v = Value::Object(obj);
+
                 self.stack.push(v);
             }
             Opcode::Iafs() => {
@@ -162,8 +166,8 @@ impl VM {
                 }
 
                 match array {
-                    Value::Object(obj) => match self.get_object(obj) {
-                        Some(Object::Array(array)) => {
+                    Value::Object(obj) => match &*obj.borrow() {
+                        Object::Array(array) => {
                             if let Value::Number(index) = index {
                                 let usize_index = index as usize;
                                 if usize_index >= array.len() {
@@ -175,7 +179,7 @@ impl VM {
                                 return;
                             }
                         }
-                        Some(Object::Dictionary(dict)) => {
+                        Object::Dictionary(dict) => {
                             if let Value::String(index) = index {
                                 for element in dict.iter() {
                                     if element.0 == index {
@@ -186,10 +190,6 @@ impl VM {
                                 self.stack.push(Value::Null());
                                 return;
                             }
-                        }
-                        _ => {
-                            self.error =
-                                format!("iafs failed: invalid reference: referencing 0x{:?}", obj);
                         }
                     },
                     Value::String(string) => {
@@ -222,8 +222,8 @@ impl VM {
                     }
                 }
 
-                let obj = Object::Dictionary(items);
-                let v = Value::Object(self.add_object(obj));
+                let obj = Rc::new(RefCell::new(Object::Dictionary(items)));
+                let v = Value::Object(obj);
                 self.stack.push(v);
             }
             Opcode::Aiafs() => {
@@ -302,15 +302,6 @@ impl VM {
                 self.pc.set_low(*addr);
                 self.pc.sub_low(1);
             }
-            Opcode::Gc() => {
-                self.gc();
-            }
-            Opcode::Gcoff() => {
-                self.gc_enabled = true;
-            }
-            Opcode::Gcon() => {
-                self.gc_enabled = true;
-            }
             Opcode::Add() => {
                 let value = self.compute_stack_values(AstBinopOp::PLUS);
                 self.stack.push(value);
@@ -377,11 +368,6 @@ impl VM {
                 if !self.call_stack.is_empty() {
                     self.pc = self.call_stack.pop().unwrap();
                 } else {
-                    if let Value::Object(ret) = self.ret {
-                        if self.get_object(ret).is_some() {
-                            self.remove_object(ret);
-                        }
-                    }
                     self.halted = true;
                 }
             }

@@ -41,7 +41,6 @@ fn main {
 
     println!("{}", vm.ret);
     assert_eq!(vm.error, "");
-    assert!(vm.objects.is_empty());
     assert!(matches!(vm.ret, Value::Number(1.0)));
 }
 
@@ -82,7 +81,6 @@ fn main {
 
     println!("{}", vm.ret);
     assert_eq!(vm.error, "");
-    assert!(vm.objects.is_empty());
     assert!(matches!(vm.ret, Value::Number(1.0)));
 }
 
@@ -123,6 +121,5 @@ fn main {
 
     println!("{}", vm.ret);
     assert_eq!(vm.error, "");
-    assert!(vm.objects.is_empty());
     assert!(matches!(vm.ret, Value::Number(69.0)));
 }

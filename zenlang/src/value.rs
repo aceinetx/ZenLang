@@ -3,8 +3,10 @@
 //! ZenLang variable value
 use crate::strong_u64::U64BitsControl;
 use crate::vm::VM;
+use alloc::rc::*;
 use alloc::string::*;
 use alloc::vec::*;
+use core::cell::RefCell;
 use core::fmt::Display;
 
 /// Object
@@ -21,7 +23,7 @@ pub enum Value {
     String(String),
     Boolean(bool),
     FunctionRef(u64, u64),
-    Object(usize),
+    Object(Rc<RefCell<Object>>),
     Null(),
 }
 
@@ -73,8 +75,8 @@ impl Value {
             (Value::String(a), Value::String(b)) => a == b,
             (Value::Boolean(a), Value::Boolean(b)) => a == b,
             (Value::Object(obja), Value::Object(objb)) => {
-                match (vm.get_object(*obja), vm.get_object(*objb)) {
-                    (Some(Object::Array(a)), Some(Object::Array(b))) => {
+                match (&*obja.borrow(), &*objb.borrow()) {
+                    (Object::Array(a), Object::Array(b)) => {
                         if a.len() != b.len() {
                             return false;
                         }
@@ -85,7 +87,7 @@ impl Value {
                         }
                         return true;
                     }
-                    (Some(Object::Dictionary(a)), Some(Object::Dictionary(b))) => {
+                    (Object::Dictionary(a), Object::Dictionary(b)) => {
                         if a.len() != b.len() {
                             return false;
                         }
@@ -127,8 +129,8 @@ impl Display for Value {
                 return write!(f, "{}", boolean);
             }
             Value::Object(obj) => {
-                return write!(f, "[object at 0x{:x}]", obj);
-                /*                match obj.read() {
+                //return write!(f, "[object at 0x{:x}]", obj.as_ptr() as u64);
+                match &*obj.borrow() {
                     Object::Array(array) => {
                         let _ = write!(f, "[");
 
@@ -171,7 +173,6 @@ impl Display for Value {
                         Ok(())
                     }
                 }
-                */
             }
             Value::FunctionRef(addr, args_count) => {
                 return write!(

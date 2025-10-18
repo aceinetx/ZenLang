@@ -9,8 +9,8 @@ impl VM {
     /// The reason it's in a function (not in execute_opcode) is because it needs to be recursive
     pub(crate) fn aiafs(&mut self, value: &mut Value, set_to: Value, index: Value) {
         match value {
-            Value::Object(obj) => match self.get_object_mut(*obj) {
-                Some(Object::Array(array)) => {
+            Value::Object(obj) => match &mut *obj.borrow_mut() {
+                Object::Array(array) => {
                     let usz_index: usize;
                     if let Value::Number(index) = index {
                         usz_index = index as usize;
@@ -30,7 +30,7 @@ impl VM {
 
                     array[usz_index] = set_to;
                 }
-                Some(Object::Dictionary(dict)) => {
+                Object::Dictionary(dict) => {
                     let s_index: String;
                     if let Value::String(s) = index {
                         s_index = s;
@@ -48,10 +48,6 @@ impl VM {
                     }
 
                     dict.push((s_index, set_to));
-                }
-                _ => {
-                    self.error =
-                        format!("aiafs failed: invalid reference: referencing 0x{:x}", *obj);
                 }
             },
             _ => {

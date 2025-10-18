@@ -1,7 +1,10 @@
+use core::cell::RefCell;
+
 use crate::interop::*;
 use crate::value::*;
 use crate::vm::*;
 use alloc::format;
+use alloc::rc::Rc;
 use alloc::string::*;
 use alloc::vec::*;
 
@@ -66,7 +69,7 @@ impl VM {
                 // array size
                 if let Some(value) = self.stack.pop() {
                     if let Value::Object(obj) = value {
-                        if let Some(Object::Array(array)) = self.get_object(obj) {
+                        if let Object::Array(array) = &*obj.borrow() {
                             self.stack.push(Value::Number(array.len() as f64));
                         } else {
                             self.error = "vmcall: expected an array".into();
@@ -92,7 +95,7 @@ impl VM {
 
                 if let Some(value) = self.stack.pop() {
                     if let Value::Object(obj) = value {
-                        if let Some(Object::Array(value)) = self.get_object(obj) {
+                        if let Object::Array(value) = &*obj.borrow() {
                             array = value.clone();
                         } else {
                             self.error = "vmcall: expected an array".into();
@@ -108,7 +111,7 @@ impl VM {
                 }
 
                 array.push(element);
-                let ptr = self.add_object(Object::Array(array));
+                let ptr = Rc::new(RefCell::new(Object::Array(array)));
                 self.stack.push(Value::Object(ptr));
             }
             7 => {
@@ -117,7 +120,7 @@ impl VM {
 
                 if let Some(value) = self.stack.pop() {
                     if let Value::Object(obj) = value {
-                        if let Some(Object::Array(value)) = self.get_object(obj) {
+                        if let Object::Array(value) = &*obj.borrow() {
                             array = value.clone();
                         } else {
                             self.error = "vmcall: expected an array".into();
@@ -133,7 +136,7 @@ impl VM {
                 }
 
                 array.pop();
-                let ptr = self.add_object(Object::Array(array));
+                let ptr = Rc::new(RefCell::new(Object::Array(array)));
                 self.stack.push(Value::Object(ptr));
             }
             8 => {
@@ -155,7 +158,7 @@ impl VM {
 
                 if let Some(value) = self.stack.pop() {
                     if let Value::Object(obj) = value {
-                        if let Some(Object::Array(value)) = self.get_object(obj) {
+                        if let Object::Array(value) = &*obj.borrow() {
                             array = value.clone();
                         } else {
                             self.error = "vmcall: expected an array".into();
@@ -176,7 +179,7 @@ impl VM {
                 }
 
                 array.remove(at);
-                let ptr = self.add_object(Object::Array(array));
+                let ptr = Rc::new(RefCell::new(Object::Array(array)));
                 self.stack.push(Value::Object(ptr));
             }
             9 => {
@@ -206,7 +209,7 @@ impl VM {
 
                 if let Some(value) = self.stack.pop() {
                     if let Value::Object(obj) = value {
-                        if let Some(Object::Array(value)) = self.get_object(obj) {
+                        if let Object::Array(value) = &*obj.borrow() {
                             array = value.clone();
                         } else {
                             self.error = "vmcall: expected an array".into();
@@ -226,7 +229,7 @@ impl VM {
                     return;
                 }
                 array.insert(at, element);
-                let ptr = self.add_object(Object::Array(array));
+                let ptr = Rc::new(RefCell::new(Object::Array(array)));
                 self.stack.push(Value::Object(ptr));
             }
             10 => {
@@ -263,7 +266,7 @@ impl VM {
                     array.push(Value::String(String::from(part)))
                 }
 
-                let ptr = self.add_object(Object::Array(array));
+                let ptr = Rc::new(RefCell::new(Object::Array(array)));
                 self.stack.push(Value::Object(ptr));
             }
             11 => {
@@ -289,7 +292,7 @@ impl VM {
                             array.push(Value::Number(byte as f64));
                         }
 
-                        let ptr = self.add_object(Object::Array(array));
+                        let ptr = Rc::new(RefCell::new(Object::Array(array)));
                         self.stack.push(Value::Object(ptr));
                     } else {
                         self.stack.push(Value::Null());
@@ -332,7 +335,7 @@ impl VM {
 
                 if let Some(value) = self.stack.pop() {
                     if let Value::Object(obj) = value {
-                        if let Some(Object::Array(array)) = self.get_object(obj) {
+                        if let Object::Array(array) = &*obj.borrow() {
                             for value in array.iter() {
                                 if let Value::Number(byte) = value {
                                     bytes.push(*byte as u8);
@@ -482,15 +485,9 @@ impl VM {
                 // clone
                 if let Some(value) = self.stack.pop() {
                     if let Value::Object(obj) = value {
-                        if let Some(obj) = self.get_object(obj) {
-                            let new = self.add_object(obj.clone());
-                            self.stack.push(Value::Object(new));
-                        } else {
-                            self.error =
-                                format!("vmcall: invalid reference: referencing 0x{:?}", obj)
-                                    .into();
-                            return;
-                        }
+                        let obj = &*obj.borrow();
+                        let new = Rc::new(RefCell::new(obj.clone()));
+                        self.stack.push(Value::Object(new));
                     } else {
                         self.error = "vmcall: expected an object".into();
                         return;

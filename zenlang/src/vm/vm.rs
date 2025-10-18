@@ -20,11 +20,6 @@ pub struct VM {
     pub error: String,
     pub ret: Value,
     pub platform: Option<Box<dyn Platform>>,
-    pub gc_current_countdown: usize,
-    pub gc_countdown: usize,
-    pub gc_enabled: bool,
-    pub objects: Vec<(usize, Object)>,
-    pub(crate) obj_next_addr: usize,
     pub global_scope: Scope,
     pub halted: bool,
     pub(crate) bfas_stack_start: Vec<i64>,
@@ -43,11 +38,6 @@ impl VM {
             error: String::new(),
             ret: Value::Null(),
             platform: None,
-            gc_countdown: 10,
-            gc_current_countdown: 10,
-            gc_enabled: true,
-            objects: Vec::new(),
-            obj_next_addr: 0,
             global_scope: Scope::new(),
             halted: false,
             bfas_stack_start: Vec::new(),
@@ -179,48 +169,8 @@ impl VM {
         return None;
     }
 
-    pub fn get_object(&self, ptr: usize) -> Option<&Object> {
-        for pair in self.objects.iter() {
-            if pair.0 == ptr {
-                return Some(&pair.1);
-            }
-        }
-        return None;
-    }
-
-    pub fn get_object_mut(&mut self, ptr: usize) -> Option<&mut Object> {
-        for pair in self.objects.iter_mut() {
-            if pair.0 == ptr {
-                return Some(&mut pair.1);
-            }
-        }
-        return None;
-    }
-
-    pub fn add_object(&mut self, obj: Object) -> usize {
-        self.objects.push((self.obj_next_addr, obj));
-        self.obj_next_addr += 1;
-        return self.obj_next_addr - 1;
-    }
-
-    pub fn remove_object(&mut self, ptr: usize) {
-        if self.get_object(ptr).is_none() {
-            self.error = format!("trying to remove an object at 0x{:x} (doesn't exist)", ptr);
-            return;
-        }
-        let mut idx: usize = 0;
-        for (i, pair) in self.objects.iter_mut().enumerate() {
-            if pair.0 == ptr {
-                idx += i;
-                break;
-            }
-        }
-        self.objects.remove(idx);
-    }
-
     pub fn step(&mut self) -> bool {
         if self.halted {
-            self.gc();
             return false;
         }
 
@@ -228,14 +178,12 @@ impl VM {
         let opcode_index = self.pc.get_low();
         if module_index >= self.modules.len() {
             self.halted = true;
-            self.gc();
             return false;
         }
 
         let opcodes = core::mem::take(&mut self.modules[module_index].opcodes);
         if opcode_index >= opcodes.len() as u32 {
             self.halted = true;
-            self.gc();
             return false;
         }
 
@@ -246,12 +194,6 @@ impl VM {
         self.modules[module_index].opcodes = opcodes;
 
         self.pc.add_low(1);
-
-        if (self.gc_current_countdown == 0 || !self.error.is_empty()) && self.gc_enabled {
-            self.gc();
-            self.gc_current_countdown = self.objects.len() + 5;
-        }
-        self.gc_current_countdown -= 1;
 
         return true;
     }

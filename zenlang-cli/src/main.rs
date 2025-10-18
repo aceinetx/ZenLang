@@ -40,16 +40,6 @@ fn run_vm(vm: &mut vm::VM) {
     } else {
         println!("no values leaked on stack");
     }
-
-    if !vm.objects.is_empty() {
-        println!("leaked {} objects!", vm.objects.len());
-        println!("objects:");
-        for pair in vm.objects.iter() {
-            println!("  {:?}", pair.1);
-        }
-    } else {
-        println!("no objects leaked");
-    }
 }
 
 fn run_code(code: String, module_name: String) {

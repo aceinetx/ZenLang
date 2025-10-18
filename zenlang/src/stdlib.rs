@@ -110,11 +110,6 @@ fn #[ctor] stdlib_init {
         "write" = write_file, 
         "write_bytes" = write_file_bytes,
     };
-    let Gc = {
-        "collect" = gc,
-        "off" = gcoff,
-        "on" = gcon,
-    };
 }
     "#,
     );
@@ -162,33 +157,6 @@ fn #[ctor] stdlib_init {
         false,
     ));
     module.opcodes.push(Opcode::Dynvmcall());
-    module.opcodes.push(Opcode::Ret());
-
-    module.functions.push(ModuleFunction::new(
-        "gc".into(),
-        module.opcodes.len() as u32,
-        0,
-        false,
-    ));
-    module.opcodes.push(Opcode::Gc());
-    module.opcodes.push(Opcode::Ret());
-
-    module.functions.push(ModuleFunction::new(
-        "gcoff".into(),
-        module.opcodes.len() as u32,
-        0,
-        false,
-    ));
-    module.opcodes.push(Opcode::Gcoff());
-    module.opcodes.push(Opcode::Ret());
-
-    module.functions.push(ModuleFunction::new(
-        "gcon".into(),
-        module.opcodes.len() as u32,
-        0,
-        false,
-    ));
-    module.opcodes.push(Opcode::Gcon());
     module.opcodes.push(Opcode::Ret());
 
     return module.clone();
