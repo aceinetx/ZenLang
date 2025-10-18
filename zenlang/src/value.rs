@@ -160,6 +160,10 @@ impl Display for Value {
                         let _ = write!(f, "{{");
 
                         for pair in dict.iter() {
+                            if pair.0 == "_typename" {
+                                continue;
+                            }
+
                             let _ = write!(f, "{} = ", pair.0);
 
                             if let Value::String(_) = pair.1 {
@@ -168,7 +172,8 @@ impl Display for Value {
                                 let _ = write!(f, "{}", pair.1);
                             }
 
-                            if pair.0 != dict.iter().last().unwrap().0 {
+                            let last = dict.iter().last().unwrap();
+                            if pair.0 != last.0 && last.0 != "_typename" {
                                 let _ = write!(f, ", ");
                             }
                         }

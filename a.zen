@@ -1,0 +1,5 @@
+mod stdlib;
+
+fn main {
+    return File.read("a.zen");
+}
