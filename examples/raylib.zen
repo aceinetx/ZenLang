@@ -1,0 +1,34 @@
+// This example only works on linux
+mod stdlib;
+mod ffi;
+
+let raylib_lib;
+
+fn InitWindow width height title {
+    let args = FFI.bind_args(["int", "int", "str"], [width, height, title]);
+    return null;
+}
+
+fn CloseWindow {
+    let args = FFI.bind_args([], []);
+    return null;
+}
+
+fn main {
+    let raylib_lib = FFI.Lib.load("libraylib.so");
+    if let index = get_ok(raylib_lib){
+        let raylib_lib = index;
+    } elif let error = get_err(raylib_lib) {
+        print("error loading raylib: ");
+        println(error);
+        return null;
+    }
+    println(raylib_lib);
+    
+    InitWindow(800, 600, "Hello from ZenLang");
+    CloseWindow();
+
+    FFI.Lib.unload(raylib_lib);
+
+    return null;
+}

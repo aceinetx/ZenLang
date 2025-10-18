@@ -18,7 +18,7 @@ pub trait Platform {
     }
     fn read_file_bytes(&self, name: String) -> Option<Vec<u8>>;
     fn write_file_bytes(&self, name: String, bytes: Vec<u8>);
-    fn vmcall(&self, _vm: &mut VM, _index: u8) -> bool {
+    fn vmcall(&mut self, _vm: &mut VM, _index: u8) -> bool {
         return false;
     }
 }

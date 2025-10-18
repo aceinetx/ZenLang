@@ -5,3 +5,5 @@ edition = "2024"
 
 [dependencies]
 zenlang = { path = "../zenlang" }
+[target.'cfg(target_os = "linux")'.dependencies]
+dlopen = "0.1.8"
