@@ -3,6 +3,7 @@
 //! ZenLang variable value
 use crate::strong_u64::U64BitsControl;
 use crate::vm::VM;
+use alloc::collections::btree_map::BTreeMap;
 use alloc::rc::*;
 use alloc::string::*;
 use alloc::vec::*;
@@ -13,7 +14,7 @@ use core::fmt::Display;
 #[derive(Clone, Debug)]
 pub enum Object {
     Array(Vec<Value>),
-    Dictionary(Vec<(String, Value)>),
+    Dictionary(BTreeMap<String, Value>),
 }
 
 /// Value
@@ -92,14 +93,15 @@ impl Value {
                             return false;
                         }
 
-                        for i in 0..a.len() {
-                            if a[i].0 != b[i].0 {
+                        for pair in a.iter() {
+                            if !b.contains_key(pair.0) {
                                 return false;
                             }
-                            if !a[i].1.equal(&b[i].1, vm) {
+                            if !pair.1.equal(&b[pair.0], vm) {
                                 return false;
                             }
                         }
+
                         return true;
                     }
                     _ => return false,
@@ -151,20 +153,22 @@ impl Display for Value {
                         Ok(())
                     }
                     Object::Dictionary(dict) => {
+                        if dict.contains_key("_typename".into()) {
+                            let _ = write!(f, "{} ", dict.get("_typename").unwrap());
+                        }
+
                         let _ = write!(f, "{{");
 
-                        let len = dict.len();
-                        for i in 0..len {
-                            let entry = &dict[i];
-                            let _ = write!(f, "{} = ", entry.0);
+                        for pair in dict.iter() {
+                            let _ = write!(f, "{} = ", pair.0);
 
-                            if let Value::String(_) = entry.1 {
-                                let _ = write!(f, "\"{}\"", entry.1);
+                            if let Value::String(_) = pair.1 {
+                                let _ = write!(f, "\"{}\"", pair.1);
                             } else {
-                                let _ = write!(f, "{}", entry.1);
+                                let _ = write!(f, "{}", pair.1);
                             }
 
-                            if i != len - 1 {
+                            if pair.0 != dict.iter().last().unwrap().0 {
                                 let _ = write!(f, ", ");
                             }
                         }

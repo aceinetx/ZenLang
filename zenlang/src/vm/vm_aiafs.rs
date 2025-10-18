@@ -40,14 +40,7 @@ impl VM {
                         return;
                     }
 
-                    for pair in dict.iter_mut() {
-                        if pair.0 == s_index {
-                            pair.1 = set_to;
-                            return;
-                        }
-                    }
-
-                    dict.push((s_index, set_to));
+                    dict.insert(s_index, set_to);
                 }
             },
             _ => {

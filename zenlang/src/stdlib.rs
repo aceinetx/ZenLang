@@ -42,10 +42,10 @@ fn str_split str delimiter {
     return _vmcall_ret_unsafe_3(str, delimiter, 10);
 }
 fn err value {
-    return {"_err" = value, "_ok" = null};
+    return {"_typename" = "Result", "_err" = value, "_ok" = null};
 }
 fn ok value {
-    return {"_err" = null, "_ok" = value};
+    return {"_typename" = "Result", "_err" = null, "_ok" = value};
 }
 fn get_err result {
     return result._err;

@@ -3,6 +3,7 @@ use crate::opcode::*;
 use crate::strong_u64::U64BitsControl;
 use crate::value::*;
 use crate::vm::*;
+use alloc::collections::btree_map::BTreeMap;
 use alloc::format;
 use alloc::rc::*;
 use alloc::string::*;
@@ -181,13 +182,11 @@ impl VM {
                         }
                         Object::Dictionary(dict) => {
                             if let Value::String(index) = index {
-                                for element in dict.iter() {
-                                    if element.0 == index {
-                                        self.stack.push(element.1.clone());
-                                        return;
-                                    }
+                                if !dict.contains_key(&index) {
+                                    self.stack.push(Value::Null());
+                                } else {
+                                    self.stack.push(dict.get(&index).unwrap().clone());
                                 }
-                                self.stack.push(Value::Null());
                                 return;
                             }
                         }
@@ -211,18 +210,19 @@ impl VM {
                 }
             }
             Opcode::Cdfse(names) => {
-                let mut items = Vec::<(String, Value)>::new();
+                let mut dict = BTreeMap::<String, Value>::new();
                 for i in 0..names.len() {
                     if let Some(stack_value) = self.stack.pop() {
                         // todo: do smth w ts clone
-                        items.insert(0, (names[names.len() - i - 1].clone(), stack_value));
+                        //items.insert(0, (names[names.len() - i - 1].clone(), stack_value));
+                        dict.insert(names[names.len() - i - 1].clone(), stack_value);
                     } else {
                         self.error = format!("cdfse failed: no more values on stack");
                         return;
                     }
                 }
 
-                let obj = Rc::new(RefCell::new(Object::Dictionary(items)));
+                let obj = Rc::new(RefCell::new(Object::Dictionary(dict)));
                 let v = Value::Object(obj);
                 self.stack.push(v);
             }
