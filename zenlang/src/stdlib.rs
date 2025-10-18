@@ -38,6 +38,19 @@ fn array_remove array index {
 fn array_insert array index element {
     return _vmcall_ret_unsafe_4(array, index, element, 9);
 }
+fn array_count array element {
+    let i = 0;
+    let count = 0;
+    let size = array_size(array);
+    while i < size {
+        if array[i] == element {
+            let count = count + 1;
+        }
+        
+        let i = i + 1;
+    }
+    return count;
+}
 fn str_split str delimiter {
     return _vmcall_ret_unsafe_3(str, delimiter, 10);
 }

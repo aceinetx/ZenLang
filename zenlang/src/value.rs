@@ -159,22 +159,25 @@ impl Display for Value {
 
                         let _ = write!(f, "{{");
 
-                        for pair in dict.iter() {
-                            if pair.0 == "_typename" {
-                                continue;
-                            }
+                        if dict.len() > 0 {
+                            let first = dict.iter().nth(0).unwrap();
 
-                            let _ = write!(f, "{} = ", pair.0);
+                            for pair in dict.iter() {
+                                if pair.0 == "_typename" {
+                                    continue;
+                                }
 
-                            if let Value::String(_) = pair.1 {
-                                let _ = write!(f, "\"{}\"", pair.1);
-                            } else {
-                                let _ = write!(f, "{}", pair.1);
-                            }
+                                if pair.0 != first.0 {
+                                    let _ = write!(f, ", ");
+                                }
 
-                            let last = dict.iter().last().unwrap();
-                            if pair.0 != last.0 && last.0 != "_typename" {
-                                let _ = write!(f, ", ");
+                                let _ = write!(f, "{} = ", pair.0);
+
+                                if let Value::String(_) = pair.1 {
+                                    let _ = write!(f, "\"{}\"", pair.1);
+                                } else {
+                                    let _ = write!(f, "{}", pair.1);
+                                }
                             }
                         }
 

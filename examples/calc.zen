@@ -1,0 +1,46 @@
+mod stdlib;
+
+fn perform_operation first op second {
+    if array_count(
+        ["+", "-", "*", "/"],
+        op
+    ) == 0 {
+        return err("Invalid operator");
+    }
+
+    if op == "+" {
+        return ok(first + second);
+    } elif op == "-" {
+        return ok(first - second);
+    } elif op == "*" {
+        return ok(first * second);
+    } elif op == "/" {
+        return ok(first / second);
+    }
+
+    return err("Unreachable");
+}
+
+fn main {
+    println("Enter first number");
+    if let first = get_ok(number(get_string())){}
+    else {
+        println("Not a valid number");
+        return null;
+    }
+    println("Enter operator");
+    let op = get_string(); 
+    println("Enter second number");
+    if let second = get_ok(number(get_string())){}
+    else {
+        println("Not a valid number");
+        return null;
+    }
+
+    let res = perform_operation(first, op, second);
+    if let num = get_ok(res){
+        return num;
+    }
+     
+    return get_err(res);
+}
