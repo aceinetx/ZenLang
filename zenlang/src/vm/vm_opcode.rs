@@ -282,7 +282,10 @@ impl VM {
                         return;
                     }
 
-                    self.error = "bst failed: value on stack is not of an acceptable type".into();
+                    self.error = format!(
+                        "bst failed: value is not of an acceptable type ({:?})",
+                        value
+                    );
                 } else {
                     self.error = "bst failed: no value on stack".into();
                 }

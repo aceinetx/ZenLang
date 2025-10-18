@@ -37,44 +37,48 @@ impl VM {
                     }
                 }
             }
-            AstBinopOp::BITSHR => {
-                if let Value::Number(left_num) = left {
-                    if let Value::Number(right_num) = right {
-                        return Value::Number(((left_num as i64) >> (right_num as i64)) as f64);
-                    }
+            AstBinopOp::BITSHR => match (left, right) {
+                (Value::Number(left_num), Value::Number(right_num)) => {
+                    return Value::Number(((left_num as i64) >> (right_num as i64)) as f64);
                 }
-            }
-            AstBinopOp::BITSHL => {
-                if let Value::Number(left_num) = left {
-                    if let Value::Number(right_num) = right {
-                        return Value::Number(((left_num as i64) << (right_num as i64)) as f64);
-                    }
+                _ => {}
+            },
+            AstBinopOp::BITSHL => match (left, right) {
+                (Value::Number(left_num), Value::Number(right_num)) => {
+                    return Value::Number(((left_num as i64) << (right_num as i64)) as f64);
                 }
-            }
-            AstBinopOp::BITAND => {
-                if let Value::Number(left_num) = left {
-                    if let Value::Number(right_num) = right {
-                        return Value::Number(((left_num as i64) & (right_num as i64)) as f64);
-                    }
+                _ => {}
+            },
+            AstBinopOp::BITAND => match (left, right) {
+                (Value::Number(left_num), Value::Number(right_num)) => {
+                    return Value::Number(((left_num as i64) & (right_num as i64)) as f64);
                 }
-                if let Value::Boolean(left) = left {
-                    if let Value::Boolean(right) = right {
-                        return Value::Number((left && right) as i64 as f64);
-                    }
+                (Value::Boolean(left), Value::Boolean(right)) => {
+                    return Value::Number((left && right) as i64 as f64);
                 }
-            }
-            AstBinopOp::BITOR => {
-                if let Value::Number(left_num) = left {
-                    if let Value::Number(right_num) = right {
-                        return Value::Number(((left_num as i64) | (right_num as i64)) as f64);
-                    }
+                (Value::Number(left_num), Value::Boolean(right_bool)) => {
+                    return Value::Number(((left_num as i64) & (right_bool as i64)) as f64);
                 }
-                if let Value::Boolean(left) = left {
-                    if let Value::Boolean(right) = right {
-                        return Value::Number((left || right) as i64 as f64);
-                    }
+                (Value::Boolean(left_bool), Value::Number(right_num)) => {
+                    return Value::Number(((left_bool as i64) & (right_num as i64)) as f64);
                 }
-            }
+                _ => {}
+            },
+            AstBinopOp::BITOR => match (left, right) {
+                (Value::Number(left_num), Value::Number(right_num)) => {
+                    return Value::Number(((left_num as i64) | (right_num as i64)) as f64);
+                }
+                (Value::Boolean(left), Value::Boolean(right)) => {
+                    return Value::Number((left || right) as i64 as f64);
+                }
+                (Value::Number(left_num), Value::Boolean(right_bool)) => {
+                    return Value::Number(((left_num as i64) | (right_bool as i64)) as f64);
+                }
+                (Value::Boolean(left_bool), Value::Number(right_num)) => {
+                    return Value::Number(((left_bool as i64) | (right_num as i64)) as f64);
+                }
+                _ => {}
+            },
             AstBinopOp::EQ => {
                 return Value::Boolean(left.equal(&right, self));
             }

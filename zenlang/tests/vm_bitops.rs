@@ -107,3 +107,79 @@ fn vm_test_bitshl() {
     assert_eq!(vm.error, "");
     assert!(matches!(vm.ret, Value::Number(492.0)));
 }
+
+#[test]
+fn vm_test_bitor_if_true() {
+    let mut tokenizer = Tokenizer::new(
+        r#"
+fn main {
+    let x = 5;
+    let flag = true;
+    if (x == 1 | x == 2 | x == 3 | x == 5) & flag {
+        return 10;
+    }
+    return 0;
+} 
+    "#
+        .into(),
+    );
+    let mut parser = Parser::new(&mut tokenizer);
+    let mut compiler = Compiler::new(&mut parser);
+    if let Err(e) = compiler.compile() {
+        assert_eq!(e, "");
+    }
+    let mut vm = VM::new();
+    let module = compiler.get_module();
+    println!("{:?}", module.opcodes);
+    let _ = vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
+
+    loop {
+        if !vm.step() {
+            break;
+        }
+    }
+
+    assert_eq!(vm.error, "");
+    assert!(matches!(vm.ret, Value::Number(10.0)));
+}
+
+#[test]
+fn vm_test_bitor_if_false() {
+    let mut tokenizer = Tokenizer::new(
+        r#"
+fn main {
+    let x = 4;
+    let flag = true;
+    if (x == 1 | x == 2 | x == 3 | x == 5) & flag {
+        return 5;
+    }
+    return 0;
+} 
+    "#
+        .into(),
+    );
+    let mut parser = Parser::new(&mut tokenizer);
+    let mut compiler = Compiler::new(&mut parser);
+    if let Err(e) = compiler.compile() {
+        assert_eq!(e, "");
+    }
+    let mut vm = VM::new();
+    let module = compiler.get_module();
+    println!("{:?}", module.opcodes);
+    let _ = vm.load_module(module);
+    if let Err(e) = vm.set_entry_function("main") {
+        assert_eq!(e, "");
+    }
+
+    loop {
+        if !vm.step() {
+            break;
+        }
+    }
+
+    assert_eq!(vm.error, "");
+    assert!(matches!(vm.ret, Value::Number(0.0)));
+}
