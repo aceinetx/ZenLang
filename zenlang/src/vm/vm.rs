@@ -12,7 +12,6 @@ pub static MAX_STACK_SIZE: usize = 1000;
 
 pub struct VM {
     pub modules: Vec<Module>,
-    pub owned_modules: Vec<Module>,
     pub pc: u64,
     pub stack: Vec<Value>,
     pub call_stack: Vec<u64>,
@@ -30,7 +29,6 @@ impl VM {
     pub fn new() -> VM {
         return VM {
             modules: Vec::new(),
-            owned_modules: Vec::new(),
             pc: 0,
             stack: Vec::new(),
             call_stack: Vec::new(),
