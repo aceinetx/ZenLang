@@ -1,17 +1,21 @@
 use crate::ast::binop::*;
 use crate::value::*;
 use crate::vm::*;
+use alloc::format;
+use alloc::string::String;
 
 impl VM {
     pub(crate) fn compute_values(&mut self, left: Value, right: Value, op: AstBinopOp) -> Value {
         match op {
-            AstBinopOp::PLUS => {
-                if let Value::Number(left_num) = left {
-                    if let Value::Number(right_num) = right {
-                        return Value::Number(left_num + right_num);
-                    }
+            AstBinopOp::PLUS => match (left, right) {
+                (Value::Number(left_num), Value::Number(right_num)) => {
+                    return Value::Number(left_num + right_num);
                 }
-            }
+                (Value::String(left_str), Value::String(right_str)) => {
+                    return Value::String(format!("{}{}", left_str, right_str));
+                }
+                _ => {}
+            },
             AstBinopOp::MINUS => {
                 if let Value::Number(left_num) = left {
                     if let Value::Number(right_num) = right {
@@ -19,13 +23,19 @@ impl VM {
                     }
                 }
             }
-            AstBinopOp::MUL => {
-                if let Value::Number(left_num) = left {
-                    if let Value::Number(right_num) = right {
-                        return Value::Number(left_num * right_num);
-                    }
+            AstBinopOp::MUL => match (left, right) {
+                (Value::Number(left_num), Value::Number(right_num)) => {
+                    return Value::Number(left_num * right_num);
                 }
-            }
+                (Value::String(left_str), Value::Number(right_num)) => {
+                    let mut new = String::new();
+                    for _ in 0..right_num as i64 {
+                        new.push_str(&left_str);
+                    }
+                    return Value::String(new);
+                }
+                _ => {}
+            },
             AstBinopOp::DIV => {
                 if let Value::Number(left_num) = left {
                     if let Value::Number(right_num) = right {
