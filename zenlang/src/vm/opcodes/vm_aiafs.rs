@@ -1,13 +1,13 @@
 use crate::value::*;
-use crate::vm::*;
+use crate::vm::VM;
 use alloc::format;
-use alloc::string::String;
+use alloc::string::*;
 
 impl VM {
     /// Perform Aiafs operation
     ///
     /// The reason it's in a function (not in execute_opcode) is because it needs to be recursive
-    pub(crate) fn aiafs(&mut self, value: &mut Value, set_to: Value, index: Value) {
+    fn aiafs(&mut self, value: &mut Value, set_to: Value, index: Value) {
         match value {
             Value::Object(obj) => match &mut *obj.borrow_mut() {
                 Object::Array(array) => {
@@ -48,5 +48,34 @@ impl VM {
             }
         }
         return;
+    }
+
+    pub fn op_aiafs(&mut self) {
+        let set_value: Value;
+        let index: Value;
+        let mut object: Value;
+
+        if let Some(value) = self.stack.pop() {
+            index = value;
+        } else {
+            self.error = format!("aiafs failed: no more values on stack for index");
+            return;
+        }
+
+        if let Some(value) = self.stack.pop() {
+            set_value = value;
+        } else {
+            self.error = format!("aiafs failed: no more values on stack for set value");
+            return;
+        }
+
+        if let Some(value) = self.stack.pop() {
+            object = value;
+        } else {
+            self.error = format!("aiafs failed: no more values on stack for object");
+            return;
+        }
+
+        self.aiafs(&mut object, set_value, index);
     }
 }

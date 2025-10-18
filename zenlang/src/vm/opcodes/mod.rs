@@ -1,0 +1,14 @@
+mod vm_aiafs;
+mod vm_alu;
+mod vm_bit_alu;
+mod vm_branch;
+mod vm_cafse;
+mod vm_call;
+mod vm_cdfse;
+mod vm_cmp;
+mod vm_fn_args;
+mod vm_iafs;
+mod vm_load_constants;
+mod vm_ret;
+mod vm_vars;
+mod vm_vmcall;

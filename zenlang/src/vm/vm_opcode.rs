@@ -1,264 +1,57 @@
-use crate::ast::binop::*;
 use crate::opcode::*;
-use crate::strong_u64::U64BitsControl;
-use crate::value::*;
 use crate::vm::*;
-use alloc::collections::btree_map::BTreeMap;
 use alloc::format;
-use alloc::rc::*;
-use alloc::string::*;
-use alloc::vec::*;
-use core::cell::*;
 
 impl VM {
     pub(crate) fn execute_opcode(&mut self, opcode: &Opcode) {
         match opcode {
             Opcode::Call() => {
-                if let Some(value) = self.stack.pop() {
-                    if let Value::FunctionRef(addr, args_count) = value {
-                        self.call_stack.push(self.pc);
-                        self.check_stack_overflow();
-                        self.pc = addr;
-                        self.pc.sub_low(1);
-                        self.add_scope();
-
-                        let start = self.bfas_stack_start.pop().unwrap();
-                        let end = self.bfas_stack_end.pop().unwrap();
-                        let diff = end - start;
-                        if diff != args_count as i64 {
-                            self.error = format!(
-                                "call: expected exactly {} arguments, but provided {} (trying to call a function at {}:{})",
-                                args_count,
-                                diff,
-                                self.pc.get_low(),
-                                self.pc.get_high(),
-                            );
-                        }
-                    } else {
-                        self.error = "call: value on stack is not a function reference".into();
-                    }
-                } else {
-                    self.error = "call: stack is empty".into();
-                }
+                self.op_call();
             }
             Opcode::Vmcall(index) => {
-                self.vmcall(*index);
+                self.op_vmcall(*index);
             }
             Opcode::Dynvmcall() => {
-                let index;
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Number(value) = value {
-                        index = value as i64 as u8;
-                    } else {
-                        self.error = format!("dynvmcall failed: value on stack is not a number");
-                        return;
-                    }
-                } else {
-                    self.error = format!("dynvmcall failed: no more values on stack");
-                    return;
-                }
-                self.vmcall(index);
+                self.op_dynvmcall();
             }
             Opcode::LoadConstant(value) => {
-                let value = Value::Number(*value);
-                self.stack.push(value);
-                self.check_stack_overflow();
+                self.op_load_constant(*value);
             }
             Opcode::LoadNull() => {
-                self.stack.push(Value::Null());
-                self.check_stack_overflow();
+                self.op_load_null();
             }
             Opcode::LoadBool(flag) => {
-                self.stack.push(Value::Boolean(*flag));
-                self.check_stack_overflow();
+                self.op_load_bool(*flag);
             }
             Opcode::LoadStr(value) => {
-                let value = Value::String(value.to_string());
-                self.stack.push(value);
-                self.check_stack_overflow();
+                self.op_load_str(value);
             }
             Opcode::LoadVar(name) => {
-                if let Some(scope) = self.scopes.last() {
-                    if let Some(value) = scope.get(name) {
-                        self.stack.push(value.clone());
-                        self.check_stack_overflow();
-                        return;
-                    }
-                }
-
-                if let Some(value) = self.global_scope.get(name) {
-                    self.stack.push(value.clone());
-                    self.check_stack_overflow();
-                    return;
-                }
-
-                for module_i in 0..self.modules.len() {
-                    let module = &self.modules[module_i];
-                    for func in module.functions.iter() {
-                        if func.name.to_string() == name.to_string() {
-                            let mut addr: u64 = 0;
-                            addr.set_low(func.addr);
-                            addr.set_high(module_i as u32);
-                            self.stack.push(Value::FunctionRef(addr, func.args_count));
-                            self.check_stack_overflow();
-                            return;
-                        }
-                    }
-                }
-                self.stack.push(Value::Null());
+                self.op_load_var(name);
             }
             Opcode::StoreVar(name) => {
-                // do something with the clone here
-                if let Some(store_value) = self.stack.pop() {
-                    if let Some(value) = self.global_scope.get_mut(name) {
-                        *value = store_value;
-                        return;
-                    }
-
-                    if let Some(scope) = self.scopes.last_mut() {
-                        scope.create_if_doesnt_exist(name);
-                        if let Some(value) = scope.get_mut(name) {
-                            *value = store_value;
-                            return;
-                        }
-                    } else {
-                        self.error = format!("storev failed: scopes is empty");
-                        return;
-                    }
-                } else {
-                    self.error = format!("storev failed: no value in stack");
-                    return;
-                }
+                self.op_store_var(name);
             }
             Opcode::PushRet() => {
-                // do smth with the clone
-                self.stack.push(self.ret.clone());
+                self.op_push_ret();
             }
             Opcode::Cafse(items) => {
-                let mut vec = Vec::<Value>::new();
-                for _ in 0..*items {
-                    if let Some(stack_value) = self.stack.pop() {
-                        vec.insert(0, stack_value);
-                    } else {
-                        self.error = format!("cafse failed: no more values on stack");
-                        return;
-                    }
-                }
-                let obj = Rc::new(RefCell::new(Object::Array(vec)));
-
-                let v = Value::Object(obj);
-
-                self.stack.push(v);
+                self.op_cafse(*items);
             }
             Opcode::Iafs() => {
-                let array;
-                let index;
-                if let Some(value) = self.stack.pop() {
-                    index = value;
-                } else {
-                    self.error = format!("iafs failed: no more values on stack for index");
-                    return;
-                }
-                if let Some(value) = self.stack.pop() {
-                    array = value;
-                } else {
-                    self.error = format!("iafs failed: no more values on stack for array");
-                    return;
-                }
-
-                match array {
-                    Value::Object(obj) => match &*obj.borrow() {
-                        Object::Array(array) => {
-                            if let Value::Number(index) = index {
-                                let usize_index = index as usize;
-                                if usize_index >= array.len() {
-                                    self.stack.push(Value::Null());
-                                    return;
-                                }
-
-                                self.stack.push(array[usize_index].clone());
-                                return;
-                            }
-                        }
-                        Object::Dictionary(dict) => {
-                            if let Value::String(index) = index {
-                                if !dict.contains_key(&index) {
-                                    self.stack.push(Value::Null());
-                                } else {
-                                    self.stack.push(dict.get(&index).unwrap().clone());
-                                }
-                                return;
-                            }
-                        }
-                    },
-                    Value::String(string) => {
-                        if let Value::Number(index) = index {
-                            if let Some(ch) = string.chars().nth(index as usize) {
-                                self.stack.push(Value::String(String::from(ch)));
-                            } else {
-                                self.stack.push(Value::Null());
-                            }
-                            return;
-                        }
-                    }
-                    _ => {
-                        self.error = format!(
-                            "iafs failed: invalid operand types: {:?} {:?}",
-                            array, index
-                        );
-                    }
-                }
+                self.op_iafs();
             }
             Opcode::Cdfse(names) => {
-                let mut dict = BTreeMap::<String, Value>::new();
-                for i in 0..names.len() {
-                    if let Some(stack_value) = self.stack.pop() {
-                        // todo: do smth w ts clone
-                        //items.insert(0, (names[names.len() - i - 1].clone(), stack_value));
-                        dict.insert(names[names.len() - i - 1].clone(), stack_value);
-                    } else {
-                        self.error = format!("cdfse failed: no more values on stack");
-                        return;
-                    }
-                }
-
-                let obj = Rc::new(RefCell::new(Object::Dictionary(dict)));
-                let v = Value::Object(obj);
-                self.stack.push(v);
+                self.op_cdfse(names);
             }
             Opcode::Aiafs() => {
-                let set_value: Value;
-                let index: Value;
-                let mut object: Value;
-
-                if let Some(value) = self.stack.pop() {
-                    index = value;
-                } else {
-                    self.error = format!("aiafs failed: no more values on stack for index");
-                    return;
-                }
-
-                if let Some(value) = self.stack.pop() {
-                    set_value = value;
-                } else {
-                    self.error = format!("aiafs failed: no more values on stack for set value");
-                    return;
-                }
-
-                if let Some(value) = self.stack.pop() {
-                    object = value;
-                } else {
-                    self.error = format!("aiafs failed: no more values on stack for object");
-                    return;
-                }
-
-                self.aiafs(&mut object, set_value, index);
+                self.op_aiafs();
             }
             Opcode::BeginFnArgs() => {
-                self.bfas_stack_start.push(self.stack.len() as i64);
+                self.op_begin_fn_args();
             }
             Opcode::EndFnArgs() => {
-                self.bfas_stack_end.push(self.stack.len() as i64);
+                self.op_end_fn_args();
             }
             Opcode::Pop() => {
                 if self.stack.is_empty() {
@@ -268,111 +61,58 @@ impl VM {
                 }
             }
             Opcode::BranchTrue(addr) => {
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Boolean(flag) = value {
-                        if flag {
-                            self.pc.set_low(*addr - 1);
-                        }
-                        return;
-                    }
-                    if let Value::Number(num) = value {
-                        if num != 0.0 {
-                            self.pc.set_low(*addr - 1);
-                        }
-                        return;
-                    }
-
-                    self.error = format!(
-                        "bst failed: value is not of an acceptable type ({:?})",
-                        value
-                    );
-                } else {
-                    self.error = "bst failed: no value on stack".into();
-                }
+                self.op_branch_true(*addr);
             }
             Opcode::BranchNonNull(addr) => {
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Null() = value {
-                        return;
-                    }
-                    self.pc.set_low(*addr);
-                    self.pc.sub_low(1);
-                } else {
-                    self.error = "bsnn failed: no value on stack".into();
-                }
+                self.op_branch_nonnull(*addr);
             }
             Opcode::Branch(addr) => {
-                self.pc.set_low(*addr);
-                self.pc.sub_low(1);
+                self.op_branch(*addr);
             }
             Opcode::Add() => {
-                let value = self.compute_stack_values(AstBinopOp::PLUS);
-                self.stack.push(value);
+                self.op_add();
             }
             Opcode::Sub() => {
-                let value = self.compute_stack_values(AstBinopOp::MINUS);
-                self.stack.push(value);
+                self.op_sub();
             }
             Opcode::Mul() => {
-                let value = self.compute_stack_values(AstBinopOp::MUL);
-                self.stack.push(value);
+                self.op_mul();
             }
             Opcode::Div() => {
-                let value = self.compute_stack_values(AstBinopOp::DIV);
-                self.stack.push(value);
+                self.op_div();
             }
             Opcode::Eq() => {
-                let value = self.compute_stack_values(AstBinopOp::EQ);
-                self.stack.push(value);
+                self.op_eq();
             }
             Opcode::Neq() => {
-                let value = self.compute_stack_values(AstBinopOp::NEQ);
-                self.stack.push(value);
+                self.op_neq();
             }
             Opcode::Lt() => {
-                let value = self.compute_stack_values(AstBinopOp::LT);
-                self.stack.push(value);
+                self.op_lt();
             }
             Opcode::Gt() => {
-                let value = self.compute_stack_values(AstBinopOp::GT);
-                self.stack.push(value);
+                self.op_gt();
             }
             Opcode::Le() => {
-                let value = self.compute_stack_values(AstBinopOp::LE);
-                self.stack.push(value);
+                self.op_le();
             }
             Opcode::Ge() => {
-                let value = self.compute_stack_values(AstBinopOp::GE);
-                self.stack.push(value);
+                self.op_ge();
             }
             Opcode::Bshr() => {
-                let value = self.compute_stack_values(AstBinopOp::BITSHR);
-                self.stack.push(value);
+                self.op_bshr();
             }
             Opcode::Bshl() => {
-                let value = self.compute_stack_values(AstBinopOp::BITSHL);
-                self.stack.push(value);
+                self.op_bshl();
             }
             Opcode::Band() => {
-                let value = self.compute_stack_values(AstBinopOp::BITAND);
-                self.stack.push(value);
+                self.op_band();
             }
             Opcode::Bor() => {
-                let value = self.compute_stack_values(AstBinopOp::BITOR);
-                self.stack.push(value);
+                self.op_bor();
             }
             Opcode::Ret() => {
-                if !self.stack.is_empty() {
-                    self.ret = self.stack.pop().unwrap();
-                }
-
-                self.remove_scope();
-
-                if !self.call_stack.is_empty() {
-                    self.pc = self.call_stack.pop().unwrap();
-                } else {
-                    self.halted = true;
-                }
+                self.op_ret();
             }
         }
     }
