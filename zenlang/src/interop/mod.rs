@@ -14,6 +14,7 @@ pub fn interop_ok(value: Value) -> Value {
     let mut result = BTreeMap::<String, Value>::new();
     result.insert("_ok".into(), value);
     result.insert("_err".into(), Value::Null());
+    result.insert("_typename".into(), Value::String("Result".into()));
     let p = Rc::new(RefCell::new(Object::Dictionary(result)));
     return Value::Object(p);
 }
@@ -25,6 +26,7 @@ pub fn interop_err(value: Value) -> Value {
     let mut result = BTreeMap::<String, Value>::new();
     result.insert("_ok".into(), Value::Null());
     result.insert("_err".into(), value);
+    result.insert("_typename".into(), Value::String("Result".into()));
     let p = Rc::new(RefCell::new(Object::Dictionary(result)));
     return Value::Object(p);
 }
