@@ -104,7 +104,6 @@ fn clone obj {
     return _vmcall_ret_unsafe_2(obj, 19);
 }
 fn #[ctor] stdlib_init {
-    println("ctor");
     let File = {
         "read" = read_file,
         "read_bytes" = read_file_bytes,
