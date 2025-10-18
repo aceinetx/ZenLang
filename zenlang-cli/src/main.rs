@@ -176,7 +176,8 @@ fn main() {
                     println!("read error: {}", error);
                     return;
                 }
-                compile_code(text, module_name, "a.zenc".into());
+                let filename = format!("{}.zenc", module_name);
+                compile_code(text, module_name, filename);
             }
         }
         Err(e) => {
