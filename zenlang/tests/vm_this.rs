@@ -3,7 +3,6 @@ use alloc::rc::Rc;
 use core::cell::RefCell;
 
 use zenlang::compiler::*;
-use zenlang::interop::*;
 use zenlang::parser::*;
 use zenlang::tokenizer::*;
 use zenlang::value::*;
@@ -85,5 +84,34 @@ fn main {
 } "#
         .into(),
         Value::Number(4.0),
+    );
+}
+
+#[test]
+fn vm_test_this_2() {
+    expect_to_return(
+        r#"
+fn f2 {
+    let this.hi = 3;
+}
+
+fn f {
+    let this.hi = 1;
+    let obj = {
+        "test" = f2
+    };
+    obj.test();
+    let this.hi = obj.hi - 1;
+}
+
+fn main {
+    let obj = {
+        "test" = f,
+    };
+    obj.test();
+    return obj.hi;
+} "#
+        .into(),
+        Value::Number(2.0),
     );
 }
