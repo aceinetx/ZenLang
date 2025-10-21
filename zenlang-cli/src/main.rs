@@ -1,123 +1,11 @@
-use std::{
-    env,
-    fs::{self},
-    io::Read,
-    path::Path,
-};
-use zenlang::{compiler, module, parser, strong_u64::U64BitsControl, tokenizer, vm};
-use zenlang_platform_std::*;
+use std::{env, fs, io::Read, path::Path};
 
-fn run_vm(vm: &mut vm::VM) {
-    if let Err(e) = vm.set_entry_function("main") {
-        println!("vm error: {}", e);
-        return;
-    }
-    //println!("{:?}", vm.modules);
+use crate::argparser::ArgParser;
 
-    vm.run_until_halt();
+mod argparser;
+mod runner;
 
-    if !vm.error.is_empty() {
-        let mut pc = vm.pc;
-        pc.sub_low(1);
-
-        println!("\n-- begin runtime error --");
-        println!("{}", vm.error);
-        if let Some(name) = vm.get_function_name_from_pc(pc) {
-            println!("runtime error in function {}", name,);
-        }
-        println!("runtime error at pc = {}:{}", pc.get_low(), pc.get_high(),);
-        println!("-- end runtime error --");
-        return;
-    }
-
-    println!("returned {}", vm.ret);
-
-    if !vm.stack.is_empty() {
-        println!("{} values remained on stack!", vm.stack.len());
-    } else {
-        println!("no values leaked on stack");
-    }
-}
-
-fn run_code(code: String, module_name: String) {
-    let mut tokenizer = tokenizer::Tokenizer::new(code);
-    let mut parser = parser::Parser::new(&mut tokenizer);
-    let mut compiler = compiler::Compiler::new(&mut parser);
-
-    if let Err(e) = compiler.compile() {
-        println!("compile error: {}", e);
-        return;
-    }
-
-    if compiler.warnings.len() > 0 {
-        println!("compile warnings:");
-        for warning in compiler.warnings.iter() {
-            println!("- {}", warning);
-        }
-    }
-
-    let module = compiler.get_module();
-    module.name = module_name;
-
-    let mut vm = vm::VM::new();
-    vm.platform = Some(Box::new(Platform::new()));
-
-    if let Err(e) = vm.load_module(&module) {
-        println!("{}", e);
-        return;
-    }
-
-    run_vm(&mut vm);
-}
-
-fn compile_code(code: String, module_name: String, out_filename: String) {
-    let mut tokenizer = tokenizer::Tokenizer::new(code);
-    let mut parser = parser::Parser::new(&mut tokenizer);
-    let mut compiler = compiler::Compiler::new(&mut parser);
-
-    if let Err(e) = compiler.compile() {
-        println!("compile error: {}", e);
-        return;
-    }
-
-    if compiler.warnings.len() > 0 {
-        println!("compile warnings:");
-        for warning in compiler.warnings.iter() {
-            println!("- {}", warning);
-        }
-    }
-
-    let module = compiler.get_module();
-    module.name = module_name;
-    match module.compile() {
-        Err(e) => {
-            println!("module compile error: {}", e);
-        }
-        Ok(bytes) => {
-            let _ = fs::write(out_filename, bytes);
-        }
-    }
-}
-
-fn run_bytes(bytes: Vec<u8>) {
-    let mut module = module::Module::new();
-    if let Err(e) = module.load(bytes) {
-        println!("load error: {}", e);
-        return;
-    }
-
-    let mut vm = vm::VM::new();
-    vm.platform = Some(Box::new(Platform::new()));
-
-    if let Err(e) = vm.load_module(&module) {
-        println!("{}", e);
-        return;
-    }
-
-    run_vm(&mut vm);
-}
-
-fn get_module_name_from_path(path: String) -> String {
+pub fn get_module_name_from_path(path: &String) -> String {
     let path = Path::new(&path);
 
     if let Some(stem) = path.file_stem() {
@@ -128,35 +16,28 @@ fn get_module_name_from_path(path: String) -> String {
 }
 
 fn main() {
-    let mut args: Vec<String> = env::args().collect();
-    args.push("/home/aceinet/ZenLang/a.zen".into());
+    let mut args = ArgParser::new();
+    args.parse(&env::args().collect::<Vec<String>>());
 
-    if args.len() < 2 {
+    if args.filename.is_empty() {
         println!("zenlang: no filename provided");
         return;
     }
 
-    let mut compile: bool = false;
-    if args.len() >= 3 {
-        if args[2] == "compile" {
-            compile = true;
-        }
-    }
-
-    let module_name = get_module_name_from_path(args[1].clone());
-    match fs::File::open(&args[1]) {
+    let module_name = get_module_name_from_path(&args.filename);
+    match fs::File::open(&args.filename) {
         Ok(mut file) => {
-            if !compile {
-                if args[1].ends_with(".zen") {
+            if !args.compile {
+                if args.filename.ends_with(".zen") {
                     let mut text = String::new();
                     if let Err(error) = file.read_to_string(&mut text) {
                         println!("read error: {}", error);
                         return;
                     }
-                    run_code(text, module_name);
-                } else if args[1].ends_with(".zenc") {
+                    runner::run_code(text, module_name);
+                } else if args.filename.ends_with(".zenc") {
                     let bytes: Vec<u8>;
-                    match fs::read(&args[1]) {
+                    match fs::read(args.filename) {
                         Err(e) => {
                             println!("read error: {}", e);
                             return;
@@ -165,7 +46,7 @@ fn main() {
                             bytes = data;
                         }
                     }
-                    run_bytes(bytes);
+                    runner::run_bytes(bytes);
                 }
             } else {
                 let mut text = String::new();
@@ -174,11 +55,11 @@ fn main() {
                     return;
                 }
                 let filename = format!("{}.zenc", module_name);
-                compile_code(text, module_name, filename);
+                runner::compile_code(text, module_name, filename);
             }
         }
         Err(e) => {
-            println!("failed to open {}: {}", &args[1], e);
+            println!("failed to open {}: {}", args.filename, e);
         }
     }
 }
