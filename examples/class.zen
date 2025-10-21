@@ -3,14 +3,13 @@ mod stdlib;
 // ZenLang is not object oriented - therefore it doesn't have classes
 // But you can make something similar
 fn class_new {
-    let inst = {
+    return {
 			"add_a" = class_add_a,
 			"add_b" = class_add_b,
 			"print" = class_print,
 			"a" = 0, 
 			"b" = 0
 		};
-    return inst;
 }
 
 fn class_add_a n {
