@@ -3,21 +3,26 @@ mod stdlib;
 // ZenLang is not object oriented - therefore it doesn't have classes
 // But you can make something similar
 fn class_new {
-    let inst = {"a" = 0, "b" = 0};
-    return inst;
+    return {
+			"add_a" = class_add_a,
+			"add_b" = class_add_b,
+			"print" = class_print,
+			"a" = 0, 
+			"b" = 0
+		};
 }
 
-fn class_add_a self n {
+fn class_add_a n {
     let self.a = self.a + n;
     return null;
 }
 
-fn class_add_b self n {
+fn class_add_b n {
     let self.b = self.b + n;
     return null;
 }
 
-fn class_print self {
+fn class_print {
     let res = self.a + self.b;
     println(res);
     return null;
@@ -25,8 +30,8 @@ fn class_print self {
 
 fn main {
     let class = class_new();
-    class_add_a(class, 42);
-    class_add_b(class, 69);
-    class_print(class);
+		class.add_a(42);
+		class.add_b(69);
+		class.print();
     return null;
 }

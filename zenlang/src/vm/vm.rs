@@ -21,6 +21,7 @@ pub struct VM {
     pub platform: Option<Box<dyn Platform>>,
     pub global_scope: Scope,
     pub halted: bool,
+    pub self_var: Value,
     pub(crate) bfas_stack_start: Vec<i64>,
     pub(crate) bfas_stack_end: Vec<i64>,
 }
@@ -38,6 +39,7 @@ impl VM {
             platform: None,
             global_scope: Scope::new(),
             halted: false,
+            self_var: Value::Null(),
             bfas_stack_start: Vec::new(),
             bfas_stack_end: Vec::new(),
         };
