@@ -19,6 +19,7 @@ impl VM {
             self.error = format!("iafs failed: no more values on stack for array");
             return;
         }
+        self.this = array.clone();
 
         match array {
             Value::Object(obj) => match &*obj.borrow() {

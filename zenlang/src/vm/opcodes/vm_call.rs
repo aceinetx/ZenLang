@@ -2,6 +2,7 @@ use crate::strong_u64::U64BitsControl;
 use crate::value::*;
 use crate::vm::VM;
 use alloc::format;
+use alloc::string::*;
 
 impl VM {
     pub fn op_call(&mut self) {
@@ -12,6 +13,11 @@ impl VM {
                 self.pc = addr;
                 self.pc.sub_low(1);
                 self.add_scope();
+
+                let this_name = &String::from("this");
+                let scope = self.scopes.last_mut().unwrap();
+                scope.create_if_doesnt_exist(this_name);
+                *scope.get_mut(this_name).unwrap() = core::mem::take(&mut self.this);
 
                 let start = self.bfas_stack_start.pop().unwrap();
                 let end = self.bfas_stack_end.pop().unwrap();
