@@ -62,16 +62,16 @@ fn expect_to_return_obj(code: String, object: Object) {
 }
 
 #[test]
-fn vm_test_this_1() {
+fn vm_test_self_1() {
     expect_to_return(
         r#"
 fn f2 {
-    let this.hi = this.hi + 3;
+    let self.hi = self.hi + 3;
 }
 
 fn f {
-    let this.hi = 1;
-    this.test2();
+    let self.hi = 1;
+    self.test2();
 }
 
 fn main {
@@ -88,20 +88,20 @@ fn main {
 }
 
 #[test]
-fn vm_test_this_2() {
+fn vm_test_self_2() {
     expect_to_return(
         r#"
 fn f2 {
-    let this.hi = 3;
+    let self.hi = 3;
 }
 
 fn f {
-    let this.hi = 1;
+    let self.hi = 1;
     let obj = {
         "test" = f2
     };
     obj.test();
-    let this.hi = obj.hi - 1;
+    let self.hi = obj.hi - 1;
 }
 
 fn main {

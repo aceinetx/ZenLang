@@ -14,10 +14,10 @@ impl VM {
                 self.pc.sub_low(1);
                 self.add_scope();
 
-                let this_name = &String::from("this");
+                let this_name = &String::from("self");
                 let scope = self.scopes.last_mut().unwrap();
                 scope.create_if_doesnt_exist(this_name);
-                *scope.get_mut(this_name).unwrap() = core::mem::take(&mut self.this);
+                *scope.get_mut(this_name).unwrap() = core::mem::take(&mut self.self_var);
 
                 let start = self.bfas_stack_start.pop().unwrap();
                 let end = self.bfas_stack_end.pop().unwrap();
