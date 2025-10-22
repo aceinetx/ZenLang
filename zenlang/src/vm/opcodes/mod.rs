@@ -5,6 +5,7 @@ mod vm_branch;
 mod vm_cafse;
 mod vm_call;
 mod vm_cdfse;
+mod vm_closure;
 mod vm_cmp;
 mod vm_fn_args;
 mod vm_iafs;

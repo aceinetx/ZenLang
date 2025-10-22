@@ -1,5 +1,3 @@
-use core::fmt::Error;
-
 use crate::ast::*;
 use crate::parser::parser::Parser;
 use crate::tokenizer::*;
