@@ -184,9 +184,22 @@ impl VM {
         if self.environs.len() == 0 {
             panic!("pop_environment: environs is empty");
         }
-        (&mut *self.environs.last().unwrap().borrow_mut())
-            .vars
-            .clear();
+        // Fuck reference counted ptrs
+        // Why do I have to count references, MANUALLY
+        // (there is probably a better way to do this, but time's ticking)
+        let environ = self.environs.last().unwrap();
+        let mut refs: usize = 0;
+        for e in self.environs.iter() {
+            if Rc::ptr_eq(e, environ) {
+                refs += 1;
+            }
+        }
+
+        // If refs != 1, the vars are prolly used somewhere else so don't clear them
+        if refs == 1 {
+            (&mut *environ.borrow_mut()).vars.clear();
+        }
+
         self.environs.pop();
     }
 
