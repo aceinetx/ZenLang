@@ -111,3 +111,27 @@ fn main {
         Value::Number(3.0),
     );
 }
+
+#[test]
+fn vm_test_closure_4() {
+    expect_to_return(
+        r#"
+fn closure array {
+    let x = 5;
+    let closure = fn {
+        return x;
+    };
+    return closure;
+} 
+
+fn main {
+    let arr = [];
+    let f =closure(arr);
+
+    return f();
+}
+    "#
+        .into(),
+        Value::Number(5.0),
+    );
+}

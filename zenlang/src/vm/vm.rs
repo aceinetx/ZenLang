@@ -196,6 +196,8 @@ impl VM {
         }
 
         // If refs != 1, the vars are prolly used somewhere else so don't clear them
+        // TODO: This doesn't work and doesn't pass the fourth test in vm_closure.rs, instead we
+        // should try using weak ptr's
         if refs == 1 {
             (&mut *environ.borrow_mut()).vars.clear();
         }
