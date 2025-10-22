@@ -88,3 +88,26 @@ fn main {
         Value::Number(3.0),
     );
 }
+
+#[test]
+fn vm_test_closure_3() {
+    expect_to_return(
+        r#"
+fn closure array {
+    let closure = fn {
+        return 3;
+    };
+    return closure;
+} 
+
+fn main {
+    let arr = [];
+    let f =closure(arr);
+
+    return f();
+}
+    "#
+        .into(),
+        Value::Number(3.0),
+    );
+}
