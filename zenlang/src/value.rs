@@ -215,3 +215,9 @@ impl Display for Value {
         }
     }
 }
+
+impl Default for Value {
+    fn default() -> Self {
+        return Value::Null();
+    }
+}

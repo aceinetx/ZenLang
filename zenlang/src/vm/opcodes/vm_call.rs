@@ -2,6 +2,7 @@ use crate::strong_u64::U64BitsControl;
 use crate::value::*;
 use crate::vm::VM;
 use alloc::format;
+use alloc::string::*;
 
 impl VM {
     pub fn op_call(&mut self) {
