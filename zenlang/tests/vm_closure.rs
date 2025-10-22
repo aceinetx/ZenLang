@@ -57,3 +57,34 @@ fn main {
         Value::Number(6.0),
     );
 }
+
+#[test]
+fn vm_test_closure_2() {
+    expect_to_return(
+        r#"
+fn call f n {
+    let x = 4;
+    f(n);
+    return x;
+} 
+
+fn main {
+    let num = 5;
+    let closure = fn n {
+        let num = n;
+        let x = 0;
+        if x != null {
+            let num = 3;
+        }
+        return null;
+    };
+    if call(closure, 6) == 0 {
+        return null;
+    }
+    return num;
+}
+    "#
+        .into(),
+        Value::Number(3.0),
+    );
+}
