@@ -1,8 +1,8 @@
-//! Scope
-//!
-//! Contains: Scope
+//! Environment
+use core::cell::RefCell;
 
 use crate::value::Value;
+use alloc::rc::Rc;
 use alloc::string::*;
 use alloc::vec::*;
 
@@ -10,13 +10,17 @@ use alloc::vec::*;
 ///
 /// Contains variables values and names
 #[derive(Debug)]
-pub struct Scope {
+pub struct Environment {
     pub(crate) vars: Vec<(String, Value)>,
+    pub parent: Option<Rc<RefCell<Environment>>>,
 }
 
-impl Scope {
-    pub fn new() -> Scope {
-        return Scope { vars: Vec::new() };
+impl Environment {
+    pub fn new() -> Environment {
+        return Environment {
+            vars: Vec::new(),
+            parent: None,
+        };
     }
 
     /// Get a variable reference by a name
@@ -47,8 +51,8 @@ impl Scope {
     }
 }
 
-impl Default for Scope {
+impl Default for Environment {
     fn default() -> Self {
-        return Scope::new();
+        return Environment::new();
     }
 }

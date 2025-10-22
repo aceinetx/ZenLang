@@ -1,10 +1,13 @@
+use core::cell::RefCell;
+
+use crate::environment::Environment;
 use crate::module::Module;
 use crate::platform::Platform;
-use crate::scope::Scope;
 use crate::strong_u64::*;
 use crate::value::*;
 use alloc::boxed::*;
 use alloc::format;
+use alloc::rc::*;
 use alloc::string::*;
 use alloc::vec::*;
 
@@ -15,11 +18,11 @@ pub struct VM {
     pub pc: u64,
     pub stack: Vec<Value>,
     pub call_stack: Vec<u64>,
-    pub scopes: Vec<Scope>,
+    pub environ: Option<Rc<RefCell<Environment>>>,
     pub error: String,
     pub ret: Value,
     pub platform: Option<Box<dyn Platform>>,
-    pub global_scope: Scope,
+    pub global_scope: Environment,
     pub halted: bool,
     pub(crate) bfas_stack_start: Vec<i64>,
     pub(crate) bfas_stack_end: Vec<i64>,
@@ -32,11 +35,11 @@ impl VM {
             pc: 0,
             stack: Vec::new(),
             call_stack: Vec::new(),
-            scopes: Vec::new(),
+            environ: None,
             error: String::new(),
             ret: Value::Null(),
             platform: None,
-            global_scope: Scope::new(),
+            global_scope: Environment::new(),
             halted: false,
             bfas_stack_start: Vec::new(),
             bfas_stack_end: Vec::new(),
@@ -67,7 +70,7 @@ impl VM {
             if func.ctor {
                 self.pc.set_low(func.addr as u32);
                 self.pc.set_high((self.modules.len() - 1) as u32);
-                self.add_scope();
+                self.add_environment();
 
                 while !self.halted {
                     if !self.step() {
@@ -75,7 +78,7 @@ impl VM {
                     }
                 }
 
-                self.scopes.clear();
+                self.environ = Some(Rc::new(RefCell::new(Environment::new())));
 
                 if !self.error.is_empty() {
                     self.halted = true;
@@ -127,7 +130,7 @@ impl VM {
                 if function.name == entry_fn_name {
                     self.pc.set_low(function.addr as u32);
                     self.pc.set_high(i as u32);
-                    self.add_scope();
+                    self.add_environment();
                     return Ok(());
                 }
             }
@@ -144,12 +147,23 @@ impl VM {
         }
     }
 
-    pub(crate) fn add_scope(&mut self) {
-        self.scopes.push(Scope::new());
+    pub(crate) fn add_environment(&mut self) {
+        let new = Rc::new(RefCell::new(Environment::new()));
+        if let Some(environ) = &self.environ {
+            (&mut *new.borrow_mut()).parent = Some(environ.clone());
+        }
+        self.environ = Some(new);
     }
 
     pub(crate) fn remove_scope(&mut self) {
-        self.scopes.pop();
+        if self.environ.is_none() {
+            panic!("environ is None");
+        }
+
+        // Welcome to rust!
+        self.environ = core::mem::take(
+            &mut (&mut *core::mem::take(&mut self.environ).unwrap().borrow_mut()).parent,
+        );
     }
 
     pub fn get_function_name_from_pc(&mut self, pc: u64) -> Option<String> {
@@ -194,6 +208,7 @@ impl VM {
         let opcode = &opcodes[opcode_index as usize];
 
         self.execute_opcode(opcode);
+        self.check_stack_overflow();
 
         self.modules[module_index].opcodes = opcodes;
 

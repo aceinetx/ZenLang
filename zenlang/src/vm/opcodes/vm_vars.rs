@@ -6,17 +6,16 @@ use alloc::string::*;
 
 impl VM {
     pub fn op_load_var(&mut self, name: &String) {
-        if let Some(scope) = self.scopes.last() {
-            if let Some(value) = scope.get(name) {
+        if let Some(environ) = &self.environ {
+            let environ = &*environ.borrow();
+            if let Some(value) = environ.get(name) {
                 self.stack.push(value.clone());
-                self.check_stack_overflow();
                 return;
             }
         }
 
         if let Some(value) = self.global_scope.get(name) {
             self.stack.push(value.clone());
-            self.check_stack_overflow();
             return;
         }
 
@@ -44,9 +43,11 @@ impl VM {
                 return;
             }
 
-            if let Some(scope) = self.scopes.last_mut() {
-                scope.create_if_doesnt_exist(name);
-                if let Some(value) = scope.get_mut(name) {
+            if let Some(environ) = &mut self.environ {
+                let environ = &mut *environ.borrow_mut();
+
+                environ.create_if_doesnt_exist(name);
+                if let Some(value) = environ.get_mut(name) {
                     *value = store_value;
                     return;
                 }
