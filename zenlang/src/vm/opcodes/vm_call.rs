@@ -2,6 +2,7 @@ use crate::strong_u64::U64BitsControl;
 use crate::value::*;
 use crate::vm::VM;
 use alloc::format;
+use alloc::string::*;
 
 impl VM {
     pub fn op_call(&mut self) {
@@ -14,6 +15,12 @@ impl VM {
                     self.pc.sub_low(1);
 
                     self.push_environment();
+
+                    let this_name = &String::from("self");
+                    let environ = self.environs.last_mut().unwrap();
+                    let environ = &mut *environ.borrow_mut();
+                    environ.create_if_doesnt_exist(this_name);
+                    *environ.get_mut(this_name).unwrap() = core::mem::take(&mut self.self_var);
 
                     let start = self.bfas_stack_start.pop().unwrap();
                     let end = self.bfas_stack_end.pop().unwrap();
@@ -34,6 +41,12 @@ impl VM {
                     self.pc = addr;
 
                     self.environs.push(env);
+
+                    let this_name = &String::from("self");
+                    let environ = self.environs.last_mut().unwrap();
+                    let environ = &mut *environ.borrow_mut();
+                    environ.create_if_doesnt_exist(this_name);
+                    *environ.get_mut(this_name).unwrap() = core::mem::take(&mut self.self_var);
 
                     let start = self.bfas_stack_start.pop().unwrap();
                     let end = self.bfas_stack_end.pop().unwrap();
