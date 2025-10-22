@@ -130,7 +130,7 @@ impl VM {
                 if function.name == entry_fn_name {
                     self.pc.set_low(function.addr as u32);
                     self.pc.set_high(i as u32);
-                    //self.push_environment();
+                    self.push_environment();
                     return Ok(());
                 }
             }

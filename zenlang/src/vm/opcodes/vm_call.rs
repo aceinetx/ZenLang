@@ -40,7 +40,7 @@ impl VM {
                     self.check_stack_overflow();
                     self.pc = addr;
 
-                    self.environs.push(env.clone());
+                    self.environs.push(env);
 
                     let this_name = &String::from("self");
                     let environ = self.environs.last_mut().unwrap();
