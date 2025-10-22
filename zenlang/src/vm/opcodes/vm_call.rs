@@ -11,7 +11,8 @@ impl VM {
                 self.check_stack_overflow();
                 self.pc = addr;
                 self.pc.sub_low(1);
-                self.add_environment();
+
+                self.push_environment();
 
                 let start = self.bfas_stack_start.pop().unwrap();
                 let end = self.bfas_stack_end.pop().unwrap();

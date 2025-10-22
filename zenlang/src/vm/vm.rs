@@ -70,16 +70,13 @@ impl VM {
             if func.ctor {
                 self.pc.set_low(func.addr as u32);
                 self.pc.set_high((self.modules.len() - 1) as u32);
-                self.add_environment();
+                self.push_environment();
 
                 while !self.halted {
                     if !self.step() {
                         break;
                     }
                 }
-
-                self.environs
-                    .push(Rc::new(RefCell::new(Environment::new())));
 
                 if !self.error.is_empty() {
                     self.halted = true;
@@ -131,7 +128,7 @@ impl VM {
                 if function.name == entry_fn_name {
                     self.pc.set_low(function.addr as u32);
                     self.pc.set_high(i as u32);
-                    self.add_environment();
+                    self.push_environment();
                     return Ok(());
                 }
             }
@@ -149,28 +146,42 @@ impl VM {
     }
 
     pub(crate) fn add_environment(&mut self) {
-        let new = Rc::new(RefCell::new(Environment::new()));
-        if let Some(environ) = self.environs.pop() {
-            (&mut *new.borrow_mut()).parent = Some(environ.clone());
+        if self.environs.len() == 0 {
+            panic!("add_environment: environs is empty");
         }
+
+        let new = Rc::new(RefCell::new(Environment::new()));
+        (&mut *new.borrow_mut()).parent = Some(self.environs.pop().unwrap().clone());
         self.environs.push(new);
     }
 
     pub(crate) fn remove_environment(&mut self) {
         if self.environs.len() == 0 {
-            panic!("environs is empty");
+            panic!("remove_environment: environs is empty");
         }
 
         let environ = self.environs.pop().unwrap();
         let environ = &mut *environ.borrow_mut();
 
         if environ.parent.is_none() {
-            self.environs.clear();
+            self.pop_environment();
             return;
         }
 
         self.environs
             .push(core::mem::take(&mut environ.parent).unwrap());
+    }
+
+    pub fn push_environment(&mut self) {
+        self.environs
+            .push(Rc::new(RefCell::new(Environment::new())));
+    }
+
+    pub fn pop_environment(&mut self) {
+        if self.environs.len() == 0 {
+            panic!("pop_environment: environs is empty");
+        }
+        self.environs.pop();
     }
 
     pub fn get_function_name_from_pc(&mut self, pc: u64) -> Option<String> {
