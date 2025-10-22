@@ -1,0 +1,15 @@
+fn call f n {
+    let x = 4;
+    f(n);
+    return null;
+} 
+
+fn main {
+    let num = 5;
+    let closure = fn n {
+        let num = n;
+        return null;
+    };
+    call(closure, 6);
+    return num;
+}
