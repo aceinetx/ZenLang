@@ -1,6 +1,7 @@
 mod stdlib;
 
 fn iter arr func {
+	let arr = clone(arr);
 	while array_size(arr) > 0 {
 		if func(arr[0]) == false {
 			return null;
@@ -11,12 +12,10 @@ fn iter arr func {
 	return null;
 }
 
-fn print_item item {
-	println(item);
-	return true;
-}
-
 fn main {
-	iter([1,2,3,4,5], print_item);
+	iter([1,2,3,4,5], fn item {
+		println(item);
+		return true;
+	});
 	return null;
 }
