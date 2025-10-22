@@ -1,3 +1,5 @@
+use core::fmt::Error;
+
 use crate::ast::*;
 use crate::parser::parser::Parser;
 use crate::tokenizer::*;
@@ -179,6 +181,34 @@ impl<'a> Parser<'_> {
                 node.flag = true;
                 left = Box::new(node);
 
+                self.next();
+            }
+            Token::Fn => {
+                let mut node = closure::AstClosure::new();
+
+                self.next();
+                loop {
+                    if matches!(self.current_token, Token::Lbrace) {
+                        break;
+                    }
+
+                    if let Token::Identifier(name) = &self.current_token {
+                        node.args.push(name.clone());
+                    } else {
+                        return Err(self.error("expected either an identifier or lbrace"));
+                    }
+
+                    self.next();
+                }
+
+                let block = self.parse_block();
+                if let Err(e) = block {
+                    return Err(e);
+                }
+
+                node.children = block.unwrap();
+
+                left = Box::new(node);
                 self.next();
             }
             _ => {

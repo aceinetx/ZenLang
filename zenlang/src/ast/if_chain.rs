@@ -107,7 +107,9 @@ impl Compile for AstIfChain {
                 module
                     .opcodes
                     .push(Opcode::StoreVar(head.if_let_name.clone()));
-                module.opcodes.push(Opcode::LoadVar(head.if_let_name.clone()));
+                module
+                    .opcodes
+                    .push(Opcode::LoadVar(head.if_let_name.clone()));
 
                 branch_indexes.push(module.opcodes.len());
                 module.opcodes.push(Opcode::BranchNonNull(0));
@@ -224,7 +226,8 @@ impl Compile for AstIfChain {
                 if let Opcode::BranchTrue(bst_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
                     *bst_addr = addr as u32;
                 }
-                if let Opcode::BranchNonNull(bsnn_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
+                if let Opcode::BranchNonNull(bsnn_addr) = &mut module.opcodes[branch_indexes[1 + i]]
+                {
                     *bsnn_addr = addr as u32;
                 }
             }

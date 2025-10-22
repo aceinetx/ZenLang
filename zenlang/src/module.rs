@@ -3,6 +3,7 @@
 //! Contains ZenLang module structs
 use crate::opcode::Opcode;
 use ::serde::{Deserialize, Serialize};
+use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
 use bincode;
@@ -88,6 +89,16 @@ impl Module {
     /// Get an opcode at a certain address
     pub fn get_opcode(&self, addr: u32) -> &Opcode {
         return &self.opcodes[addr as usize];
+    }
+
+    pub fn format_debug_opcodes(&self) -> String {
+        let mut s = String::new();
+
+        for (index, opcode) in self.opcodes.iter().enumerate() {
+            s.push_str(format!("{:>width$} {:?}\n", index, opcode, width = 5).as_str());
+        }
+
+        return s;
     }
 }
 

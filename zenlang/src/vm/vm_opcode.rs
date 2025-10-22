@@ -1,4 +1,6 @@
 use crate::opcode::*;
+use crate::strong_u64::U64BitsControl;
+use crate::value::Value;
 use crate::vm::*;
 use alloc::format;
 
@@ -113,6 +115,18 @@ impl VM {
             }
             Opcode::Ret() => {
                 self.op_ret();
+            }
+            Opcode::Closure(skip, args) => {
+                let value = Value::FunctionRefEnv(
+                    self.pc.get_low() as u64,
+                    *args,
+                    self.environs.last().unwrap().clone(),
+                );
+
+                self.pc.add_low(*skip);
+
+                self.stack.push(value);
+                //panic!();
             }
         }
     }

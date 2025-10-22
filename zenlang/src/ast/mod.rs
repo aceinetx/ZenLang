@@ -8,6 +8,7 @@ pub mod binop;
 pub mod block;
 pub mod boolean;
 pub mod break_stmt;
+pub mod closure;
 pub mod continue_stmt;
 pub mod defer;
 pub mod dict;

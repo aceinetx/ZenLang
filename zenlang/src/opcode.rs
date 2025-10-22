@@ -28,6 +28,7 @@ pub enum Opcode {
     BranchTrue(u32),    // branch stack true (branch if stack value is true)
     BranchNonNull(u32), // branch stack non null
     Branch(u32),        // branch
+    Closure(u32, u64),  // closure, args: skip
     Add(),
     Sub(),
     Mul(),

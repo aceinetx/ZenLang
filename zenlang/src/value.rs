@@ -1,6 +1,7 @@
 //! Value
 //!
 //! ZenLang variable value
+use crate::environment::Environment;
 use crate::strong_u64::U64BitsControl;
 use crate::vm::VM;
 use alloc::collections::btree_map::BTreeMap;
@@ -24,6 +25,7 @@ pub enum Value {
     String(String),
     Boolean(bool),
     FunctionRef(u64, u64),
+    FunctionRefEnv(u64, u64, Rc<RefCell<Environment>>),
     Object(Rc<RefCell<Object>>),
     Null(),
 }
@@ -110,6 +112,9 @@ impl Value {
             (Value::FunctionRef(a, b), Value::FunctionRef(c, d)) => {
                 return a == c && b == d;
             }
+            (Value::FunctionRefEnv(a, b, _), Value::FunctionRefEnv(c, d, _)) => {
+                return a == c && b == d;
+            }
             (Value::Null(), Value::Null()) => {
                 return true;
             }
@@ -190,6 +195,15 @@ impl Display for Value {
                 return write!(
                     f,
                     "[function at 0x{:?} in module {} with {} arguments]",
+                    addr.get_low(),
+                    addr.get_high(),
+                    args_count
+                );
+            }
+            Value::FunctionRefEnv(addr, args_count, _) => {
+                return write!(
+                    f,
+                    "[env function at 0x{:?} in module {} with {} arguments]",
                     addr.get_low(),
                     addr.get_high(),
                     args_count
