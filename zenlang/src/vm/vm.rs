@@ -184,25 +184,24 @@ impl VM {
         if self.environs.len() == 0 {
             panic!("pop_environment: environs is empty");
         }
-        // Fuck reference counted ptrs
-        // Why do I have to count references, MANUALLY
-        // (there is probably a better way to do this, but time's ticking)
-        let environ = self.environs.last().unwrap();
-        let mut refs: usize = 0;
-        for e in self.environs.iter() {
-            if Rc::ptr_eq(e, environ) {
-                refs += 1;
+
+        let mut in_use = false;
+        let env = self.environs.last().unwrap();
+        for environ in self.environs.iter() {
+            for var in (&*environ.borrow()).vars.iter() {
+                if let Value::FunctionRefEnv(_, _, e) = &var.1 {
+                    if let Some(e) = &e.upgrade() {
+                        if Rc::ptr_eq(env, e) {
+                            in_use = true;
+                        }
+                    }
+                }
             }
         }
 
-        // If refs != 1, the vars are prolly used somewhere else so don't clear them
-        // TODO: This doesn't work and doesn't pass the fourth test in vm_closure.rs, instead we
-        // should try using weak ptr's
-        if refs == 1 {
-            (&mut *environ.borrow_mut()).vars.clear();
+        if !in_use {
+            //self.environs.pop();
         }
-
-        self.environs.pop();
     }
 
     pub fn get_function_name_from_pc(&mut self, pc: u64) -> Option<String> {

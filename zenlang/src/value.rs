@@ -25,7 +25,7 @@ pub enum Value {
     String(String),
     Boolean(bool),
     FunctionRef(u64, u64),
-    FunctionRefEnv(u64, u64, Rc<RefCell<Environment>>),
+    FunctionRefEnv(u64, u64, Weak<RefCell<Environment>>),
     Object(Rc<RefCell<Object>>),
     Null(),
 }

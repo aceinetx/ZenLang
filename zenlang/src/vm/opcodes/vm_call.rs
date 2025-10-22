@@ -2,6 +2,7 @@ use crate::strong_u64::U64BitsControl;
 use crate::value::*;
 use crate::vm::VM;
 use alloc::format;
+//use alloc::rc::Rc;
 use alloc::string::*;
 
 impl VM {
@@ -40,7 +41,11 @@ impl VM {
                     self.check_stack_overflow();
                     self.pc = addr;
 
-                    self.environs.push(env);
+                    if let Some(env) = env.upgrade() {
+                        self.environs.push(env);
+                    } else {
+                        //self.push_environment();
+                    }
 
                     let this_name = &String::from("self");
                     let environ = self.environs.last_mut().unwrap();

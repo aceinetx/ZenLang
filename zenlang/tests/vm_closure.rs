@@ -126,9 +126,8 @@ fn closure array {
 
 fn main {
     let arr = [];
-    let f =closure(arr);
 
-    return f();
+    return closure(arr)();
 }
     "#
         .into(),
