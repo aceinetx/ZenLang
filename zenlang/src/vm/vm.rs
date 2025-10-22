@@ -18,7 +18,7 @@ pub struct VM {
     pub pc: u64,
     pub stack: Vec<Value>,
     pub call_stack: Vec<u64>,
-    pub environ: Option<Rc<RefCell<Environment>>>,
+    pub environs: Vec<Rc<RefCell<Environment>>>,
     pub error: String,
     pub ret: Value,
     pub platform: Option<Box<dyn Platform>>,
@@ -35,7 +35,7 @@ impl VM {
             pc: 0,
             stack: Vec::new(),
             call_stack: Vec::new(),
-            environ: None,
+            environs: Vec::new(),
             error: String::new(),
             ret: Value::Null(),
             platform: None,
@@ -78,7 +78,8 @@ impl VM {
                     }
                 }
 
-                self.environ = Some(Rc::new(RefCell::new(Environment::new())));
+                self.environs
+                    .push(Rc::new(RefCell::new(Environment::new())));
 
                 if !self.error.is_empty() {
                     self.halted = true;
@@ -149,21 +150,27 @@ impl VM {
 
     pub(crate) fn add_environment(&mut self) {
         let new = Rc::new(RefCell::new(Environment::new()));
-        if let Some(environ) = &self.environ {
+        if let Some(environ) = self.environs.pop() {
             (&mut *new.borrow_mut()).parent = Some(environ.clone());
         }
-        self.environ = Some(new);
+        self.environs.push(new);
     }
 
-    pub(crate) fn remove_scope(&mut self) {
-        if self.environ.is_none() {
-            panic!("environ is None");
+    pub(crate) fn remove_environment(&mut self) {
+        if self.environs.len() == 0 {
+            panic!("environs is empty");
         }
 
-        // Welcome to rust!
-        self.environ = core::mem::take(
-            &mut (&mut *core::mem::take(&mut self.environ).unwrap().borrow_mut()).parent,
-        );
+        let environ = self.environs.pop().unwrap();
+        let environ = &mut *environ.borrow_mut();
+
+        if environ.parent.is_none() {
+            self.environs.clear();
+            return;
+        }
+
+        self.environs
+            .push(core::mem::take(&mut environ.parent).unwrap());
     }
 
     pub fn get_function_name_from_pc(&mut self, pc: u64) -> Option<String> {

@@ -10,7 +10,7 @@ impl VM {
             self.ret = self.stack.pop().unwrap();
         }
 
-        self.remove_scope();
+        self.remove_environment();
 
         if !self.call_stack.is_empty() {
             self.pc = self.call_stack.pop().unwrap();
