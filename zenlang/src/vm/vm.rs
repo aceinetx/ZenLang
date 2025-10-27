@@ -1,6 +1,3 @@
-use core::cell::RefCell;
-
-use crate::environment;
 use crate::environment::Environment;
 use crate::module::Module;
 use crate::platform::Platform;
@@ -8,7 +5,6 @@ use crate::strong_u64::*;
 use crate::value::*;
 use alloc::boxed::*;
 use alloc::format;
-use alloc::rc::*;
 use alloc::string::*;
 use alloc::vec::*;
 
@@ -210,11 +206,15 @@ impl VM {
             return true;
         }
 
+        for environ in self.environs_stack.iter() {
+            if *environ == id {
+                return true;
+            }
+        }
+
         for value in self.stack.iter() {
-            if let Value::FunctionRefEnv(_, _, i) = value {
-                if *i == id {
-                    return true;
-                }
+            if self.is_environ_used_in(id, value) {
+                return true;
             }
         }
 

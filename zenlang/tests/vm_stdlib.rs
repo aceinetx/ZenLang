@@ -332,6 +332,9 @@ fn vm_test_stdlib_clone() {
 fn main {
     let a1 = [1,2,3];
     let a2 = clone(a1);
+    if a2 == null {
+        return "a2 is null!";
+    }
     let a1[0] = 0;
     return a2[0];
 }

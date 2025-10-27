@@ -2,8 +2,6 @@ use crate::strong_u64::U64BitsControl;
 use crate::value::*;
 use crate::vm::VM;
 use alloc::format;
-use alloc::rc::Rc;
-//use alloc::rc::Rc;
 use alloc::string::*;
 
 impl VM {

@@ -1,7 +1,6 @@
 //! Value
 //!
 //! ZenLang variable value
-use crate::environment::Environment;
 use crate::strong_u64::U64BitsControl;
 use crate::vm::VM;
 use alloc::collections::btree_map::BTreeMap;
