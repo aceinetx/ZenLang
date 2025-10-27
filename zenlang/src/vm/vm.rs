@@ -219,6 +219,10 @@ impl VM {
         }
 
         for environ in self.environs.iter() {
+            if environ.0 == id {
+                continue;
+            }
+
             for var in environ.1.vars.iter() {
                 if self.is_environ_used_in(id, &var.1) {
                     return true;

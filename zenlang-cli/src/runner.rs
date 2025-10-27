@@ -36,7 +36,7 @@ fn run_vm(vm: &mut vm::VM) {
     // There will always be at least 1 environ for the main function that doesn't get freed
     // That's normal
     if vm.environs.len() > 1 {
-        println!("{} environs remained!", vm.environs.len());
+        println!("{} environs remained! {:?}", vm.environs.len(), vm.environs);
     } else {
         println!("no environs leaked");
     }
