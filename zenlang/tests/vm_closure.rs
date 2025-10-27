@@ -180,3 +180,27 @@ fn main {
         Value::Number(10.0),
     );
 }
+
+#[test]
+fn vm_test_closure_iife() {
+    expect_to_return(
+        r#"
+fn clos f {
+    return f();
+}
+
+fn main {
+    let x = 3;
+    let f = fn val {
+        return fn {
+            return val;
+        };
+    }(x);
+    let x = 4;
+    return clos(f);
+}
+    "#
+        .into(),
+        Value::Number(3.0),
+    );
+}
