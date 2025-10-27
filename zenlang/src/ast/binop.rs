@@ -1,6 +1,7 @@
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::vec::*;
 
+#[derive(Debug)]
 pub enum AstBinopOp {
     PLUS,
     MINUS,

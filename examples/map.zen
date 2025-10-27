@@ -1,0 +1,18 @@
+mod stdlib;
+
+fn map_mutate array func {
+	let i = array_size(array) - 1;
+	while i >= 0 {
+		let array[i] = func(array[i]);
+		let i = i - 1;
+	}
+	return null;
+}
+
+fn main {
+	let arr = [1,2,3,4,5];
+	map_mutate(arr, fn val {
+		return val * 2;
+	});
+	return arr;
+}

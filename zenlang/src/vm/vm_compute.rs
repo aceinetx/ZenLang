@@ -7,8 +7,8 @@ use alloc::string::String;
 impl VM {
     pub(crate) fn compute_values(&mut self, left: Value, right: Value, op: AstBinopOp) -> Value {
         let err = format!(
-            "unmatched left and right value types: {:?} {:?}",
-            left, right
+            "unmatched left and right value types: {:?} {:?} with op {:?}",
+            left, right, op
         );
         match op {
             AstBinopOp::PLUS => match (left, right) {
