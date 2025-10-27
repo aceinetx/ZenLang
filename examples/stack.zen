@@ -35,7 +35,7 @@ fn stack_is_empty {
 
 fn main {
     let stack = stack_new();
-		stack.push(69);
+    stack.push(69);
     println(stack.top());
     return stack.is_empty();
 }

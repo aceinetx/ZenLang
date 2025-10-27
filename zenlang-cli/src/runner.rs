@@ -32,6 +32,14 @@ fn run_vm(vm: &mut vm::VM) {
     } else {
         println!("no values leaked on stack");
     }
+
+    // There will always be at least 1 environ for the main function that doesn't get freed
+    // That's normal
+    if vm.environs.len() > 1 {
+        println!("{} environs remained!", vm.environs.len());
+    } else {
+        println!("no environs leaked");
+    }
 }
 
 pub fn run_code(code: String, module_name: String) {
