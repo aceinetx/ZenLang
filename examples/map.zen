@@ -9,10 +9,24 @@ fn map_mutate array func {
 	return null;
 }
 
-fn main {
+fn do func {
 	let arr = [1,2,3,4,5];
-	map_mutate(arr, fn val {
+	print(arr);
+	print(" -> ");
+	map_mutate(arr, func);
+	println(arr);
+	return null;
+}
+
+fn main {
+	do(fn val {
 		return val * 2;
 	});
-	return arr;
+	do(fn val {
+		return val / 2;
+	});
+	do(fn val {
+		return val + val / 2;
+	});
+	return null;
 }
