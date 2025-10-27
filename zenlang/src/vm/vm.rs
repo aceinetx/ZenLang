@@ -253,9 +253,9 @@ impl VM {
             panic!("pop_environment: environs stack is empty");
         }
 
-        self.gc_environs();
-
         self.environs_stack.pop();
+
+        self.gc_environs();
     }
 
     pub fn get_function_name_from_pc(&mut self, pc: u64) -> Option<String> {
