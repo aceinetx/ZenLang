@@ -6,8 +6,7 @@ use alloc::string::*;
 
 impl VM {
     pub fn op_load_var(&mut self, name: &String) {
-        if let Some(environ) = self.environs.last() {
-            let environ = &*environ.borrow();
+        if let Some(environ) = self.get_environ_by_id(*self.environs_stack.last().unwrap()) {
             if let Some(value) = environ.get(name) {
                 self.stack.push(value.clone());
                 return;
@@ -43,9 +42,8 @@ impl VM {
                 return;
             }
 
-            if let Some(environ) = self.environs.last_mut() {
-                let environ = &mut *environ.borrow_mut();
-
+            if let Some(environ) = self.get_environ_by_id_mut(*self.environs_stack.last().unwrap())
+            {
                 environ.create_if_doesnt_exist(name);
                 if let Some(value) = environ.get_mut(name) {
                     *value = store_value;

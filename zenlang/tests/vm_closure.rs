@@ -134,3 +134,49 @@ fn main {
         Value::Number(5.0),
     );
 }
+
+#[test]
+fn vm_test_closure_5() {
+    expect_to_return(
+        r#"
+fn closure {
+    let closure = fn {
+        let x = 5;
+        let inner = fn {
+            return x;
+        };
+        return inner;
+    };
+    return closure;
+} 
+
+fn main {
+    return closure()()();
+}
+    "#
+        .into(),
+        Value::Number(5.0),
+    );
+}
+
+#[test]
+fn vm_test_closure_6() {
+    expect_to_return(
+        r#"
+fn dict {
+    let x = 5;
+    return {
+        "f" = fn {
+            return x;
+        }
+    };
+}
+
+fn main {
+    return dict().f() + dict()["f"]();
+}
+    "#
+        .into(),
+        Value::Number(10.0),
+    );
+}

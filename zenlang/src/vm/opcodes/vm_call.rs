@@ -2,6 +2,7 @@ use crate::strong_u64::U64BitsControl;
 use crate::value::*;
 use crate::vm::VM;
 use alloc::format;
+use alloc::rc::Rc;
 //use alloc::rc::Rc;
 use alloc::string::*;
 
@@ -18,10 +19,11 @@ impl VM {
                     self.push_environment();
 
                     let this_name = &String::from("self");
-                    let environ = self.environs.last_mut().unwrap();
-                    let environ = &mut *environ.borrow_mut();
-                    environ.create_if_doesnt_exist(this_name);
-                    *environ.get_mut(this_name).unwrap() = core::mem::take(&mut self.self_var);
+                    let self_var = core::mem::take(&mut self.self_var);
+
+                    self.get_environ_by_id_mut(*self.environs_stack.last().unwrap())
+                        .unwrap()
+                        .set(this_name, self_var);
 
                     let start = self.bfas_stack_start.pop().unwrap();
                     let end = self.bfas_stack_end.pop().unwrap();
@@ -41,17 +43,14 @@ impl VM {
                     self.check_stack_overflow();
                     self.pc = addr;
 
-                    if let Some(env) = env.upgrade() {
-                        self.environs.push(env);
-                    } else {
-                        //self.push_environment();
-                    }
+                    self.environs_stack.push(env);
 
                     let this_name = &String::from("self");
-                    let environ = self.environs.last_mut().unwrap();
-                    let environ = &mut *environ.borrow_mut();
-                    environ.create_if_doesnt_exist(this_name);
-                    *environ.get_mut(this_name).unwrap() = core::mem::take(&mut self.self_var);
+                    let self_var = core::mem::take(&mut self.self_var);
+
+                    self.get_environ_by_id_mut(*self.environs_stack.last().unwrap())
+                        .unwrap()
+                        .set(this_name, self_var);
 
                     let start = self.bfas_stack_start.pop().unwrap();
                     let end = self.bfas_stack_end.pop().unwrap();

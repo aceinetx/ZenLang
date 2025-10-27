@@ -9,7 +9,7 @@ use alloc::vec::*;
 /// Scope
 ///
 /// Contains variables values and names
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Environment {
     pub(crate) vars: Vec<(String, Value)>,
     pub parent: Option<Rc<RefCell<Environment>>>,
@@ -41,6 +41,12 @@ impl Environment {
             }
         }
         return None;
+    }
+
+    /// Set a variable
+    pub fn set(&mut self, name: &String, value: Value) {
+        self.create_if_doesnt_exist(name);
+        *self.get_mut(name).unwrap() = value;
     }
 
     /// Create a variable if doesn't exist

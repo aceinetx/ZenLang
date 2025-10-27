@@ -6,6 +6,10 @@ use alloc::string::String;
 
 impl VM {
     pub(crate) fn compute_values(&mut self, left: Value, right: Value, op: AstBinopOp) -> Value {
+        let err = format!(
+            "unmatched left and right value types: {:?} {:?}",
+            left, right
+        );
         match op {
             AstBinopOp::PLUS => match (left, right) {
                 (Value::Number(left_num), Value::Number(right_num)) => {
@@ -108,7 +112,7 @@ impl VM {
                 return Value::Boolean(left.ge(&right));
             }
         }
-        self.error = "unmatched left and right value types".into();
+        self.error = err;
         return Value::Null();
     }
 

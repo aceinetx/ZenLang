@@ -1,5 +1,6 @@
 use core::cell::RefCell;
 
+use crate::environment;
 use crate::environment::Environment;
 use crate::module::Module;
 use crate::platform::Platform;
@@ -18,7 +19,9 @@ pub struct VM {
     pub pc: u64,
     pub stack: Vec<Value>,
     pub call_stack: Vec<u64>,
-    pub environs: Vec<Rc<RefCell<Environment>>>,
+    pub next_environ_index: usize,
+    pub environs: Vec<(usize, Environment)>,
+    pub environs_stack: Vec<usize>,
     pub error: String,
     pub ret: Value,
     pub platform: Option<Box<dyn Platform>>,
@@ -36,7 +39,9 @@ impl VM {
             pc: 0,
             stack: Vec::new(),
             call_stack: Vec::new(),
+            next_environ_index: 0,
             environs: Vec::new(),
+            environs_stack: Vec::new(),
             error: String::new(),
             ret: Value::Null(),
             platform: None,
@@ -147,61 +152,110 @@ impl VM {
         }
     }
 
-    /*    pub(crate) fn add_environment(&mut self) {
-        if self.environs.len() == 0 {
-            panic!("add_environment: environs is empty");
-        }
-
-        let new = Rc::new(RefCell::new(Environment::new()));
-        (&mut *new.borrow_mut()).parent = Some(self.environs.pop().unwrap().clone());
-        self.environs.push(new);
-    }
-
-    pub(crate) fn remove_environment(&mut self) {
-        if self.environs.len() == 0 {
-            panic!("remove_environment: environs is empty");
-        }
-
-        let environ = self.environs.pop().unwrap();
-        let environ = &mut *environ.borrow_mut();
-
-        if environ.parent.is_none() {
-            self.pop_environment();
-            return;
-        }
-
-        self.environs
-            .push(core::mem::take(&mut environ.parent).unwrap());
-        environ.parent = None;
-    }*/
-
     pub fn push_environment(&mut self) {
         self.environs
-            .push(Rc::new(RefCell::new(Environment::new())));
+            .push((self.next_environ_index, Environment::new()));
+        self.environs_stack.push(self.next_environ_index);
+        self.next_environ_index += 1;
     }
 
-    pub fn pop_environment(&mut self) {
-        if self.environs.len() == 0 {
-            panic!("pop_environment: environs is empty");
+    pub fn get_environ_by_id(&self, id: usize) -> Option<&Environment> {
+        for environ in self.environs.iter() {
+            if environ.0 == id {
+                return Some(&environ.1);
+            }
+        }
+        return None;
+    }
+
+    pub fn get_environ_by_id_mut(&mut self, id: usize) -> Option<&mut Environment> {
+        for environ in self.environs.iter_mut() {
+            if environ.0 == id {
+                return Some(&mut environ.1);
+            }
+        }
+        return None;
+    }
+
+    pub fn is_environ_used_in(&self, id: usize, value: &Value) -> bool {
+        if let Value::FunctionRefEnv(_, _, i) = value {
+            if *i == id {
+                return true;
+            }
         }
 
-        let mut in_use = false;
-        let env = self.environs.last().unwrap();
-        for environ in self.environs.iter() {
-            for var in (&*environ.borrow()).vars.iter() {
-                if let Value::FunctionRefEnv(_, _, e) = &var.1 {
-                    if let Some(e) = &e.upgrade() {
-                        if Rc::ptr_eq(env, e) {
-                            in_use = true;
+        if let Value::Object(obj) = value {
+            match &*obj.borrow() {
+                Object::Array(array) => {
+                    for value in array.iter() {
+                        if self.is_environ_used_in(id, value) {
+                            return true;
+                        }
+                    }
+                }
+                Object::Dictionary(dict) => {
+                    for value in dict.iter() {
+                        if self.is_environ_used_in(id, value.1) {
+                            return true;
                         }
                     }
                 }
             }
         }
+        return false;
+    }
 
-        if !in_use {
-            //self.environs.pop();
+    pub fn is_environ_used(&self, id: usize) -> bool {
+        if id == 0 {
+            return true;
         }
+
+        for value in self.stack.iter() {
+            if let Value::FunctionRefEnv(_, _, i) = value {
+                if *i == id {
+                    return true;
+                }
+            }
+        }
+
+        for environ in self.environs.iter() {
+            for var in environ.1.vars.iter() {
+                if self.is_environ_used_in(id, &var.1) {
+                    return true;
+                }
+            }
+        }
+
+        if self.is_environ_used_in(id, &self.ret) {
+            return true;
+        }
+
+        return false;
+    }
+
+    pub fn gc_environs(&mut self) {
+        let mut marked: Vec<usize> = Vec::new();
+        for i in 0..self.environs.len() {
+            let environ = &self.environs[i];
+
+            if !self.is_environ_used(environ.0) {
+                marked.push(i);
+            }
+        }
+
+        for i in marked.iter().rev() {
+            self.environs.remove(*i);
+        }
+    }
+
+    pub fn pop_environment(&mut self) {
+        if self.environs_stack.len() == 0 {
+            panic!("pop_environment: environs stack is empty");
+        }
+
+        self.gc_environs();
+
+        self.environs_stack.pop();
     }
 
     pub fn get_function_name_from_pc(&mut self, pc: u64) -> Option<String> {
