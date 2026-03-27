@@ -443,6 +443,17 @@ fn tokenizer_test_hashtag() {
 }
 
 #[test]
+fn tokenizer_test_colon() {
+    let mut tokenizer = Tokenizer::new("1.23: :".into());
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Number(1.23)));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Colon));
+    let token = tokenizer.next();
+    assert!(matches!(token, Token::Colon));
+}
+
+#[test]
 fn tokenizer_test_vmcall() {
     let mut tokenizer = Tokenizer::new("fn main {return 2 + 1 vmcall 1 + 2; }".into());
     tokenizer.next();

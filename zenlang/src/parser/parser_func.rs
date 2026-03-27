@@ -46,17 +46,46 @@ impl<'a> Parser<'_> {
             function.name = name;
 
             // Parse function arguments
+            self.next();
             loop {
-                let token = self.next();
+                let mut token = self.current_token.clone();
+
                 if matches!(token, Token::Lbrace) {
                     // Got a `{` - break out
                     break;
                 }
 
-                if let Token::Identifier(name) = token {
-                    function.args.push(name);
+                let mut parsed_type_hint = false;
+
+                if let Token::Identifier(name) = &token {
+                    function.args.push(name.to_string());
                 } else {
                     return Err(self.error("expected identifier in `fn <args> (HERE)`"));
+                }
+
+                token = self.next();
+                if matches!(token, Token::Colon) {
+                    // Parse type hints
+                    let type_hint = self.next();
+                    if let Token::Identifier(name) = type_hint {
+                        function.args_type_hints.push(name);
+                        self.next();
+                    } else {
+                        return Err(self.error("expected identifier after a type hint colon"));
+                    }
+                    parsed_type_hint = true;
+                } else if !matches!(token, Token::Lbrace) {
+                    // is there a better way to check for that shit?
+                    if let Token::Identifier(_) = token {
+                    } else {
+                        return Err(
+                            self.error("expected a colon or lbrace in a function arguments")
+                        );
+                    }
+                }
+
+                if !parsed_type_hint {
+                    function.args_type_hints.push(String::new());
                 }
             }
 

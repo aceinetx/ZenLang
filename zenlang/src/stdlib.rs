@@ -4,7 +4,7 @@ use crate::{
     opcode::Opcode,
     parser, tokenizer,
 };
-use alloc::string::*;
+use alloc::{string::*, vec::Vec};
 
 pub fn compile_stdlib_module() -> Module {
     let code = String::from(
@@ -139,6 +139,7 @@ fn #[ctor] stdlib_init {
         "_vmcall_ret_unsafe_1".into(),
         module.opcodes.len() as u32,
         1,
+        Vec::new(),
         false,
     ));
     module.opcodes.push(Opcode::Dynvmcall());
@@ -148,6 +149,7 @@ fn #[ctor] stdlib_init {
         "_vmcall_ret_unsafe_2".into(),
         module.opcodes.len() as u32,
         2,
+        Vec::new(),
         false,
     ));
     module.opcodes.push(Opcode::Dynvmcall());
@@ -157,6 +159,7 @@ fn #[ctor] stdlib_init {
         "_vmcall_ret_unsafe_3".into(),
         module.opcodes.len() as u32,
         3,
+        Vec::new(),
         false,
     ));
     module.opcodes.push(Opcode::Dynvmcall());
@@ -166,6 +169,7 @@ fn #[ctor] stdlib_init {
         "_vmcall_ret_unsafe_4".into(),
         module.opcodes.len() as u32,
         4,
+        Vec::new(),
         false,
     ));
     module.opcodes.push(Opcode::Dynvmcall());

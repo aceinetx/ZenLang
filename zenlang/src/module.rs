@@ -21,16 +21,25 @@ pub struct ModuleFunction {
     pub addr: u32,
     /// Argument count
     pub args_count: u64,
+    /// Argument type hints
+    pub args_type_hints: Vec<String>,
     /// Is a constructor function
     pub ctor: bool,
 }
 
 impl ModuleFunction {
-    pub fn new(name: String, addr: u32, args_count: u64, ctor: bool) -> ModuleFunction {
+    pub fn new(
+        name: String,
+        addr: u32,
+        args_count: u64,
+        args_type_hints: Vec<String>,
+        ctor: bool,
+    ) -> ModuleFunction {
         return ModuleFunction {
             name: name,
             addr: addr,
             args_count: args_count,
+            args_type_hints: args_type_hints,
             ctor: ctor,
         };
     }

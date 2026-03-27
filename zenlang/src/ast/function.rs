@@ -9,6 +9,7 @@ pub struct AstFunction {
     pub children: Vec<alloc::boxed::Box<dyn Compile>>,
     pub name: String,
     pub args: Vec<String>,
+    pub args_type_hints: Vec<String>,
     pub attrs: Vec<FunctionAttribute>,
 }
 
@@ -18,6 +19,7 @@ impl AstFunction {
             children: Vec::new(),
             name: String::new(),
             args: Vec::new(),
+            args_type_hints: Vec::new(),
             attrs: Vec::new(),
         };
     }
@@ -70,6 +72,7 @@ impl Compile for AstFunction {
                 name,
                 module.opcodes.len() as u32,
                 self.args.len() as u64,
+                self.args_type_hints.clone(),
                 ctor,
             ));
         }

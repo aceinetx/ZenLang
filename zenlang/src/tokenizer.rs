@@ -29,6 +29,7 @@ pub enum Token {
     Lbracket,
     Rbracket,
     Semicolon,
+    Colon,
     Comma,
     Dot,
     Assign,
@@ -210,6 +211,9 @@ impl Tokenizer {
             } else if c == ';' {
                 self.pos += 1;
                 return Token::Semicolon;
+            } else if c == ':' {
+                self.pos += 1;
+                return Token::Colon;
             } else if c == ',' {
                 self.pos += 1;
                 return Token::Comma;
