@@ -11,33 +11,33 @@ pub fn compile_stdlib_module() -> Module {
         r#"
 let File;
 
-fn #[naked] print str {
+fn #[naked] print str: string {
     vmcall 1;
     return null;
 } 
-fn #[naked] println str {
+fn #[naked] println str: string {
     vmcall 2;
     return null;
 } 
 fn get_string {
     return _vmcall_ret_unsafe_1(3);
 }
-fn array_size array {
+fn array_size array: array {
     return _vmcall_ret_unsafe_2(array, 5);
 }
-fn array_push array element {
+fn array_push array: array element {
     return _vmcall_ret_unsafe_3(array, element, 6);
 }
-fn array_pop array {
+fn array_pop array: array {
     return _vmcall_ret_unsafe_2(array, 7);
 }
-fn array_remove array index {
+fn array_remove array: array index: number {
     return _vmcall_ret_unsafe_3(array, index, 8);
 }
-fn array_insert array index element {
+fn array_insert array: array index: number element {
     return _vmcall_ret_unsafe_4(array, index, element, 9);
 }
-fn array_count array element {
+fn array_count array: array element {
     let i = 0;
     let count = 0;
     let size = array_size(array);
@@ -50,10 +50,10 @@ fn array_count array element {
     }
     return count;
 }
-fn array_last array {
+fn array_last array: array {
     return array[array_size(array) - 1];
 }
-fn str_split str delimiter {
+fn str_split str: string delimiter: string {
     return _vmcall_ret_unsafe_3(str, delimiter, 10);
 }
 fn err value {
@@ -62,33 +62,33 @@ fn err value {
 fn ok value {
     return {"_typename" = "Result", "_err" = null, "_ok" = value};
 }
-fn get_err result {
+fn get_err result: Result {
     return result._err;
 }
-fn get_ok result {
+fn get_ok result: Result {
     return result._ok;
 }
-fn read_file_bytes path {
+fn read_file_bytes path: string {
     if let bytes = _vmcall_ret_unsafe_2(path, 11){
         return ok(bytes);
     }
     return err("Read failed");
 }
-fn read_file path {
+fn read_file path: string {
     if let bytes = _vmcall_ret_unsafe_2(path, 12){
         return ok(bytes);
     }
     return err("Read failed");
 }
-fn #[naked] write_file_bytes path bytes {
+fn #[naked] write_file_bytes path: string bytes: array {
     vmcall 13;
     return null;
 }
-fn #[naked] write_file path bytes {
+fn #[naked] write_file path: string bytes: array {
     vmcall 14;
     return null;
 }
-fn boolean str {
+fn boolean str: string {
     if str == "true" {
         return true;
     } elif str == "false" {
@@ -96,20 +96,20 @@ fn boolean str {
     }
     return null;
 }
-fn ord ch {
+fn ord ch: string {
     if ch == "" {
         return err("ch is empty");
     }
 
     return ok(_vmcall_ret_unsafe_2(ch, 15));
 }
-fn chr ch {
+fn chr ch: number {
     return _vmcall_ret_unsafe_2(ch, 16);
 }
 fn stringify any {
     return _vmcall_ret_unsafe_2(any, 17);
 }
-fn number str {
+fn number str: string {
     return _vmcall_ret_unsafe_2(str, 18);
 }
 fn clone obj {
