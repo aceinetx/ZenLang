@@ -27,7 +27,11 @@ impl VM {
                     let mut addr: u64 = 0;
                     addr.set_low(func.addr);
                     addr.set_high(module_i as u32);
-                    self.stack.push(Value::FunctionRef(addr, func.args_count));
+                    self.stack.push(Value::FunctionRef(
+                        addr,
+                        func.args_count,
+                        func.args_type_hints.clone(),
+                    ));
                     self.check_stack_overflow();
                     return;
                 }

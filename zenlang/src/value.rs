@@ -23,7 +23,7 @@ pub enum Value {
     Number(f64),
     String(String),
     Boolean(bool),
-    FunctionRef(u64, u64),
+    FunctionRef(u64, u64, Vec<String>),
     Object(Rc<RefCell<Object>>),
     Null(),
 }
@@ -107,8 +107,9 @@ impl Value {
                     _ => return false,
                 }
             }
-            (Value::FunctionRef(a, b), Value::FunctionRef(c, d)) => {
-                return a == c && b == d;
+            (Value::FunctionRef(a, b, c), Value::FunctionRef(d, e, f)) => {
+                // TODO: we don't check the argument types yet
+                return a == d && b == e;
             }
             (Value::Null(), Value::Null()) => {
                 return true;
@@ -186,7 +187,7 @@ impl Display for Value {
                     }
                 }
             }
-            Value::FunctionRef(addr, args_count) => {
+            Value::FunctionRef(addr, args_count, _args_types) => {
                 return write!(
                     f,
                     "[function at 0x{:?} in module {} with {} arguments]",
