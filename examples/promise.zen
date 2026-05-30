@@ -1,0 +1,24 @@
+mod stdlib;
+
+fn Promise_new executor {
+	let inst = {
+		_typename = "Promise",
+		state = "pending",
+		continuations = [],
+	}
+	executor(resolve);
+
+	return inst;
+}
+
+fn hello {
+	println("hello");
+	return null;
+}
+
+fn main {
+	println(set_timeout);
+	set_timeout(hello, 1000);
+	while true {}
+	return null;
+}

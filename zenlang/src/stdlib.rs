@@ -115,6 +115,9 @@ fn number str {
 fn clone obj {
     return _vmcall_ret_unsafe_2(obj, 19);
 }
+fn set_timeout func timeout {
+    return _vmcall_ret_unsafe_3(timeout, func, 20);
+}
 fn #[ctor] stdlib_init {
     let File = {
         "read" = read_file,

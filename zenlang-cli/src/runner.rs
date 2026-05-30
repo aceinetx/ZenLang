@@ -7,7 +7,7 @@ fn run_vm(vm: &mut vm::VM) {
         println!("vm error: {}", e);
         return;
     }
-    //println!("{:?}", vm.modules);
+    println!("{:#?}", vm.modules[0]);
 
     vm.run_until_halt();
 

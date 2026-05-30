@@ -1,5 +1,6 @@
 //! ZenLang Platform implementation for rust's standard library
 use std::fs;
+use std::time::{SystemTime, UNIX_EPOCH};
 use zenlang::module::Module;
 use zenlang::platform;
 use zenlang::stdlib::compile_stdlib_module;
@@ -56,5 +57,13 @@ impl platform::Platform for Platform {
 
     fn write_file_bytes(&self, name: String, bytes: Vec<u8>) {
         let _ = fs::write(name, bytes);
+    }
+
+    fn get_time_millis(&self) -> u128 {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_millis();
+        return now;
     }
 }

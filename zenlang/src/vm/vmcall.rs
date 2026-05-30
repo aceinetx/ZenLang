@@ -497,6 +497,33 @@ impl VM {
                     return;
                 }
             }
+            20 => {
+                // set_timeout
+                if let Some(platform) = &self.platform {
+                    if let Some(value) = self.stack.pop() {
+                        if let Value::FunctionRef(addr, _) = value {
+                            if let Some(value) = self.stack.pop() {
+                                if let Value::Number(timeout) = value {
+                                    self.timeout_funcs
+                                        .push((addr, platform.get_time_millis() + timeout as u128));
+                                } else {
+                                    self.error = "vmcall: expected a number as timeout".into();
+                                    return;
+                                }
+                            } else {
+                                self.error = "vmcall: no value on stack".into();
+                                return;
+                            }
+                        } else {
+                            self.error = "vmcall: expected a function".into();
+                            return;
+                        }
+                    } else {
+                        self.error = "vmcall: no value on stack".into();
+                        return;
+                    }
+                }
+            }
             _ => {
                 if let Some(mut platform) = self.platform.take() {
                     let result = platform.as_mut().vmcall(self, index);

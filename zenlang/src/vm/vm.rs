@@ -4,6 +4,7 @@ use crate::scope::Scope;
 use crate::strong_u64::*;
 use crate::value::*;
 use alloc::boxed::*;
+use alloc::collections::btree_map::BTreeMap;
 use alloc::format;
 use alloc::string::*;
 use alloc::vec::*;
@@ -24,6 +25,7 @@ pub struct VM {
     pub self_var: Value,
     pub(crate) bfas_stack_start: Vec<i64>,
     pub(crate) bfas_stack_end: Vec<i64>,
+    pub(crate) timeout_funcs: Vec<(u64, u128)>,
 }
 
 impl VM {
@@ -42,6 +44,7 @@ impl VM {
             self_var: Value::Null(),
             bfas_stack_start: Vec::new(),
             bfas_stack_end: Vec::new(),
+            timeout_funcs: Vec::new(),
         };
     }
 
@@ -175,6 +178,29 @@ impl VM {
         }
     }
 
+    fn collect_timeout_funcs(&mut self) {
+        if let Some(platform) = &self.platform {
+            let mut timeout_func = 0u64;
+            let mut timeout = false;
+            let mut timeout_func_index = 0;
+            for (i, func) in self.timeout_funcs.iter().enumerate() {
+                timeout_func_index = i;
+                if func.1 <= platform.get_time_millis() {
+                    timeout_func = func.0;
+                    timeout = true;
+                    break;
+                }
+            }
+            if timeout {
+                self.timeout_funcs.remove(timeout_func_index);
+                self.stack.push(Value::FunctionRef(timeout_func, 0));
+                self.bfas_stack_start.push(0);
+                self.bfas_stack_end.push(0);
+                self.op_call()
+            }
+        }
+    }
+
     pub fn step(&mut self) -> bool {
         if self.halted {
             return false;
@@ -196,6 +222,7 @@ impl VM {
         let opcode = &opcodes[opcode_index as usize];
 
         self.execute_opcode(opcode);
+        self.collect_timeout_funcs();
 
         self.modules[module_index].opcodes = opcodes;
 

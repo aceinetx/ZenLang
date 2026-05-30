@@ -21,4 +21,7 @@ pub trait Platform {
     fn vmcall(&self, _vm: &mut VM, _index: u8) -> bool {
         return false;
     }
+    fn get_time_millis(&self) -> u128 {
+        return 0;
+    }
 }
