@@ -4,6 +4,16 @@ use crate::ast::*;
 use crate::parser::error;
 use crate::tokenizer::*;
 
+#[macro_export]
+macro_rules! unwrap_or_ret_error {
+    ($x:expr) => {
+        match $x {
+            Ok(node) => node,
+            Err(e) => return Err(e),
+        }
+    };
+}
+
 pub struct Parser<'a> {
     pub root: root::AstRoot,
     pub(crate) tokenizer: &'a mut Tokenizer,
@@ -38,10 +48,7 @@ impl<'a> Parser<'_> {
         while !matches!(token, Token::EOF) {
             match token {
                 Token::Fn => {
-                    let func = match self.parse_function() {
-                        Ok(func) => func,
-                        Err(e) => return Err(e),
-                    };
+                    let func = unwrap_or_ret_error!(self.parse_function());
                     self.root.children.push(Box::new(func));
                 }
                 _ => {}

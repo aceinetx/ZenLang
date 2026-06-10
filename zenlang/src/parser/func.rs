@@ -1,6 +1,7 @@
 use crate::ast::function::AstFunction;
 use crate::parser::*;
 use crate::tokenizer::Token;
+use crate::unwrap_or_ret_error;
 
 impl Parser<'_> {
     pub(crate) fn parse_function(&mut self) -> Result<AstFunction, error::Error> {
@@ -34,10 +35,7 @@ impl Parser<'_> {
 
             self.back();
 
-            func.body.push(match self.parse_statement() {
-                Ok(node) => node,
-                Err(e) => return Err(e),
-            });
+            func.body.push(unwrap_or_ret_error!(self.parse_statement()));
         }
 
         Ok(func)

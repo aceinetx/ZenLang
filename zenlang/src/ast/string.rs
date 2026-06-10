@@ -9,9 +9,9 @@ pub struct AstString {
 }
 
 impl AstString {
-    pub fn new() -> Self {
+    pub fn new(string: String) -> Self {
         return Self {
-            string: String::new(),
+            string: string,
             do_push: true,
         };
     }
@@ -28,7 +28,9 @@ impl Compile for AstString {
     ) -> Result<(), alloc::string::String> {
         let module = compiler.get_module();
         if self.do_push {
-            module.opcodes.push(Opcode::LoadStr(self.string.to_string()));
+            module
+                .opcodes
+                .push(Opcode::LoadStr(self.string.to_string()));
         }
 
         Ok(())

@@ -9,10 +9,9 @@ impl Parser<'_> {
         let token = self.next();
         return match token {
             Token::Return => {
-                let node = Box::new(AstReturn::new(match self.parse_expression() {
-                    Ok(node) => node,
-                    Err(e) => return Err(e),
-                }));
+                let node = Box::new(AstReturn::new(unwrap_or_ret_error!(
+                    self.parse_expression()
+                )));
 
                 if !matches!(self.next(), Token::Semicolon) {
                     return Err(error::Error::StatementSemicolon());

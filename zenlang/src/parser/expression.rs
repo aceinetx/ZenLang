@@ -1,9 +1,11 @@
 use crate::ast::binop::{AstBinop, AstBinopOp};
 use crate::ast::node::Compile;
 use crate::ast::number::AstNumber;
+use crate::ast::string::AstString;
 use crate::ast::var_ref::AstVarRef;
 use crate::parser::*;
 use crate::tokenizer::Token;
+use crate::unwrap_or_ret_error;
 use alloc::boxed::Box;
 
 impl Parser<'_> {
@@ -19,15 +21,16 @@ impl Parser<'_> {
                 let node = Box::new(AstNumber::new(number));
                 Ok(node)
             }
+            Token::String(str) => {
+                let node = Box::new(AstString::new(str));
+                Ok(node)
+            }
             _ => panic!(),
         }
     }
 
     pub(crate) fn parse_multiplicative(&mut self) -> Result<Box<dyn Compile>, error::Error> {
-        let mut left = match self.parse_primary() {
-            Ok(node) => node,
-            Err(e) => return Err(e),
-        };
+        let mut left = unwrap_or_ret_error!(self.parse_primary());
 
         let mut token;
         loop {
@@ -41,10 +44,7 @@ impl Parser<'_> {
                 }
             };
 
-            let right = match self.parse_primary() {
-                Ok(node) => node,
-                Err(e) => return Err(e),
-            };
+            let right = unwrap_or_ret_error!(self.parse_primary());
 
             left = Box::new(AstBinop::new(left, op, right));
         }
@@ -53,10 +53,7 @@ impl Parser<'_> {
     }
 
     pub(crate) fn parse_additive(&mut self) -> Result<Box<dyn Compile>, error::Error> {
-        let mut left = match self.parse_multiplicative() {
-            Ok(node) => node,
-            Err(e) => return Err(e),
-        };
+        let mut left = unwrap_or_ret_error!(self.parse_multiplicative());
 
         let mut token;
         loop {
@@ -70,10 +67,7 @@ impl Parser<'_> {
                 }
             };
 
-            let right = match self.parse_multiplicative() {
-                Ok(node) => node,
-                Err(e) => return Err(e),
-            };
+            let right = unwrap_or_ret_error!(self.parse_multiplicative());
 
             left = Box::new(AstBinop::new(left, op, right));
         }
