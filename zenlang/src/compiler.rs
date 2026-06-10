@@ -38,7 +38,7 @@ impl<'a> Compiler<'_> {
     pub fn compile(&mut self) -> Result<(), String> {
         self.warnings.clear();
         if let Err(e) = self.parser.parse() {
-            return Err(e.into());
+            return Err(e.to_string());
         }
 
         let mut root = core::mem::take(&mut self.parser.root);

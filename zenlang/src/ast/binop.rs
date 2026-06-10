@@ -1,4 +1,5 @@
 use crate::{ast::node::Compile, opcode::Opcode};
+use alloc::boxed::*;
 use alloc::vec::*;
 
 pub enum AstBinopOp {
@@ -19,18 +20,18 @@ pub enum AstBinopOp {
 }
 
 pub struct AstBinop {
-    pub left: Option<alloc::boxed::Box<dyn Compile>>,
-    pub right: Option<alloc::boxed::Box<dyn Compile>>,
+    pub left: Box<dyn Compile>,
+    pub right: Box<dyn Compile>,
     pub op: AstBinopOp,
     do_push: bool,
 }
 
 impl AstBinop {
-    pub fn new() -> Self {
+    pub fn new(left: Box<dyn Compile>, op: AstBinopOp, right: Box<dyn Compile>) -> Self {
         return Self {
-            left: None,
-            right: None,
-            op: AstBinopOp::PLUS,
+            left: left,
+            right: right,
+            op: op,
             do_push: true,
         };
     }
@@ -49,19 +50,12 @@ impl Compile for AstBinop {
         &mut self,
         compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
-        if let Some(left) = &mut self.left {
-            if let Err(e) = left.compile(compiler) {
-                return Err(e);
-            }
-        } else {
-            return Err("left is None".into());
+        if let Err(e) = self.left.compile(compiler) {
+            return Err(e);
         }
-        if let Some(right) = &mut self.right {
-            if let Err(e) = right.compile(compiler) {
-                return Err(e);
-            }
-        } else {
-            return Err("right is None".into());
+
+        if let Err(e) = self.right.compile(compiler) {
+            return Err(e);
         }
 
         let opcode;

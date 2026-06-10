@@ -8,9 +8,9 @@ pub struct AstVarRef {
 }
 
 impl AstVarRef {
-    pub fn new() -> Self {
+    pub fn new(name: String) -> Self {
         return Self {
-            name: String::new(),
+            name: name,
             do_push: true,
         };
     }

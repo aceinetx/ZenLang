@@ -8,9 +8,9 @@ pub struct AstNumber {
 }
 
 impl AstNumber {
-    pub fn new() -> Self {
+    pub fn new(number: f64) -> Self {
         return Self {
-            number: 0.0,
+            number: number,
             do_push: true,
         };
     }
