@@ -9,6 +9,10 @@ pub enum Error {
     FunctionSyntaxBraces(),
     StatementSyntax(Token),
     StatementSemicolon(),
+    LetNameSyntax(Token),
+    LetDotSyntax(Token),
+    LetExpectedRbracket(Token),
+    LetExpectedAssign(Token),
 }
 
 impl ToString for Error {
@@ -25,7 +29,7 @@ impl ToString for Error {
             }
             Self::FunctionSyntaxArg(token) => {
                 format!(
-                    "Expected identifier as a function argument, but found {:?}",
+                    "Expected identifier as a function argument, but got {:?}",
                     token
                 )
             }
@@ -34,6 +38,24 @@ impl ToString for Error {
             }
             Self::StatementSemicolon() => {
                 format!("Expected `;` where a statement terminates")
+            }
+            Self::LetNameSyntax(token) => {
+                format!("Expected identifier as a name for let, but got {:?}", token)
+            }
+            Self::LetDotSyntax(token) => {
+                format!(
+                    "Expected a number or an identifier after `.` in let, but got {:?}",
+                    token
+                )
+            }
+            Self::LetExpectedRbracket(token) => {
+                format!(
+                    "Expected `]` after index expression in let, but got {:?}",
+                    token
+                )
+            }
+            Self::LetExpectedAssign(token) => {
+                format!("Expected `=` in let, but got {:?}", token)
             }
         };
     }

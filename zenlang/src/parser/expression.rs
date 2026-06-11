@@ -3,9 +3,9 @@ use crate::ast::node::Compile;
 use crate::ast::number::AstNumber;
 use crate::ast::string::AstString;
 use crate::ast::var_ref::AstVarRef;
+use crate::parser::unwrap_or_ret_error;
 use crate::parser::*;
 use crate::tokenizer::Token;
-use crate::unwrap_or_ret_error;
 use alloc::boxed::Box;
 
 impl Parser<'_> {

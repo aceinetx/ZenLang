@@ -1,7 +1,7 @@
 use crate::ast::function::AstFunction;
+use crate::parser::unwrap_or_ret_error;
 use crate::parser::*;
 use crate::tokenizer::Token;
-use crate::unwrap_or_ret_error;
 
 impl Parser<'_> {
     pub(crate) fn parse_function(&mut self) -> Result<AstFunction, error::Error> {

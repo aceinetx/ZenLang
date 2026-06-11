@@ -4,7 +4,6 @@ use crate::ast::*;
 use crate::parser::error;
 use crate::tokenizer::*;
 
-#[macro_export]
 macro_rules! unwrap_or_ret_error {
     ($x:expr) => {
         match $x {
@@ -13,6 +12,8 @@ macro_rules! unwrap_or_ret_error {
         }
     };
 }
+
+pub(crate) use unwrap_or_ret_error;
 
 pub struct Parser<'a> {
     pub root: root::AstRoot,
