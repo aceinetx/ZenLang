@@ -4,16 +4,16 @@ use alloc::boxed::*;
 use alloc::vec::*;
 
 pub struct AstArrayIndex {
-    pub array: Option<Box<dyn Compile>>,
-    pub index: Option<Box<dyn Compile>>,
+    pub array: Box<dyn Compile>,
+    pub index: Box<dyn Compile>,
     do_push: bool,
 }
 
 impl AstArrayIndex {
-    pub fn new() -> Self {
+    pub fn new(array: Box<dyn Compile>, index: Box<dyn Compile>) -> Self {
         return Self {
-            array: None,
-            index: None,
+            array: array,
+            index: index,
             do_push: true,
         };
     }
@@ -29,19 +29,12 @@ impl Compile for AstArrayIndex {
         compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
         if self.do_push {
-            if let Some(array) = &mut self.array {
-                if let Err(e) = array.compile(compiler) {
-                    return Err(e);
-                }
-            } else {
-                return Err("array is None".into());
+            if let Err(e) = self.array.compile(compiler) {
+                return Err(e);
             }
-            if let Some(index) = &mut self.index {
-                if let Err(e) = index.compile(compiler) {
-                    return Err(e);
-                }
-            } else {
-                return Err("index is None".into());
+
+            if let Err(e) = self.index.compile(compiler) {
+                return Err(e);
             }
 
             let module = compiler.get_module();

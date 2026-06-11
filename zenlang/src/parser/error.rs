@@ -8,7 +8,7 @@ pub enum Error {
     FunctionSyntaxArg(Token),
     FunctionSyntaxBraces(),
     StatementSyntax(Token),
-    StatementSemicolon(),
+    StatementSemicolon(Token),
     LetNameSyntax(Token),
     LetDotSyntax(Token),
     LetExpectedRbracket(Token),
@@ -18,6 +18,8 @@ pub enum Error {
     AttributeExpectedIdentifier(Token),
     UnknownAttribute(String),
     VmcallExpectedNumber(Token),
+    ArrayIndexRbracket(Token),
+    IndexDotSyntax(Token),
 }
 
 impl ToString for Error {
@@ -41,8 +43,11 @@ impl ToString for Error {
             Self::StatementSyntax(token) => {
                 format!("Unexpected {:?} where a statement should be", token)
             }
-            Self::StatementSemicolon() => {
-                format!("Expected `;` where a statement terminates")
+            Self::StatementSemicolon(token) => {
+                format!(
+                    "Expected `;` where a statement terminates, but got {:?}",
+                    token
+                )
             }
             Self::LetNameSyntax(token) => {
                 format!("Expected identifier as a name for let, but got {:?}", token)
@@ -85,6 +90,15 @@ impl ToString for Error {
             }
             Self::VmcallExpectedNumber(token) => {
                 format!("Expected number in a vmcall, but got {:?}", token)
+            }
+            Self::ArrayIndexRbracket(token) => {
+                format!("Expected `]` after array indexing, but got {:?}", token)
+            }
+            Self::IndexDotSyntax(token) => {
+                format!(
+                    "Expected a number or an identifier after `.` while indexing, but got {:?}",
+                    token
+                )
             }
         };
     }

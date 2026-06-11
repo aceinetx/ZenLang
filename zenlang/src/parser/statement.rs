@@ -102,8 +102,9 @@ impl Parser<'_> {
             }
         };
 
-        if !matches!(self.next(), Token::Semicolon) {
-            return Err(error::Error::StatementSemicolon());
+        let semi = self.next();
+        if !matches!(semi, Token::Semicolon) {
+            return Err(error::Error::StatementSemicolon(semi));
         }
 
         Ok(statement)

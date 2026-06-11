@@ -1,4 +1,5 @@
 use crate::ast::node::Compile;
+use crate::ast::node::StatementExpression;
 use crate::opcode::Opcode;
 use alloc::boxed::*;
 use alloc::vec::*;
@@ -42,5 +43,11 @@ impl Compile for AstArray {
         }
 
         Ok(())
+    }
+}
+
+impl StatementExpression for AstArray {
+    fn disable_push(&mut self) {
+        self.do_push = false;
     }
 }

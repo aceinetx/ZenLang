@@ -1,3 +1,5 @@
+use crate::ast::array::AstArray;
+use crate::ast::array_index::AstArrayIndex;
 use crate::ast::binop::{AstBinop, AstBinopOp};
 use crate::ast::boolean::AstBoolean;
 use crate::ast::func_call::AstFuncCall;
@@ -20,11 +22,6 @@ impl Parser<'_> {
             Token::Identifier(ident) => {
                 let node = Box::new(AstVarRef::new(ident));
 
-                if matches!(self.next(), Token::Lparen) {
-                    // Function call
-                }
-                self.back();
-
                 Ok(node)
             }
             Token::Number(number) => {
@@ -45,6 +42,30 @@ impl Parser<'_> {
             }
             Token::False => {
                 let node = Box::new(AstBoolean::new(false));
+                Ok(node)
+            }
+            Token::Lbracket => {
+                // Array
+                let mut node = Box::new(AstArray::new());
+
+                let mut token;
+                loop {
+                    token = self.next();
+                    if matches!(token, Token::Rbracket) {
+                        break;
+                    }
+                    self.back();
+                    node.values
+                        .push(unwrap_or_ret_error!(self.parse_expression()));
+
+                    token = self.next();
+                    match token {
+                        Token::Rbracket => break,
+                        Token::Comma => continue,
+                        _ => panic!("{:?}", token),
+                    };
+                }
+
                 Ok(node)
             }
             _ => panic!("{:?}", token),
@@ -80,6 +101,33 @@ impl Parser<'_> {
                     }
 
                     func_call
+                }
+                Token::Lbracket => {
+                    // Array index
+                    let index = Box::new(AstArrayIndex::new(
+                        left,
+                        unwrap_or_ret_error!(self.parse_expression()),
+                    ));
+
+                    let rb = self.next();
+                    if !matches!(rb, Token::Rbracket) {
+                        return Err(error::Error::ArrayIndexRbracket(rb));
+                    }
+
+                    index
+                }
+                Token::Dot => {
+                    // Dotted index
+                    let v = self.next();
+                    let v: Box<dyn CompileStatementExpression> = match v {
+                        Token::Number(num) => Box::new(AstNumber::new(num)),
+                        Token::Identifier(ident) => Box::new(AstString::new(ident)),
+                        _ => return Err(error::Error::IndexDotSyntax(v)),
+                    };
+
+                    let index = Box::new(AstArrayIndex::new(left, v));
+
+                    index
                 }
                 _ => {
                     self.back();
