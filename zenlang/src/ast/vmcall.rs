@@ -7,8 +7,8 @@ pub struct AstVmcall {
 }
 
 impl AstVmcall {
-    pub fn new() -> Self {
-        return Self { id: 0u8 };
+    pub fn new(id: u8) -> Self {
+        return Self { id: id };
     }
 }
 

@@ -1,6 +1,6 @@
-use alloc::{format, string::ToString};
-
 use crate::tokenizer::Token;
+use alloc::string::String;
+use alloc::{format, string::ToString};
 
 pub enum Error {
     UnexpectedGlobalScopeToken(Token),
@@ -14,6 +14,10 @@ pub enum Error {
     LetExpectedRbracket(Token),
     LetExpectedAssign(Token),
     FunccallExpectedComma(Token),
+    FunctionSyntaxHashtagBracket(Token),
+    AttributeExpectedIdentifier(Token),
+    UnknownAttribute(String),
+    VmcallExpectedNumber(Token),
 }
 
 impl ToString for Error {
@@ -63,6 +67,24 @@ impl ToString for Error {
                     "Expected `,` after an argument in a function call, but got {:?}",
                     token
                 )
+            }
+            Self::FunctionSyntaxHashtagBracket(token) => {
+                format!(
+                    "Expected `[` after `#` in a function definition, but got {:?}",
+                    token
+                )
+            }
+            Self::AttributeExpectedIdentifier(token) => {
+                format!(
+                    "Expected an identifier as an attribute name, but got {:?}",
+                    token
+                )
+            }
+            Self::UnknownAttribute(attribute) => {
+                format!("Unknown attribute: {}", attribute)
+            }
+            Self::VmcallExpectedNumber(token) => {
+                format!("Expected number in a vmcall, but got {:?}", token)
             }
         };
     }

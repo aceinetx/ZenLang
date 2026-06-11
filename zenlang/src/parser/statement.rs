@@ -4,9 +4,10 @@ use crate::ast::number::AstNumber;
 use crate::ast::ret::AstReturn;
 use crate::ast::var_assign::AstAssign;
 use crate::ast::var_ref::AstVarRef;
+use crate::ast::vmcall::AstVmcall;
 use crate::parser::unwrap_or_ret_error;
 use crate::parser::*;
-use crate::tokenizer::Token;
+use crate::tokenizer::Token::{self, Vmcall};
 use alloc::boxed::Box;
 
 impl Parser<'_> {
@@ -80,6 +81,17 @@ impl Parser<'_> {
                     assign.expr = Some(expr);
                     assign
                 }
+            }
+            Token::Vmcall => {
+                let id = self.next();
+                let id = match id {
+                    Token::Number(number) => number as u8,
+                    _ => return Err(error::Error::VmcallExpectedNumber(id)),
+                };
+
+                let vmcall = Box::new(AstVmcall::new(id));
+
+                vmcall
             }
             _ => {
                 self.back();
