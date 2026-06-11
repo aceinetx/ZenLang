@@ -13,6 +13,7 @@ pub enum Error {
     LetDotSyntax(Token),
     LetExpectedRbracket(Token),
     LetExpectedAssign(Token),
+    FunccallExpectedComma(Token),
 }
 
 impl ToString for Error {
@@ -56,6 +57,12 @@ impl ToString for Error {
             }
             Self::LetExpectedAssign(token) => {
                 format!("Expected `=` in let, but got {:?}", token)
+            }
+            Self::FunccallExpectedComma(token) => {
+                format!(
+                    "Expected `,` after an argument in a function call, but got {:?}",
+                    token
+                )
             }
         };
     }

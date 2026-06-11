@@ -81,7 +81,13 @@ impl Parser<'_> {
                     assign
                 }
             }
-            _ => return Err(error::Error::StatementSyntax(token)),
+            _ => {
+                self.back();
+                let mut expr = unwrap_or_ret_error!(self.parse_postfix());
+                expr.disable_push();
+
+                expr
+            }
         };
 
         if !matches!(self.next(), Token::Semicolon) {

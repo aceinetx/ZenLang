@@ -1,4 +1,4 @@
-use crate::ast::node::Compile;
+use crate::ast::node::{Compile, StatementExpression};
 use crate::opcode::Opcode;
 use alloc::vec::*;
 
@@ -27,5 +27,11 @@ impl Compile for AstNull {
         }
 
         Ok(())
+    }
+}
+
+impl StatementExpression for AstNull {
+    fn disable_push(&mut self) {
+        self.do_push = false;
     }
 }

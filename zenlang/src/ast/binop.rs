@@ -1,3 +1,4 @@
+use crate::ast::node::StatementExpression;
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::boxed::*;
 use alloc::vec::*;
@@ -38,10 +39,6 @@ impl AstBinop {
 }
 
 impl Compile for AstBinop {
-    fn disable_push(&mut self) {
-        self.do_push = false;
-    }
-
     fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
         return None;
     }
@@ -104,5 +101,11 @@ impl Compile for AstBinop {
         }
 
         Ok(())
+    }
+}
+
+impl StatementExpression for AstBinop {
+    fn disable_push(&mut self) {
+        self.do_push = false;
     }
 }

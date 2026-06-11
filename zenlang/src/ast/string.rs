@@ -1,4 +1,5 @@
 use crate::ast::node::Compile;
+use crate::ast::node::StatementExpression;
 use crate::opcode::Opcode;
 use alloc::string::*;
 use alloc::vec::*;
@@ -34,5 +35,11 @@ impl Compile for AstString {
         }
 
         Ok(())
+    }
+}
+
+impl StatementExpression for AstString {
+    fn disable_push(&mut self) {
+        self.do_push = false;
     }
 }

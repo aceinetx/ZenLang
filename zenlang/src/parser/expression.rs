@@ -1,5 +1,6 @@
 use crate::ast::binop::{AstBinop, AstBinopOp};
-use crate::ast::node::Compile;
+use crate::ast::func_call::AstFuncCall;
+use crate::ast::node::{Compile, CompileStatementExpression};
 use crate::ast::null::AstNull;
 use crate::ast::number::AstNumber;
 use crate::ast::string::AstString;
@@ -10,11 +11,18 @@ use crate::tokenizer::Token;
 use alloc::boxed::Box;
 
 impl Parser<'_> {
-    pub(crate) fn parse_primary(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+    pub(crate) fn parse_primary(
+        &mut self,
+    ) -> Result<Box<dyn CompileStatementExpression>, error::Error> {
         let token = self.next();
         match token {
             Token::Identifier(ident) => {
                 let node = Box::new(AstVarRef::new(ident));
+
+                if matches!(self.next(), Token::Lparen) {
+                    // Function call
+                }
+                self.back();
 
                 Ok(node)
             }
@@ -30,12 +38,51 @@ impl Parser<'_> {
                 let node = Box::new(AstNull::new());
                 Ok(node)
             }
-            _ => panic!(),
+            _ => panic!("{:?}", token),
         }
     }
 
-    pub(crate) fn parse_multiplicative(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+    pub(crate) fn parse_postfix(
+        &mut self,
+    ) -> Result<Box<dyn CompileStatementExpression>, error::Error> {
         let mut left = unwrap_or_ret_error!(self.parse_primary());
+
+        let mut token;
+        loop {
+            token = self.next();
+            left = match token {
+                Token::Lparen => {
+                    // Function call
+                    let mut func_call = Box::new(AstFuncCall::new(left));
+                    loop {
+                        if matches!(self.next(), Token::Rparen) {
+                            break;
+                        }
+
+                        self.back();
+                        let expr = unwrap_or_ret_error!(self.parse_expression());
+                        func_call.args.push(expr);
+
+                        self.back();
+                        let comma = self.next();
+                        if !matches!(comma, Token::Comma) {
+                            return Err(error::Error::FunccallExpectedComma(comma));
+                        }
+                    }
+
+                    func_call
+                }
+                _ => {
+                    self.back();
+                    break;
+                }
+            };
+        }
+        Ok(left)
+    }
+
+    pub(crate) fn parse_multiplicative(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+        let mut left = unwrap_or_ret_error!(self.parse_postfix());
 
         let mut token;
         loop {
@@ -49,7 +96,7 @@ impl Parser<'_> {
                 }
             };
 
-            let right = unwrap_or_ret_error!(self.parse_primary());
+            let right = unwrap_or_ret_error!(self.parse_postfix());
 
             left = Box::new(AstBinop::new(left, op, right));
         }

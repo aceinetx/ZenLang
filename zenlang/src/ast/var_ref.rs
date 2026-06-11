@@ -1,3 +1,4 @@
+use crate::ast::node::StatementExpression;
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::string::*;
 use alloc::vec::*;
@@ -17,10 +18,6 @@ impl AstVarRef {
 }
 
 impl Compile for AstVarRef {
-    fn disable_push(&mut self) {
-        self.do_push = false;
-    }
-
     fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
         return None;
     }
@@ -34,5 +31,11 @@ impl Compile for AstVarRef {
             module.opcodes.push(Opcode::LoadVar(self.name.clone()));
         }
         Ok(())
+    }
+}
+
+impl StatementExpression for AstVarRef {
+    fn disable_push(&mut self) {
+        self.do_push = false;
     }
 }

@@ -1,4 +1,5 @@
 use crate::ast::node::Compile;
+use crate::ast::node::StatementExpression;
 use alloc::string::*;
 use alloc::vec::*;
 
@@ -15,8 +16,6 @@ impl AstGlobalVar {
 }
 
 impl Compile for AstGlobalVar {
-    fn disable_push(&mut self) {}
-
     fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
         return None;
     }
@@ -29,4 +28,8 @@ impl Compile for AstGlobalVar {
         module.globals.push(self.name.clone());
         Ok(())
     }
+}
+
+impl StatementExpression for AstGlobalVar {
+    fn disable_push(&mut self) {}
 }
