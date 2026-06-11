@@ -217,10 +217,37 @@ impl Parser<'_> {
         Ok(left)
     }
 
-    pub(crate) fn parse_equality(
+    pub(crate) fn parse_compare(
         &mut self,
     ) -> Result<Box<dyn CompileStatementExpression>, error::Error> {
         let mut left = self.parse_bitshift()?;
+
+        let mut token;
+        loop {
+            token = self.next();
+            let op = match token {
+                Token::OperatorCmp('>', '>') => AstBinopOp::GT,
+                Token::OperatorCmp('<', '<') => AstBinopOp::LT,
+                Token::OperatorCmp('>', '=') => AstBinopOp::GE,
+                Token::OperatorCmp('<', '=') => AstBinopOp::LE,
+                _ => {
+                    self.back();
+                    break;
+                }
+            };
+
+            let right = self.parse_bitshift()?;
+
+            left = Box::new(AstBinop::new(left, op, right));
+        }
+
+        Ok(left)
+    }
+
+    pub(crate) fn parse_equality(
+        &mut self,
+    ) -> Result<Box<dyn CompileStatementExpression>, error::Error> {
+        let mut left = self.parse_compare()?;
 
         let mut token;
         loop {
@@ -234,7 +261,7 @@ impl Parser<'_> {
                 }
             };
 
-            let right = self.parse_bitshift()?;
+            let right = self.parse_compare()?;
 
             left = Box::new(AstBinop::new(left, op, right));
         }
