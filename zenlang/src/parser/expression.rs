@@ -1,4 +1,5 @@
 use crate::ast::binop::{AstBinop, AstBinopOp};
+use crate::ast::boolean::AstBoolean;
 use crate::ast::func_call::AstFuncCall;
 use crate::ast::node::{Compile, CompileStatementExpression};
 use crate::ast::null::AstNull;
@@ -36,6 +37,14 @@ impl Parser<'_> {
             }
             Token::Null => {
                 let node = Box::new(AstNull::new());
+                Ok(node)
+            }
+            Token::True => {
+                let node = Box::new(AstBoolean::new(true));
+                Ok(node)
+            }
+            Token::False => {
+                let node = Box::new(AstBoolean::new(false));
                 Ok(node)
             }
             _ => panic!("{:?}", token),

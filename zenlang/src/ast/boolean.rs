@@ -1,4 +1,4 @@
-use crate::ast::node::Compile;
+use crate::ast::node::{Compile, StatementExpression};
 use crate::opcode::Opcode;
 use alloc::vec::*;
 
@@ -8,9 +8,9 @@ pub struct AstBoolean {
 }
 
 impl AstBoolean {
-    pub fn new() -> Self {
+    pub fn new(flag: bool) -> Self {
         return Self {
-            flag: false,
+            flag: flag,
             do_push: true,
         };
     }
@@ -31,5 +31,11 @@ impl Compile for AstBoolean {
         }
 
         Ok(())
+    }
+}
+
+impl StatementExpression for AstBoolean {
+    fn disable_push(&mut self) {
+        self.do_push = false;
     }
 }
