@@ -1,5 +1,6 @@
 use crate::ast::binop::{AstBinop, AstBinopOp};
 use crate::ast::node::Compile;
+use crate::ast::null::AstNull;
 use crate::ast::number::AstNumber;
 use crate::ast::string::AstString;
 use crate::ast::var_ref::AstVarRef;
@@ -23,6 +24,10 @@ impl Parser<'_> {
             }
             Token::String(str) => {
                 let node = Box::new(AstString::new(str));
+                Ok(node)
+            }
+            Token::Null => {
+                let node = Box::new(AstNull::new());
                 Ok(node)
             }
             _ => panic!(),
