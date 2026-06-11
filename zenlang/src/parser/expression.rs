@@ -127,7 +127,30 @@ impl Parser<'_> {
         Ok(left)
     }
 
+    pub(crate) fn parse_equality(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+        let mut left = unwrap_or_ret_error!(self.parse_additive());
+
+        let mut token;
+        loop {
+            token = self.next();
+            let op = match token {
+                Token::OperatorCmp('=', '=') => AstBinopOp::EQ,
+                Token::OperatorCmp('!', '=') => AstBinopOp::NEQ,
+                _ => {
+                    self.back();
+                    break;
+                }
+            };
+
+            let right = unwrap_or_ret_error!(self.parse_additive());
+
+            left = Box::new(AstBinop::new(left, op, right));
+        }
+
+        Ok(left)
+    }
+
     pub(crate) fn parse_expression(&mut self) -> Result<Box<dyn Compile>, error::Error> {
-        return self.parse_additive();
+        return self.parse_equality();
     }
 }
