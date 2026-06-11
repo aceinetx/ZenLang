@@ -5,9 +5,8 @@ use crate::ast::ret::AstReturn;
 use crate::ast::var_assign::AstAssign;
 use crate::ast::var_ref::AstVarRef;
 use crate::ast::vmcall::AstVmcall;
-use crate::parser::unwrap_or_ret_error;
 use crate::parser::*;
-use crate::tokenizer::Token::{self, Vmcall};
+use crate::tokenizer::Token::{self};
 use alloc::boxed::Box;
 
 impl Parser<'_> {
@@ -15,9 +14,7 @@ impl Parser<'_> {
         let token = self.next();
         let statement: Box<dyn Compile> = match token {
             Token::Return => {
-                let node = Box::new(AstReturn::new(unwrap_or_ret_error!(
-                    self.parse_expression()
-                )));
+                let node = Box::new(AstReturn::new(self.parse_expression()?));
 
                 node
             }
@@ -39,7 +36,7 @@ impl Parser<'_> {
                     match token {
                         Token::Lbracket => {
                             is_array = true;
-                            let expr = unwrap_or_ret_error!(self.parse_expression());
+                            let expr = self.parse_expression()?;
 
                             array_assign.indexes.push(expr);
 
@@ -72,7 +69,7 @@ impl Parser<'_> {
                     return Err(error::Error::LetExpectedAssign(token));
                 }
 
-                let expr = unwrap_or_ret_error!(self.parse_expression());
+                let expr = self.parse_expression()?;
 
                 if is_array {
                     array_assign.expr = Some(expr);
@@ -94,13 +91,13 @@ impl Parser<'_> {
                 vmcall
             }
             Token::If => {
-                let node = Box::new(unwrap_or_ret_error!(self.parse_if_chain()));
+                let node = Box::new(self.parse_if_chain()?);
                 self.back();
                 node
             }
             _ => {
                 self.back();
-                let mut expr = unwrap_or_ret_error!(self.parse_postfix());
+                let mut expr = self.parse_postfix()?;
                 expr.disable_push();
 
                 expr

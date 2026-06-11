@@ -1,5 +1,4 @@
 use crate::ast::function::AstFunction;
-use crate::parser::unwrap_or_ret_error;
 use crate::tokenizer::Token;
 use crate::{FunctionAttribute, parser::*};
 
@@ -70,7 +69,7 @@ impl Parser<'_> {
 
             self.back();
 
-            func.body.push(unwrap_or_ret_error!(self.parse_statement()));
+            func.body.push(self.parse_statement()?);
         }
 
         Ok(func)
