@@ -1,7 +1,9 @@
 use crate::ast::node::Compile;
 use crate::ast::node::StatementExpression;
+use crate::compiler::Compiler;
 use crate::opcode::Opcode;
 use alloc::boxed::*;
+use alloc::string::String;
 use alloc::vec::*;
 
 pub struct AstArray {
@@ -19,27 +21,14 @@ impl AstArray {
 }
 
 impl Compile for AstArray {
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         if self.do_push {
-            {
-                for value in self.values.iter_mut() {
-                    if let Err(e) = value.compile(compiler) {
-                        return Err(e);
-                    }
-                }
+            for value in self.values.iter_mut() {
+                value.compile(compiler)?;
             }
 
-            {
-                let module = compiler.get_module();
-                module.opcodes.push(Opcode::Cafse(self.values.len() as u64));
-            }
+            let module = compiler.get_module();
+            module.opcodes.push(Opcode::Cafse(self.values.len() as u64));
         }
 
         Ok(())

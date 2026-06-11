@@ -1,7 +1,8 @@
+use alloc::string::String;
+
 use crate::ast::block::AstBlock;
 use crate::ast::node::Compile;
-use alloc::boxed::*;
-use alloc::vec::*;
+use crate::compiler::Compiler;
 
 pub struct AstElseStmt {
     pub block: AstBlock,
@@ -16,14 +17,7 @@ impl AstElseStmt {
 }
 
 impl Compile for AstElseStmt {
-    fn get_children(&mut self) -> Option<&mut Vec<Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        _compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, _compiler: &mut Compiler) -> Result<(), String> {
         Ok(())
     }
 }

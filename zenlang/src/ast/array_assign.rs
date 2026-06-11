@@ -1,3 +1,4 @@
+use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::boxed::*;
 use alloc::string::String;
@@ -20,14 +21,7 @@ impl AstArrayAssign {
 }
 
 impl Compile for AstArrayAssign {
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         {
             let module = compiler.get_module();
             module.opcodes.push(Opcode::LoadVar(self.name.clone()));
@@ -39,25 +33,19 @@ impl Compile for AstArrayAssign {
                 break;
             }
 
-            if let Err(e) = index.compile(compiler) {
-                return Err(e);
-            }
+            index.compile(compiler)?;
 
             let module = compiler.get_module();
             module.opcodes.push(Opcode::Iafs());
         }
 
         if let Some(expr) = &mut self.expr {
-            if let Err(e) = expr.compile(compiler) {
-                return Err(e);
-            }
+            expr.compile(compiler)?;
         } else {
             return Err("expr is None".into());
         }
 
-        if let Err(e) = self.indexes.last_mut().unwrap().compile(compiler) {
-            return Err(e);
-        }
+        self.indexes.last_mut().unwrap().compile(compiler)?;
 
         let module = compiler.get_module();
         module.opcodes.push(Opcode::Aiafs());

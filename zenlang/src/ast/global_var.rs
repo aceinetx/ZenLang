@@ -1,7 +1,7 @@
 use crate::ast::node::Compile;
 use crate::ast::node::StatementExpression;
+use crate::compiler::Compiler;
 use alloc::string::*;
-use alloc::vec::*;
 
 pub struct AstGlobalVar {
     pub name: String,
@@ -16,14 +16,7 @@ impl AstGlobalVar {
 }
 
 impl Compile for AstGlobalVar {
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         let module = compiler.get_module();
         module.globals.push(self.name.clone());
         Ok(())

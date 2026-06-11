@@ -69,7 +69,7 @@ impl Parser<'_> {
 
             self.back();
 
-            func.body.push(self.parse_statement()?);
+            func.block.children.push(self.parse_statement()?);
         }
 
         Ok(func)

@@ -1,5 +1,7 @@
 use crate::ast::node::Compile;
+use crate::compiler::Compiler;
 use alloc::boxed::*;
+use alloc::string::String;
 use alloc::vec::*;
 
 pub struct AstDefer {
@@ -13,18 +15,9 @@ impl AstDefer {
 }
 
 impl Compile for AstDefer {
-    fn get_children(&mut self) -> Option<&mut Vec<Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         for block in self.body.iter_mut() {
-            if let Err(e) = block.compile(compiler) {
-                return Err(e);
-            }
+            block.compile(compiler)?;
         }
 
         Ok(())

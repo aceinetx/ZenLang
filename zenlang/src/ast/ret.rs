@@ -1,7 +1,8 @@
 use crate::ast::node::Compile;
+use crate::compiler::Compiler;
 use crate::opcode::Opcode;
 use alloc::boxed::Box;
-use alloc::vec::*;
+use alloc::string::String;
 
 pub struct AstReturn {
     pub value: Box<dyn Compile>,
@@ -14,17 +15,8 @@ impl AstReturn {
 }
 
 impl Compile for AstReturn {
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
-        if let Err(e) = self.value.compile(compiler) {
-            return Err(e);
-        }
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
+        self.value.compile(compiler)?;
 
         let module = compiler.get_module();
         module.opcodes.push(Opcode::Ret());

@@ -1,7 +1,8 @@
 use crate::ast::node::StatementExpression;
+use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::boxed::*;
-use alloc::vec::*;
+use alloc::string::String;
 
 pub enum AstBinopOp {
     PLUS,
@@ -39,21 +40,9 @@ impl AstBinop {
 }
 
 impl Compile for AstBinop {
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
-        if let Err(e) = self.left.compile(compiler) {
-            return Err(e);
-        }
-
-        if let Err(e) = self.right.compile(compiler) {
-            return Err(e);
-        }
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
+        self.left.compile(compiler)?;
+        self.right.compile(compiler)?;
 
         let opcode;
 

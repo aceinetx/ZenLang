@@ -1,7 +1,8 @@
 use crate::ast::node::StatementExpression;
+use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::boxed::*;
-use alloc::vec::*;
+use alloc::string::String;
 
 pub struct AstArrayIndex {
     pub array: Box<dyn Compile>,
@@ -20,22 +21,10 @@ impl AstArrayIndex {
 }
 
 impl Compile for AstArrayIndex {
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         if self.do_push {
-            if let Err(e) = self.array.compile(compiler) {
-                return Err(e);
-            }
-
-            if let Err(e) = self.index.compile(compiler) {
-                return Err(e);
-            }
+            self.array.compile(compiler)?;
+            self.index.compile(compiler)?;
 
             let module = compiler.get_module();
             module.opcodes.push(Opcode::Iafs());

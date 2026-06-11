@@ -42,10 +42,11 @@ impl<'a> Compiler<'_> {
         }
 
         let mut root = core::mem::take(&mut self.parser.root);
-        let result = root.compile_all(self);
+
+        let _ = root.compile(self)?;
 
         self.parser.root = root;
 
-        return result;
+        Ok(())
     }
 }

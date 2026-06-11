@@ -1,7 +1,8 @@
 use crate::ast::node::Compile;
+use crate::compiler::Compiler;
 use crate::opcode::*;
 use alloc::boxed::*;
-use alloc::vec::*;
+use alloc::string::String;
 
 pub struct AstDynmod {
     pub name: Option<Box<dyn Compile>>,
@@ -14,18 +15,9 @@ impl AstDynmod {
 }
 
 impl Compile for AstDynmod {
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         if let Some(name) = &mut self.name {
-            if let Err(e) = name.compile(compiler) {
-                return Err(e);
-            }
+            name.compile(compiler)?;
         } else {
             return Err("self.name is None".into());
         }

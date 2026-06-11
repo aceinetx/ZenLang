@@ -1,6 +1,8 @@
 use crate::ast::node::StatementExpression;
+use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::boxed::*;
+use alloc::string::String;
 use alloc::vec::*;
 
 pub struct AstFuncCall {
@@ -20,23 +22,14 @@ impl AstFuncCall {
 }
 
 impl Compile for AstFuncCall {
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         {
             let module = compiler.get_module();
             module.opcodes.push(Opcode::BeginFnArgs());
         }
 
         for arg in self.args.iter_mut() {
-            if let Err(e) = arg.compile(compiler) {
-                return Err(e);
-            }
+            arg.compile(compiler)?;
         }
 
         {
@@ -44,11 +37,7 @@ impl Compile for AstFuncCall {
             module.opcodes.push(Opcode::EndFnArgs());
         }
 
-        {
-            if let Err(e) = self.reference.compile(compiler) {
-                return Err(e);
-            }
-        }
+        self.reference.compile(compiler)?;
 
         {
             let module = compiler.get_module();

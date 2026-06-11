@@ -1,8 +1,9 @@
 use crate::ast::elif_stmt::*;
 use crate::ast::else_stmt::*;
 use crate::ast::if_stmt::*;
+use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::Opcode};
-use alloc::boxed::*;
+use alloc::string::String;
 use alloc::vec::*;
 
 pub struct AstIfChain {
@@ -22,14 +23,7 @@ impl AstIfChain {
 }
 
 impl Compile for AstIfChain {
-    fn get_children(&mut self) -> Option<&mut Vec<Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         // To the developer who is going to read this code:
         //
         // Dont. Don't make a mistake by trying to understand what it does
@@ -81,9 +75,7 @@ impl Compile for AstIfChain {
             if !head.if_let {
                 // if
                 if let Some(value) = &mut head.value {
-                    if let Err(e) = value.compile(compiler) {
-                        return Err(e);
-                    }
+                    value.compile(compiler)?;
                 } else {
                     return Err("head.value is None".into());
                 }
@@ -96,9 +88,7 @@ impl Compile for AstIfChain {
             } else {
                 // if let
                 if let Some(value) = &mut head.if_let_expr {
-                    if let Err(e) = value.compile(compiler) {
-                        return Err(e);
-                    }
+                    value.compile(compiler)?;
                 } else {
                     return Err("head.if_let_expr is None".into());
                 }
@@ -121,9 +111,7 @@ impl Compile for AstIfChain {
             if !elif_node.elif_let {
                 // elif
                 if let Some(value) = &mut elif_node.value {
-                    if let Err(e) = value.compile(compiler) {
-                        return Err(e);
-                    }
+                    value.compile(compiler)?;
                 }
 
                 let module = compiler.get_module();
@@ -134,9 +122,7 @@ impl Compile for AstIfChain {
             } else {
                 // elif let
                 if let Some(value) = &mut elif_node.elif_let_expr {
-                    if let Err(e) = value.compile(compiler) {
-                        return Err(e);
-                    }
+                    value.compile(compiler)?;
                 } else {
                     return Err("elif_node.elif_let_expr is None".into());
                 }
@@ -173,9 +159,7 @@ impl Compile for AstIfChain {
             }
 
             for node in head.block.children.iter_mut() {
-                if let Err(e) = node.compile_all(compiler) {
-                    return Err(e);
-                }
+                node.compile(compiler)?;
             }
 
             {
@@ -208,9 +192,7 @@ impl Compile for AstIfChain {
             }
 
             for node in elif.block.children.iter_mut() {
-                if let Err(e) = node.compile_all(compiler) {
-                    return Err(e);
-                }
+                node.compile(compiler)?;
             }
 
             {
@@ -241,9 +223,7 @@ impl Compile for AstIfChain {
         }
         if let Some(else_stmt) = &mut self.else_node {
             for node in else_stmt.block.children.iter_mut() {
-                if let Err(e) = node.compile_all(compiler) {
-                    return Err(e);
-                }
+                node.compile(compiler)?;
             }
         }
 
