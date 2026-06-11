@@ -3,7 +3,7 @@ use crate::ast::array_index::AstArrayIndex;
 use crate::ast::binop::{AstBinop, AstBinopOp};
 use crate::ast::boolean::AstBoolean;
 use crate::ast::func_call::AstFuncCall;
-use crate::ast::node::{Compile, CompileStatementExpression};
+use crate::ast::node::CompileStatementExpression;
 use crate::ast::null::AstNull;
 use crate::ast::number::AstNumber;
 use crate::ast::string::AstString;
@@ -67,6 +67,15 @@ impl Parser<'_> {
                 }
 
                 Ok(node)
+            }
+            Token::Lparen => {
+                let expr = self.parse_expression()?;
+                let rp = self.next();
+                if !matches!(rp, Token::Rparen) {
+                    return Err(error::Error::ExprRparen(rp));
+                }
+
+                Ok(expr)
             }
             _ => panic!("{:?}", token),
         }
@@ -138,7 +147,9 @@ impl Parser<'_> {
         Ok(left)
     }
 
-    pub(crate) fn parse_multiplicative(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+    pub(crate) fn parse_multiplicative(
+        &mut self,
+    ) -> Result<Box<dyn CompileStatementExpression>, error::Error> {
         let mut left = unwrap_or_ret_error!(self.parse_postfix());
 
         let mut token;
@@ -161,7 +172,9 @@ impl Parser<'_> {
         Ok(left)
     }
 
-    pub(crate) fn parse_additive(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+    pub(crate) fn parse_additive(
+        &mut self,
+    ) -> Result<Box<dyn CompileStatementExpression>, error::Error> {
         let mut left = unwrap_or_ret_error!(self.parse_multiplicative());
 
         let mut token;
@@ -184,7 +197,9 @@ impl Parser<'_> {
         Ok(left)
     }
 
-    pub(crate) fn parse_bitshift(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+    pub(crate) fn parse_bitshift(
+        &mut self,
+    ) -> Result<Box<dyn CompileStatementExpression>, error::Error> {
         let mut left = unwrap_or_ret_error!(self.parse_additive());
 
         let mut token;
@@ -207,7 +222,9 @@ impl Parser<'_> {
         Ok(left)
     }
 
-    pub(crate) fn parse_equality(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+    pub(crate) fn parse_equality(
+        &mut self,
+    ) -> Result<Box<dyn CompileStatementExpression>, error::Error> {
         let mut left = unwrap_or_ret_error!(self.parse_bitshift());
 
         let mut token;
@@ -230,7 +247,9 @@ impl Parser<'_> {
         Ok(left)
     }
 
-    pub(crate) fn parse_bitand(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+    pub(crate) fn parse_bitand(
+        &mut self,
+    ) -> Result<Box<dyn CompileStatementExpression>, error::Error> {
         let mut left = unwrap_or_ret_error!(self.parse_equality());
 
         let mut token;
@@ -252,7 +271,9 @@ impl Parser<'_> {
         Ok(left)
     }
 
-    pub(crate) fn parse_bitor(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+    pub(crate) fn parse_bitor(
+        &mut self,
+    ) -> Result<Box<dyn CompileStatementExpression>, error::Error> {
         let mut left = unwrap_or_ret_error!(self.parse_bitand());
 
         let mut token;
@@ -274,7 +295,9 @@ impl Parser<'_> {
         Ok(left)
     }
 
-    pub(crate) fn parse_expression(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+    pub(crate) fn parse_expression(
+        &mut self,
+    ) -> Result<Box<dyn CompileStatementExpression>, error::Error> {
         return self.parse_bitor();
     }
 }

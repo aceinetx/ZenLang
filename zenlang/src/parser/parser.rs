@@ -29,8 +29,6 @@ impl<'a> Parser<'_> {
     }
 
     /// Steps a token once
-    ///
-    /// Saves the next token to the self.current_token
     pub(crate) fn next(&mut self) -> Token {
         let token = self.tokenizer.next();
         return token;
@@ -39,6 +37,13 @@ impl<'a> Parser<'_> {
     /// Steps back a token
     pub(crate) fn back(&mut self) {
         self.tokenizer.back();
+    }
+
+    /// Steps a token once, then steps back
+    pub(crate) fn peek(&mut self) -> Token {
+        let token = self.next();
+        self.back();
+        return token;
     }
 
     /// Parse everything to self.root

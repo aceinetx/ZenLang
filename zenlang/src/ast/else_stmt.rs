@@ -1,14 +1,17 @@
+use crate::ast::block::AstBlock;
 use crate::ast::node::Compile;
 use alloc::boxed::*;
 use alloc::vec::*;
 
 pub struct AstElseStmt {
-    pub body: Vec<Box<dyn Compile>>,
+    pub body: AstBlock,
 }
 
 impl AstElseStmt {
     pub fn new() -> Self {
-        return Self { body: Vec::new() };
+        return Self {
+            body: AstBlock::new(),
+        };
     }
 }
 

@@ -20,6 +20,8 @@ pub enum Error {
     VmcallExpectedNumber(Token),
     ArrayIndexRbracket(Token),
     IndexDotSyntax(Token),
+    BlockLbrace(Token),
+    ExprRparen(Token),
 }
 
 impl ToString for Error {
@@ -99,6 +101,12 @@ impl ToString for Error {
                     "Expected a number or an identifier after `.` while indexing, but got {:?}",
                     token
                 )
+            }
+            Self::BlockLbrace(token) => {
+                format!("Expected `{{` to begin a block, but got {:?}", token)
+            }
+            Self::ExprRparen(token) => {
+                format!("Expected `)` to end an expression, but got {:?}", token)
             }
         };
     }

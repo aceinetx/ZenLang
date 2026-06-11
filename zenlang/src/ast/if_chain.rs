@@ -107,7 +107,9 @@ impl Compile for AstIfChain {
                 module
                     .opcodes
                     .push(Opcode::StoreVar(head.if_let_name.clone()));
-                module.opcodes.push(Opcode::LoadVar(head.if_let_name.clone()));
+                module
+                    .opcodes
+                    .push(Opcode::LoadVar(head.if_let_name.clone()));
 
                 branch_indexes.push(module.opcodes.len());
                 module.opcodes.push(Opcode::BranchNonNull(0));
@@ -170,7 +172,7 @@ impl Compile for AstIfChain {
                 addr = module.opcodes.len();
             }
 
-            for node in head.body.iter_mut() {
+            for node in head.body.body.iter_mut() {
                 if let Err(e) = node.compile_all(compiler) {
                     return Err(e);
                 }
@@ -205,7 +207,7 @@ impl Compile for AstIfChain {
                 addr = module.opcodes.len();
             }
 
-            for node in elif.body.iter_mut() {
+            for node in elif.body.body.iter_mut() {
                 if let Err(e) = node.compile_all(compiler) {
                     return Err(e);
                 }
@@ -224,7 +226,8 @@ impl Compile for AstIfChain {
                 if let Opcode::BranchTrue(bst_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
                     *bst_addr = addr as u32;
                 }
-                if let Opcode::BranchNonNull(bsnn_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
+                if let Opcode::BranchNonNull(bsnn_addr) = &mut module.opcodes[branch_indexes[1 + i]]
+                {
                     *bsnn_addr = addr as u32;
                 }
             }
@@ -237,7 +240,7 @@ impl Compile for AstIfChain {
             else_addr = module.opcodes.len();
         }
         if let Some(else_stmt) = &mut self.else_node {
-            for node in else_stmt.body.iter_mut() {
+            for node in else_stmt.body.body.iter_mut() {
                 if let Err(e) = node.compile_all(compiler) {
                     return Err(e);
                 }

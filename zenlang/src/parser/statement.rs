@@ -93,6 +93,11 @@ impl Parser<'_> {
 
                 vmcall
             }
+            Token::If => {
+                let node = Box::new(unwrap_or_ret_error!(self.parse_if_chain()));
+                self.back();
+                node
+            }
             _ => {
                 self.back();
                 let mut expr = unwrap_or_ret_error!(self.parse_postfix());
@@ -103,7 +108,7 @@ impl Parser<'_> {
         };
 
         let semi = self.next();
-        if !matches!(semi, Token::Semicolon) {
+        if !matches!(semi, Token::Semicolon) && !matches!(token, Token::If) {
             return Err(error::Error::StatementSemicolon(semi));
         }
 
