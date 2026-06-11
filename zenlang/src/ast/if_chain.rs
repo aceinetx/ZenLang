@@ -172,7 +172,7 @@ impl Compile for AstIfChain {
                 addr = module.opcodes.len();
             }
 
-            for node in head.body.body.iter_mut() {
+            for node in head.block.children.iter_mut() {
                 if let Err(e) = node.compile_all(compiler) {
                     return Err(e);
                 }
@@ -207,7 +207,7 @@ impl Compile for AstIfChain {
                 addr = module.opcodes.len();
             }
 
-            for node in elif.body.body.iter_mut() {
+            for node in elif.block.children.iter_mut() {
                 if let Err(e) = node.compile_all(compiler) {
                     return Err(e);
                 }
@@ -240,7 +240,7 @@ impl Compile for AstIfChain {
             else_addr = module.opcodes.len();
         }
         if let Some(else_stmt) = &mut self.else_node {
-            for node in else_stmt.body.body.iter_mut() {
+            for node in else_stmt.block.children.iter_mut() {
                 if let Err(e) = node.compile_all(compiler) {
                     return Err(e);
                 }

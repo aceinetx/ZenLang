@@ -18,7 +18,7 @@ impl Parser<'_> {
             }
             self.back();
 
-            block.body.push(self.parse_statement()?);
+            block.children.push(self.parse_statement()?);
         }
 
         Ok(block)

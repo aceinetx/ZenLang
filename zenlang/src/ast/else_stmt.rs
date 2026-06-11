@@ -4,13 +4,13 @@ use alloc::boxed::*;
 use alloc::vec::*;
 
 pub struct AstElseStmt {
-    pub body: AstBlock,
+    pub block: AstBlock,
 }
 
 impl AstElseStmt {
     pub fn new() -> Self {
         return Self {
-            body: AstBlock::new(),
+            block: AstBlock::new(),
         };
     }
 }

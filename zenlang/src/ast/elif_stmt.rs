@@ -6,7 +6,7 @@ use alloc::vec::*;
 
 pub struct AstElifStmt {
     pub value: Option<Box<dyn Compile>>,
-    pub body: AstBlock,
+    pub block: AstBlock,
     pub elif_let: bool,
     pub elif_let_name: String,
     pub elif_let_expr: Option<Box<dyn Compile>>,
@@ -16,7 +16,7 @@ impl AstElifStmt {
     pub fn new() -> Self {
         return Self {
             value: None,
-            body: AstBlock::new(),
+            block: AstBlock::new(),
             elif_let: false,
             elif_let_name: String::new(),
             elif_let_expr: None,

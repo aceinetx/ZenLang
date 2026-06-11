@@ -3,12 +3,14 @@ use alloc::boxed::*;
 use alloc::vec::*;
 
 pub struct AstBlock {
-    pub body: Vec<Box<dyn Compile>>,
+    pub children: Vec<Box<dyn Compile>>,
 }
 
 impl AstBlock {
     pub fn new() -> Self {
-        return Self { body: Vec::new() };
+        return Self {
+            children: Vec::new(),
+        };
     }
 }
 
@@ -21,7 +23,7 @@ impl Compile for AstBlock {
         &mut self,
         compiler: &mut crate::compiler::Compiler,
     ) -> Result<(), alloc::string::String> {
-        for block in self.body.iter_mut() {
+        for block in self.children.iter_mut() {
             if let Err(e) = block.compile(compiler) {
                 return Err(e);
             }

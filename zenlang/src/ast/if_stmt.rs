@@ -6,7 +6,7 @@ use alloc::vec::*;
 
 pub struct AstIfStmt {
     pub value: Option<Box<dyn Compile>>,
-    pub body: AstBlock,
+    pub block: AstBlock,
     pub if_let: bool,
     pub if_let_name: String,
     pub if_let_expr: Option<Box<dyn Compile>>,
@@ -16,7 +16,7 @@ impl AstIfStmt {
     pub fn new() -> Self {
         return Self {
             value: None,
-            body: AstBlock::new(),
+            block: AstBlock::new(),
             if_let: false,
             if_let_name: String::new(),
             if_let_expr: None,
