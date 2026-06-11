@@ -1,24 +1,23 @@
+use crate::ast::block::AstBlock;
 use crate::ast::node::Compile;
 use crate::compiler::Compiler;
-use alloc::boxed::*;
 use alloc::string::String;
-use alloc::vec::*;
 
 pub struct AstDefer {
-    pub body: Vec<Box<dyn Compile>>,
+    pub block: AstBlock,
 }
 
 impl AstDefer {
     pub fn new() -> Self {
-        return Self { body: Vec::new() };
+        return Self {
+            block: AstBlock::new(),
+        };
     }
 }
 
 impl Compile for AstDefer {
     fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
-        for block in self.body.iter_mut() {
-            block.compile(compiler)?;
-        }
+        self.block.compile(compiler)?;
 
         Ok(())
     }

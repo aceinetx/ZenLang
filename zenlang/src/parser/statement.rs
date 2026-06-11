@@ -1,4 +1,5 @@
 use crate::ast::array_assign::AstArrayAssign;
+use crate::ast::defer::AstDefer;
 use crate::ast::node::Compile;
 use crate::ast::number::AstNumber;
 use crate::ast::ret::AstReturn;
@@ -12,6 +13,8 @@ use alloc::boxed::Box;
 impl Parser<'_> {
     pub(crate) fn parse_statement(&mut self) -> Result<Box<dyn Compile>, error::Error> {
         let token = self.next();
+        let mut require_semicolon = false;
+
         let statement: Box<dyn Compile> = match token {
             Token::Return => {
                 let node = Box::new(AstReturn::new(self.parse_expression()?));
@@ -91,9 +94,34 @@ impl Parser<'_> {
                 vmcall
             }
             Token::If => {
+                require_semicolon = false;
                 let node = Box::new(self.parse_if_chain()?);
                 self.back();
                 node
+            }
+            Token::Defer => match self.next() {
+                Token::Lbrace => {
+                    self.back();
+                    let block = self.parse_block()?;
+                    let mut defer = Box::new(AstDefer::new());
+                    defer.block = block;
+
+                    defer
+                }
+                _ => {
+                    let mut defer = Box::new(AstDefer::new());
+                    defer.block.children.push(self.parse_statement()?);
+                    self.back();
+
+                    defer
+                }
+            },
+            Token::Lbrace => {
+                require_semicolon = false;
+                self.back();
+                let block = self.parse_block()?;
+                self.back();
+                Box::new(block)
             }
             _ => {
                 self.back();
@@ -105,7 +133,7 @@ impl Parser<'_> {
         };
 
         let semi = self.next();
-        if !matches!(semi, Token::Semicolon) && !matches!(token, Token::If) {
+        if !matches!(semi, Token::Semicolon) && require_semicolon {
             return Err(error::Error::StatementSemicolon(semi));
         }
 
