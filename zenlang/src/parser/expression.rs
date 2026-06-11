@@ -184,15 +184,15 @@ impl Parser<'_> {
         Ok(left)
     }
 
-    pub(crate) fn parse_equality(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+    pub(crate) fn parse_bitshift(&mut self) -> Result<Box<dyn Compile>, error::Error> {
         let mut left = unwrap_or_ret_error!(self.parse_additive());
 
         let mut token;
         loop {
             token = self.next();
             let op = match token {
-                Token::OperatorCmp('=', '=') => AstBinopOp::EQ,
-                Token::OperatorCmp('!', '=') => AstBinopOp::NEQ,
+                Token::BitOperator('>', '>') => AstBinopOp::BITSHR,
+                Token::BitOperator('<', '<') => AstBinopOp::BITSHL,
                 _ => {
                     self.back();
                     break;
@@ -207,7 +207,74 @@ impl Parser<'_> {
         Ok(left)
     }
 
+    pub(crate) fn parse_equality(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+        let mut left = unwrap_or_ret_error!(self.parse_bitshift());
+
+        let mut token;
+        loop {
+            token = self.next();
+            let op = match token {
+                Token::OperatorCmp('=', '=') => AstBinopOp::EQ,
+                Token::OperatorCmp('!', '=') => AstBinopOp::NEQ,
+                _ => {
+                    self.back();
+                    break;
+                }
+            };
+
+            let right = unwrap_or_ret_error!(self.parse_bitshift());
+
+            left = Box::new(AstBinop::new(left, op, right));
+        }
+
+        Ok(left)
+    }
+
+    pub(crate) fn parse_bitand(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+        let mut left = unwrap_or_ret_error!(self.parse_equality());
+
+        let mut token;
+        loop {
+            token = self.next();
+            let op = match token {
+                Token::BitOperator('&', '&') => AstBinopOp::BITAND,
+                _ => {
+                    self.back();
+                    break;
+                }
+            };
+
+            let right = unwrap_or_ret_error!(self.parse_equality());
+
+            left = Box::new(AstBinop::new(left, op, right));
+        }
+
+        Ok(left)
+    }
+
+    pub(crate) fn parse_bitor(&mut self) -> Result<Box<dyn Compile>, error::Error> {
+        let mut left = unwrap_or_ret_error!(self.parse_bitand());
+
+        let mut token;
+        loop {
+            token = self.next();
+            let op = match token {
+                Token::BitOperator('|', '|') => AstBinopOp::BITOR,
+                _ => {
+                    self.back();
+                    break;
+                }
+            };
+
+            let right = unwrap_or_ret_error!(self.parse_bitand());
+
+            left = Box::new(AstBinop::new(left, op, right));
+        }
+
+        Ok(left)
+    }
+
     pub(crate) fn parse_expression(&mut self) -> Result<Box<dyn Compile>, error::Error> {
-        return self.parse_equality();
+        return self.parse_bitor();
     }
 }
