@@ -2,6 +2,7 @@ use crate::ast::array::AstArray;
 use crate::ast::array_index::AstArrayIndex;
 use crate::ast::binop::{AstBinop, AstBinopOp};
 use crate::ast::boolean::AstBoolean;
+use crate::ast::dict::AstDict;
 use crate::ast::func_call::AstFuncCall;
 use crate::ast::node::CompileStatementExpression;
 use crate::ast::null::AstNull;
@@ -59,6 +60,41 @@ impl Parser<'_> {
                     token = self.next();
                     match token {
                         Token::Rbracket => break,
+                        Token::Comma => continue,
+                        _ => panic!("{:?}", token),
+                    };
+                }
+
+                Ok(node)
+            }
+            Token::Lbrace => {
+                // Dictionary
+                let mut node = Box::new(AstDict::new());
+
+                let mut token;
+                loop {
+                    token = self.next();
+                    if matches!(token, Token::Rbrace) {
+                        break;
+                    }
+
+                    let key = match token {
+                        Token::String(key) => key,
+                        _ => return Err(error::Error::DictStrKey(token)),
+                    };
+
+                    let eq = self.next();
+                    if !matches!(eq, Token::Assign) {
+                        return Err(error::Error::DictEqual(eq));
+                    }
+
+                    let value = self.parse_expression()?;
+
+                    node.dict.push((key, value));
+
+                    token = self.next();
+                    match token {
+                        Token::Rbrace => break,
                         Token::Comma => continue,
                         _ => panic!("{:?}", token),
                     };

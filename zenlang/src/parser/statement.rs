@@ -2,6 +2,7 @@ use crate::ast::array_assign::AstArrayAssign;
 use crate::ast::node::Compile;
 use crate::ast::number::AstNumber;
 use crate::ast::ret::AstReturn;
+use crate::ast::string::AstString;
 use crate::ast::var_assign::AstAssign;
 use crate::ast::var_ref::AstVarRef;
 use crate::ast::vmcall::AstVmcall;
@@ -55,7 +56,7 @@ impl Parser<'_> {
                             let index = self.next();
                             let index: Box<dyn Compile> = match index {
                                 Token::Number(number) => Box::new(AstNumber::new(number)),
-                                Token::Identifier(ident) => Box::new(AstVarRef::new(ident)),
+                                Token::Identifier(ident) => Box::new(AstString::new(ident)),
                                 _ => return Err(error::Error::LetDotSyntax(index)),
                             };
 

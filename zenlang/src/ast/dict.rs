@@ -1,4 +1,5 @@
 use crate::ast::node::Compile;
+use crate::ast::node::StatementExpression;
 use crate::compiler::Compiler;
 use crate::opcode::Opcode;
 use alloc::boxed::*;
@@ -34,5 +35,11 @@ impl Compile for AstDict {
         }
 
         Ok(())
+    }
+}
+
+impl StatementExpression for AstDict {
+    fn disable_push(&mut self) {
+        self.do_push = false;
     }
 }

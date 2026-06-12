@@ -22,6 +22,8 @@ pub enum Error {
     IndexDotSyntax(Token),
     BlockLbrace(Token),
     ExprRparen(Token),
+    DictStrKey(Token),
+    DictEqual(Token),
 }
 
 impl ToString for Error {
@@ -107,6 +109,12 @@ impl ToString for Error {
             }
             Self::ExprRparen(token) => {
                 format!("Expected `)` to end an expression, but got {:?}", token)
+            }
+            Self::DictStrKey(token) => {
+                format!("Expected a string as a dictionary key, but got {:?}", token)
+            }
+            Self::DictEqual(token) => {
+                format!("Expected `=` after a dictionary key, but got {:?}", token)
             }
         };
     }
