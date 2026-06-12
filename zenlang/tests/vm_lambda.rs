@@ -88,3 +88,26 @@ fn main {
         Value::Number(42.0),
     );
 }
+
+#[test]
+fn vm_lambda_test_4() {
+    expect_to_return(
+        r#"
+fn a {
+    let x = {};
+    let lambda = fn v {
+        let x.a = v;
+    };
+    return [x, lambda];
+}
+
+fn main {
+    let v = a();
+    v[1](42);
+    return v[0].a;
+}
+        "#
+        .into(),
+        Value::Number(42.0),
+    );
+}
