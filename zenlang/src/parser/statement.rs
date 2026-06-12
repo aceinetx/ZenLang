@@ -1,6 +1,7 @@
 use crate::ast::array_assign::AstArrayAssign;
 use crate::ast::break_stmt::AstBreak;
 use crate::ast::continue_stmt::AstContinue;
+use crate::ast::dynmod_stmt::AstDynmod;
 use crate::ast::node::Compile;
 use crate::ast::number::AstNumber;
 use crate::ast::ret::AstReturn;
@@ -115,6 +116,12 @@ impl Parser<'_> {
             }
             Token::Break => Box::new(AstBreak::new()),
             Token::Continue => Box::new(AstContinue::new()),
+            Token::Dynmod => {
+                let name = self.parse_expression()?;
+
+                let node = Box::new(AstDynmod::new(name));
+                node
+            }
             _ => {
                 self.back();
                 let mut expr = self.parse_postfix()?;
