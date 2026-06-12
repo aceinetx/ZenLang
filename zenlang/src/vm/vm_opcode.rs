@@ -47,11 +47,14 @@ impl VM {
             Opcode::Aiafs() => {
                 self.op_aiafs();
             }
-            Opcode::BeginFnArgs() => {
-                self.op_begin_fn_args();
+            Opcode::BeginArgs() => {
+                self.op_beginargs();
             }
-            Opcode::EndFnArgs() => {
-                self.op_end_fn_args();
+            Opcode::PushArg() => {
+                self.op_pusharg();
+            }
+            Opcode::StoreArg(name) => {
+                self.op_storearg(name);
             }
             Opcode::Pop() => {
                 if self.stack.is_empty() {
@@ -114,6 +117,7 @@ impl VM {
             Opcode::Ret() => {
                 self.op_ret();
             }
+            Opcode::Lambda(pc, args) => self.op_lambda(*pc, *args),
         }
     }
 }

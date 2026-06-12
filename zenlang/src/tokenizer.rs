@@ -4,7 +4,7 @@
 //!
 //! ### Example
 //! `fn main {}` -> `Fn, Identifier(main), Lbrace, Rbrace`
-use alloc::string::*;
+use alloc::{string::*, vec::Vec};
 use libm::pow;
 use unescape;
 
@@ -42,7 +42,6 @@ pub enum Token {
     Vmcall,
     Mod,
     Dynmod,
-    Defer,
     EOF,
 }
 
@@ -50,11 +49,16 @@ pub enum Token {
 pub struct Tokenizer {
     code: String,
     pos: usize,
+    prev_positions: Vec<usize>,
 }
 
 impl Tokenizer {
     pub fn new(code: String) -> Tokenizer {
-        return Tokenizer { code: code, pos: 0 };
+        return Tokenizer {
+            code: code,
+            pos: 0,
+            prev_positions: Vec::new(),
+        };
     }
 
     fn is_digit(&self, ch: char) -> bool {
@@ -155,6 +159,7 @@ impl Tokenizer {
     }
 
     pub fn next(&mut self) -> Token {
+        self.prev_positions.push(self.pos);
         while self.pos < self.code.len() {
             let c = self.code.chars().nth(self.pos).unwrap();
             if self.is_digit(c) {
@@ -193,8 +198,6 @@ impl Tokenizer {
                         token = Token::Mod;
                     } else if name == "dynmod" {
                         token = Token::Dynmod;
-                    } else if name == "defer" {
-                        token = Token::Defer;
                     }
                 }
                 return token;
@@ -304,5 +307,9 @@ impl Tokenizer {
             self.pos += 1;
         }
         return Token::EOF;
+    }
+
+    pub fn back(&mut self) {
+        self.pos = self.prev_positions.pop().unwrap_or(0);
     }
 }

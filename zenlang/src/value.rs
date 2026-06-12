@@ -1,7 +1,8 @@
 //! Value
 //!
 //! ZenLang variable value
-use crate::strong_u64::U64BitsControl;
+use crate::scope::Scope;
+use crate::vm::ProgramCounter;
 use crate::vm::VM;
 use alloc::collections::btree_map::BTreeMap;
 use alloc::rc::*;
@@ -23,7 +24,8 @@ pub enum Value {
     Number(f64),
     String(String),
     Boolean(bool),
-    FunctionRef(u64, u64),
+    FunctionRef(ProgramCounter, usize),
+    Lambda(ProgramCounter, Rc<RefCell<Scope>>, usize),
     Object(Rc<RefCell<Object>>),
     Null(),
 }
@@ -110,10 +112,25 @@ impl Value {
             (Value::FunctionRef(a, b), Value::FunctionRef(c, d)) => {
                 return a == c && b == d;
             }
+            (Value::Lambda(a, _, _), Value::Lambda(b, _, _)) => {
+                return a == b;
+            }
             (Value::Null(), Value::Null()) => {
                 return true;
             }
             _ => false,
+        }
+    }
+
+    pub fn get_type(&self) -> &'static str {
+        match self {
+            Value::Number(_) => "number",
+            Value::String(_) => "string",
+            Value::Boolean(_) => "bool",
+            Value::FunctionRef(_, _) => "function",
+            Value::Lambda(_, _, _) => "lambda",
+            Value::Object(_) => "object",
+            Value::Null() => "null",
         }
     }
 }
@@ -187,13 +204,10 @@ impl Display for Value {
                 }
             }
             Value::FunctionRef(addr, args_count) => {
-                return write!(
-                    f,
-                    "[function at 0x{:?} in module {} with {} arguments]",
-                    addr.get_low(),
-                    addr.get_high(),
-                    args_count
-                );
+                return write!(f, "[function at {} with {} arguments]", addr, args_count);
+            }
+            Value::Lambda(addr, _, args) => {
+                return write!(f, "[lambda at {} with {} arguments]", addr, args);
             }
             Value::Null() => {
                 return write!(f, "null");

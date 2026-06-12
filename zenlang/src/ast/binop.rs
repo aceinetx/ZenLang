@@ -1,6 +1,10 @@
+use crate::ast::node::StatementExpression;
+use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::Opcode};
-use alloc::vec::*;
+use alloc::boxed::*;
+use alloc::string::String;
 
+#[derive(Debug)]
 pub enum AstBinopOp {
     PLUS,
     MINUS,
@@ -18,51 +22,29 @@ pub enum AstBinopOp {
     BITOR,
 }
 
+#[derive(Debug)]
 pub struct AstBinop {
-    pub left: Option<alloc::boxed::Box<dyn Compile>>,
-    pub right: Option<alloc::boxed::Box<dyn Compile>>,
+    pub left: Box<dyn Compile>,
+    pub right: Box<dyn Compile>,
     pub op: AstBinopOp,
     do_push: bool,
 }
 
 impl AstBinop {
-    pub fn new() -> Self {
+    pub fn new(left: Box<dyn Compile>, op: AstBinopOp, right: Box<dyn Compile>) -> Self {
         return Self {
-            left: None,
-            right: None,
-            op: AstBinopOp::PLUS,
+            left: left,
+            right: right,
+            op: op,
             do_push: true,
         };
     }
 }
 
 impl Compile for AstBinop {
-    fn disable_push(&mut self) {
-        self.do_push = false;
-    }
-
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
-        if let Some(left) = &mut self.left {
-            if let Err(e) = left.compile(compiler) {
-                return Err(e);
-            }
-        } else {
-            return Err("left is None".into());
-        }
-        if let Some(right) = &mut self.right {
-            if let Err(e) = right.compile(compiler) {
-                return Err(e);
-            }
-        } else {
-            return Err("right is None".into());
-        }
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
+        self.left.compile(compiler)?;
+        self.right.compile(compiler)?;
 
         let opcode;
 
@@ -110,5 +92,11 @@ impl Compile for AstBinop {
         }
 
         Ok(())
+    }
+}
+
+impl StatementExpression for AstBinop {
+    fn disable_push(&mut self) {
+        self.do_push = false;
     }
 }

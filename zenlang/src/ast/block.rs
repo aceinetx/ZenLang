@@ -1,30 +1,26 @@
 use crate::ast::node::Compile;
+use crate::compiler::Compiler;
 use alloc::boxed::*;
+use alloc::string::String;
 use alloc::vec::*;
 
+#[derive(Debug)]
 pub struct AstBlock {
-    pub body: Vec<Box<dyn Compile>>,
+    pub children: Vec<Box<dyn Compile>>,
 }
 
 impl AstBlock {
     pub fn new() -> Self {
-        return Self { body: Vec::new() };
+        return Self {
+            children: Vec::new(),
+        };
     }
 }
 
 impl Compile for AstBlock {
-    fn get_children(&mut self) -> Option<&mut Vec<Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
-        for block in self.body.iter_mut() {
-            if let Err(e) = block.compile(compiler) {
-                return Err(e);
-            }
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
+        for block in self.children.iter_mut() {
+            block.compile(compiler)?;
         }
 
         Ok(())

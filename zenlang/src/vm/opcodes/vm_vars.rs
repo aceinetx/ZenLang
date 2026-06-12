@@ -1,5 +1,5 @@
-use crate::strong_u64::U64BitsControl;
 use crate::value::*;
+use crate::vm::ProgramCounter;
 use crate::vm::VM;
 use alloc::format;
 use alloc::string::*;
@@ -23,10 +23,10 @@ impl VM {
         for module_i in 0..self.modules.len() {
             let module = &self.modules[module_i];
             for func in module.functions.iter() {
-                if func.name.to_string() == name.to_string() {
-                    let mut addr: u64 = 0;
-                    addr.set_low(func.addr);
-                    addr.set_high(module_i as u32);
+                if func.name == *name {
+                    let mut addr = ProgramCounter::new();
+                    addr.inst = func.addr;
+                    addr.module = module_i;
                     self.stack.push(Value::FunctionRef(addr, func.args_count));
                     self.check_stack_overflow();
                     return;

@@ -1,55 +1,41 @@
+use crate::ast::node::StatementExpression;
+use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::boxed::*;
-use alloc::vec::*;
+use alloc::string::String;
 
+#[derive(Debug)]
 pub struct AstArrayIndex {
-    pub array: Option<Box<dyn Compile>>,
-    pub index: Option<Box<dyn Compile>>,
+    pub array: Box<dyn Compile>,
+    pub index: Box<dyn Compile>,
     do_push: bool,
 }
 
 impl AstArrayIndex {
-    pub fn new() -> Self {
+    pub fn new(array: Box<dyn Compile>, index: Box<dyn Compile>) -> Self {
         return Self {
-            array: None,
-            index: None,
+            array: array,
+            index: index,
             do_push: true,
         };
     }
 }
 
 impl Compile for AstArrayIndex {
-    fn disable_push(&mut self) {
-        self.do_push = false;
-    }
-
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         if self.do_push {
-            if let Some(array) = &mut self.array {
-                if let Err(e) = array.compile(compiler) {
-                    return Err(e);
-                }
-            } else {
-                return Err("array is None".into());
-            }
-            if let Some(index) = &mut self.index {
-                if let Err(e) = index.compile(compiler) {
-                    return Err(e);
-                }
-            } else {
-                return Err("index is None".into());
-            }
+            self.array.compile(compiler)?;
+            self.index.compile(compiler)?;
 
             let module = compiler.get_module();
             module.opcodes.push(Opcode::Iafs());
         }
         Ok(())
+    }
+}
+
+impl StatementExpression for AstArrayIndex {
+    fn disable_push(&mut self) {
+        self.do_push = false;
     }
 }

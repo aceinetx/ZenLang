@@ -9,7 +9,7 @@ use alloc::string::*;
 use alloc::vec::*;
 
 pub struct Compiler<'a> {
-    parser: &'a mut Parser<'a>,
+    pub parser: &'a mut Parser<'a>,
     module: Module,
     pub(crate) while_stmts_break_indexes: Vec<Vec<usize>>,
     pub(crate) while_stmts_continue_indexes: Vec<Vec<usize>>,
@@ -38,14 +38,15 @@ impl<'a> Compiler<'_> {
     pub fn compile(&mut self) -> Result<(), String> {
         self.warnings.clear();
         if let Err(e) = self.parser.parse() {
-            return Err(e.into());
+            return Err(e.to_string());
         }
 
         let mut root = core::mem::take(&mut self.parser.root);
-        let result = root.compile_all(self);
+
+        let _ = root.compile(self)?;
 
         self.parser.root = root;
 
-        return result;
+        Ok(())
     }
 }

@@ -140,7 +140,7 @@ fn #[ctor] stdlib_init {
 
     module.functions.push(ModuleFunction::new(
         "_vmcall_ret_unsafe_1".into(),
-        module.opcodes.len() as u32,
+        module.opcodes.len(),
         1,
         false,
     ));
@@ -149,7 +149,7 @@ fn #[ctor] stdlib_init {
 
     module.functions.push(ModuleFunction::new(
         "_vmcall_ret_unsafe_2".into(),
-        module.opcodes.len() as u32,
+        module.opcodes.len(),
         2,
         false,
     ));
@@ -158,7 +158,7 @@ fn #[ctor] stdlib_init {
 
     module.functions.push(ModuleFunction::new(
         "_vmcall_ret_unsafe_3".into(),
-        module.opcodes.len() as u32,
+        module.opcodes.len(),
         3,
         false,
     ));
@@ -167,12 +167,12 @@ fn #[ctor] stdlib_init {
 
     module.functions.push(ModuleFunction::new(
         "_vmcall_ret_unsafe_4".into(),
-        module.opcodes.len() as u32,
+        module.opcodes.len(),
         4,
         false,
     ));
     module.opcodes.push(Opcode::Dynvmcall());
     module.opcodes.push(Opcode::Ret());
 
-    return module.clone();
+    return core::mem::take(module);
 }

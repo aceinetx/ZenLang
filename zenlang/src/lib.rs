@@ -18,7 +18,6 @@ pub mod parser;
 pub mod platform;
 pub mod scope;
 pub mod stdlib;
-pub mod strong_u64;
 pub mod tokenizer;
 pub mod value;
 pub mod vm;
@@ -27,5 +26,4 @@ mod func_attr;
 pub use func_attr::*;
 
 extern crate alloc;
-#[macro_use]
 extern crate downcast;

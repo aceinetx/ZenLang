@@ -1,10 +1,12 @@
 use crate::ast::elif_stmt::*;
 use crate::ast::else_stmt::*;
 use crate::ast::if_stmt::*;
+use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::Opcode};
-use alloc::boxed::*;
+use alloc::string::String;
 use alloc::vec::*;
 
+#[derive(Debug)]
 pub struct AstIfChain {
     pub head: Option<AstIfStmt>,
     pub elifs: Vec<AstElifStmt>,
@@ -22,14 +24,7 @@ impl AstIfChain {
 }
 
 impl Compile for AstIfChain {
-    fn get_children(&mut self) -> Option<&mut Vec<Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         // To the developer who is going to read this code:
         //
         // Dont. Don't make a mistake by trying to understand what it does
@@ -81,9 +76,7 @@ impl Compile for AstIfChain {
             if !head.if_let {
                 // if
                 if let Some(value) = &mut head.value {
-                    if let Err(e) = value.compile(compiler) {
-                        return Err(e);
-                    }
+                    value.compile(compiler)?;
                 } else {
                     return Err("head.value is None".into());
                 }
@@ -96,9 +89,7 @@ impl Compile for AstIfChain {
             } else {
                 // if let
                 if let Some(value) = &mut head.if_let_expr {
-                    if let Err(e) = value.compile(compiler) {
-                        return Err(e);
-                    }
+                    value.compile(compiler)?;
                 } else {
                     return Err("head.if_let_expr is None".into());
                 }
@@ -107,7 +98,9 @@ impl Compile for AstIfChain {
                 module
                     .opcodes
                     .push(Opcode::StoreVar(head.if_let_name.clone()));
-                module.opcodes.push(Opcode::LoadVar(head.if_let_name.clone()));
+                module
+                    .opcodes
+                    .push(Opcode::LoadVar(head.if_let_name.clone()));
 
                 branch_indexes.push(module.opcodes.len());
                 module.opcodes.push(Opcode::BranchNonNull(0));
@@ -119,9 +112,7 @@ impl Compile for AstIfChain {
             if !elif_node.elif_let {
                 // elif
                 if let Some(value) = &mut elif_node.value {
-                    if let Err(e) = value.compile(compiler) {
-                        return Err(e);
-                    }
+                    value.compile(compiler)?;
                 }
 
                 let module = compiler.get_module();
@@ -132,9 +123,7 @@ impl Compile for AstIfChain {
             } else {
                 // elif let
                 if let Some(value) = &mut elif_node.elif_let_expr {
-                    if let Err(e) = value.compile(compiler) {
-                        return Err(e);
-                    }
+                    value.compile(compiler)?;
                 } else {
                     return Err("elif_node.elif_let_expr is None".into());
                 }
@@ -170,10 +159,8 @@ impl Compile for AstIfChain {
                 addr = module.opcodes.len();
             }
 
-            for node in head.body.iter_mut() {
-                if let Err(e) = node.compile_all(compiler) {
-                    return Err(e);
-                }
+            for node in head.block.children.iter_mut() {
+                node.compile(compiler)?;
             }
 
             {
@@ -187,10 +174,10 @@ impl Compile for AstIfChain {
             {
                 let module = compiler.get_module();
                 if let Opcode::BranchTrue(bst_addr) = &mut module.opcodes[branch_indexes[0]] {
-                    *bst_addr = addr as u32;
+                    *bst_addr = addr;
                 }
                 if let Opcode::BranchNonNull(bsnn_addr) = &mut module.opcodes[branch_indexes[0]] {
-                    *bsnn_addr = addr as u32;
+                    *bsnn_addr = addr;
                 }
             }
         }
@@ -205,10 +192,8 @@ impl Compile for AstIfChain {
                 addr = module.opcodes.len();
             }
 
-            for node in elif.body.iter_mut() {
-                if let Err(e) = node.compile_all(compiler) {
-                    return Err(e);
-                }
+            for node in elif.block.children.iter_mut() {
+                node.compile(compiler)?;
             }
 
             {
@@ -222,10 +207,11 @@ impl Compile for AstIfChain {
             {
                 let module = compiler.get_module();
                 if let Opcode::BranchTrue(bst_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
-                    *bst_addr = addr as u32;
+                    *bst_addr = addr;
                 }
-                if let Opcode::BranchNonNull(bsnn_addr) = &mut module.opcodes[branch_indexes[1 + i]] {
-                    *bsnn_addr = addr as u32;
+                if let Opcode::BranchNonNull(bsnn_addr) = &mut module.opcodes[branch_indexes[1 + i]]
+                {
+                    *bsnn_addr = addr;
                 }
             }
         }
@@ -237,10 +223,8 @@ impl Compile for AstIfChain {
             else_addr = module.opcodes.len();
         }
         if let Some(else_stmt) = &mut self.else_node {
-            for node in else_stmt.body.iter_mut() {
-                if let Err(e) = node.compile_all(compiler) {
-                    return Err(e);
-                }
+            for node in else_stmt.block.children.iter_mut() {
+                node.compile(compiler)?;
             }
         }
 
@@ -252,7 +236,7 @@ impl Compile for AstIfChain {
             let module = compiler.get_module();
             let opcode = &mut module.opcodes[*branch_indexes.last().unwrap()];
             if let Opcode::Branch(addr) = opcode {
-                *addr = else_addr as u32;
+                *addr = else_addr;
             }
         }
 
@@ -269,7 +253,7 @@ impl Compile for AstIfChain {
             let module = compiler.get_module();
             let opcode = &mut module.opcodes[*index];
             if let Opcode::Branch(addr) = opcode {
-                *addr = len as u32;
+                *addr = len;
             }
         }
 

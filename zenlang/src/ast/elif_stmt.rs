@@ -1,11 +1,13 @@
+use crate::ast::block::AstBlock;
 use crate::ast::node::Compile;
+use crate::compiler::Compiler;
 use alloc::boxed::*;
 use alloc::string::*;
-use alloc::vec::*;
 
+#[derive(Debug)]
 pub struct AstElifStmt {
     pub value: Option<Box<dyn Compile>>,
-    pub body: Vec<Box<dyn Compile>>,
+    pub block: AstBlock,
     pub elif_let: bool,
     pub elif_let_name: String,
     pub elif_let_expr: Option<Box<dyn Compile>>,
@@ -15,7 +17,7 @@ impl AstElifStmt {
     pub fn new() -> Self {
         return Self {
             value: None,
-            body: Vec::new(),
+            block: AstBlock::new(),
             elif_let: false,
             elif_let_name: String::new(),
             elif_let_expr: None,
@@ -24,14 +26,7 @@ impl AstElifStmt {
 }
 
 impl Compile for AstElifStmt {
-    fn get_children(&mut self) -> Option<&mut Vec<Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        _compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, _compiler: &mut Compiler) -> Result<(), String> {
         Ok(())
     }
 }

@@ -4,10 +4,28 @@ use alloc::format;
 
 impl VM {
     pub fn op_vmcall(&mut self, index: u8) {
+        match self.args.pop() {
+            Some(mut args) => {
+                while !args.is_empty() {
+                    self.stack.push(args.remove(0));
+                }
+            }
+            None => (),
+        }
+
         self.vmcall(index);
     }
 
     pub fn op_dynvmcall(&mut self) {
+        match self.args.pop() {
+            Some(mut args) => {
+                while !args.is_empty() {
+                    self.stack.push(args.remove(0));
+                }
+            }
+            None => (),
+        }
+
         let index;
         if let Some(value) = self.stack.pop() {
             if let Value::Number(value) = value {

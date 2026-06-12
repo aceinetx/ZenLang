@@ -2,13 +2,14 @@ mod stdlib;
 
 fn stack_new {
     return {
-			"top" = stack_top,
-			"push" = stack_push,
-			"pop" = stack_pop,
-			"size" = stack_size,
-			"is_empty" = stack_is_empty,
-			"data" = []
-		};
+		"top" = stack_top,
+		"push" = stack_push,
+		"pop" = stack_pop,
+		"size" = stack_size,
+		"is_empty" = stack_is_empty,
+		"iter" = stack_iter,
+		"data" = []
+	};
 }
 
 fn stack_top {
@@ -30,12 +31,29 @@ fn stack_size {
 }
 
 fn stack_is_empty {
-    return self.size() == 0;
+	return self.size() == 0;
+}
+
+fn stack_iter func {
+	let i = 0;	
+	while i < self.size() {
+		if func(self.data[i]) == false {
+			return null;	
+		}
+
+		let i = i + 1;
+	}
+	return null;	
 }
 
 fn main {
     let stack = stack_new();
-		stack.push(69);
-    println(stack.top());
+	stack.push(69);
+	stack.push(420);
+	stack.push(80085);
+	stack.iter(fn element {
+		println(element);
+		return null;
+	});
     return stack.is_empty();
 }

@@ -59,6 +59,26 @@ fn compiler_test_return() {
 }
 
 #[test]
+fn compiler_test_simple_return() {
+    let mut tokenizer = Tokenizer::new("fn main {return 69;}".into());
+    let mut parser = Parser::new(&mut tokenizer);
+    let mut compiler = Compiler::new(&mut parser);
+    if let Err(e) = compiler.compile() {
+        assert_eq!(e, "");
+    }
+
+    let module = compiler.get_module();
+    println!("{:?}", module);
+    assert_eq!(module.opcodes.len(), 2);
+    assert!(matches!(module.opcodes[0], Opcode::LoadConstant(69.0)));
+    assert!(matches!(module.opcodes[1], Opcode::Ret()));
+    assert_eq!(module.functions.len(), 1);
+    assert_eq!(module.functions[0].addr, 0);
+    assert_eq!(module.functions[0].name, "main");
+    assert_eq!(module.functions[0].args_count, 0);
+}
+
+#[test]
 fn compiler_test_return_add() {
     let mut tokenizer = Tokenizer::new("fn main {return 2+3;}".into());
     let mut parser = Parser::new(&mut tokenizer);
@@ -73,6 +93,30 @@ fn compiler_test_return_add() {
     assert!(matches!(module.opcodes[1], Opcode::LoadConstant(3.0)));
     assert!(matches!(module.opcodes[2], Opcode::Add()));
     assert!(matches!(module.opcodes[3], Opcode::Ret()));
+    assert_eq!(module.functions.len(), 1);
+    assert_eq!(module.functions[0].addr, 0);
+    assert_eq!(module.functions[0].name, "main");
+    assert_eq!(module.functions[0].args_count, 0);
+}
+
+#[test]
+fn compiler_test_return_add_mul() {
+    let mut tokenizer = Tokenizer::new("fn main {return 2+2*2;}".into());
+    let mut parser = Parser::new(&mut tokenizer);
+    let mut compiler = Compiler::new(&mut parser);
+    if let Err(e) = compiler.compile() {
+        assert_eq!(e, "");
+    }
+
+    let module = compiler.get_module();
+    println!("{:?}", module.opcodes);
+    assert_eq!(module.opcodes.len(), 6);
+    assert!(matches!(module.opcodes[0], Opcode::LoadConstant(2.0)));
+    assert!(matches!(module.opcodes[1], Opcode::LoadConstant(2.0)));
+    assert!(matches!(module.opcodes[2], Opcode::LoadConstant(2.0)));
+    assert!(matches!(module.opcodes[3], Opcode::Mul()));
+    assert!(matches!(module.opcodes[4], Opcode::Add()));
+    assert!(matches!(module.opcodes[5], Opcode::Ret()));
     assert_eq!(module.functions.len(), 1);
     assert_eq!(module.functions[0].addr, 0);
     assert_eq!(module.functions[0].name, "main");
@@ -150,31 +194,28 @@ fn compiler_test_func_call() {
     }
 
     let module = compiler.get_module();
-    assert_eq!(module.opcodes.len(), 12);
-
-    assert!(matches!(module.opcodes[0], Opcode::BeginFnArgs()));
-    assert!(matches!(module.opcodes[1], Opcode::EndFnArgs()));
-    if let Opcode::LoadVar(s) = &module.opcodes[2] {
+    assert_eq!(module.opcodes.len(), 10);
+    assert!(matches!(module.opcodes[0], Opcode::BeginArgs()));
+    if let Opcode::LoadVar(s) = &module.opcodes[1] {
         assert_eq!(s.to_string(), "main");
     } else {
         assert!(false);
     }
-    assert!(matches!(module.opcodes[3], Opcode::Call()));
-    assert!(matches!(module.opcodes[4], Opcode::PushRet()));
-    if let Opcode::StoreVar(s) = &module.opcodes[5] {
+    assert!(matches!(module.opcodes[2], Opcode::Call()));
+    assert!(matches!(module.opcodes[3], Opcode::PushRet()));
+    if let Opcode::StoreVar(s) = &module.opcodes[4] {
         assert_eq!(s.to_string(), "x");
     } else {
         assert!(false);
     }
 
-    assert!(matches!(module.opcodes[6], Opcode::BeginFnArgs()));
-    assert!(matches!(module.opcodes[7], Opcode::EndFnArgs()));
-    if let Opcode::LoadVar(s) = &module.opcodes[8] {
+    assert!(matches!(module.opcodes[5], Opcode::BeginArgs()));
+    if let Opcode::LoadVar(s) = &module.opcodes[6] {
         assert_eq!(s.to_string(), "main");
     } else {
         assert!(false);
     }
-    assert!(matches!(module.opcodes[9], Opcode::Call()));
+    assert!(matches!(module.opcodes[7], Opcode::Call()));
 
     assert_eq!(module.functions.len(), 1);
     assert_eq!(module.functions[0].addr, 0);

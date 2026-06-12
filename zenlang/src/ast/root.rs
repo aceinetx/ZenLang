@@ -1,6 +1,7 @@
-use crate::ast::node::Compile;
-use alloc::vec::*;
+use crate::{ast::node::Compile, compiler::Compiler};
+use alloc::{string::String, vec::*};
 
+#[derive(Debug)]
 pub struct AstRoot {
     pub children: Vec<alloc::boxed::Box<dyn Compile>>,
 }
@@ -14,14 +15,10 @@ impl AstRoot {
 }
 
 impl Compile for AstRoot {
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return Some(&mut self.children);
-    }
-
-    fn compile(
-        &mut self,
-        _compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
+        for child in self.children.iter_mut() {
+            child.compile(compiler)?;
+        }
         Ok(())
     }
 }

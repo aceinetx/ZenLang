@@ -1,13 +1,15 @@
+use alloc::boxed::Box;
+
+use crate::ast::global_var::AstGlobalVar;
+use crate::ast::mod_stmt::AstMod;
+use crate::ast::node::Compile;
 use crate::ast::*;
+use crate::parser::error;
 use crate::tokenizer::*;
-use alloc::boxed::*;
-use alloc::format;
-use alloc::string::*;
 
 pub struct Parser<'a> {
     pub root: root::AstRoot,
     pub(crate) tokenizer: &'a mut Tokenizer,
-    pub(crate) current_token: Token,
 }
 
 impl<'a> Parser<'_> {
@@ -15,66 +17,68 @@ impl<'a> Parser<'_> {
         return Parser {
             root: root::AstRoot::new(),
             tokenizer: tokenizer,
-            current_token: Token::EOF,
         };
     }
 
     /// Steps a token once
-    ///
-    /// Saves the next token to the self.current_token
     pub(crate) fn next(&mut self) -> Token {
         let token = self.tokenizer.next();
-        self.current_token = token.clone();
+        return token;
+    }
+
+    /// Steps back a token
+    pub(crate) fn back(&mut self) {
+        self.tokenizer.back();
+    }
+
+    /// Steps a token once, then steps back
+    pub(crate) fn peek(&mut self) -> Token {
+        let token = self.next();
+        self.back();
         return token;
     }
 
     /// Parse everything to self.root
-    pub fn parse(&mut self) -> Result<(), String> {
+    pub fn parse(&mut self) -> Result<(), error::Error> {
         self.root = root::AstRoot::new();
 
         let mut token = self.next();
         while !matches!(token, Token::EOF) {
-            match token {
-                Token::Fn => {
-                    if let Err(e) = self.parse_function() {
-                        return Err(e);
-                    }
-                }
+            let node: Box<dyn Compile> = match token {
                 Token::Let => {
-                    let mut node = global_var::AstGlobalVar::new();
-                    if let Token::Identifier(name) = self.next() {
-                        node.name = name;
-                    } else {
-                        return Err(self.error("expected identifier after global let"));
+                    let name = self.next();
+                    let name = match name {
+                        Token::Identifier(name) => name,
+                        _ => return Err(error::Error::GlobalLetIdentifier(name)),
+                    };
+
+                    let semi = self.next();
+                    if !matches!(semi, Token::Semicolon) {
+                        return Err(error::Error::StatementSemicolon(semi));
                     }
 
-                    if !matches!(self.next(), Token::Semicolon) {
-                        return Err(self.error("expected semicolon after global let <name>"));
-                    }
-
-                    self.root.children.push(Box::new(node));
+                    let node = Box::new(AstGlobalVar::new(name));
+                    node
                 }
                 Token::Mod => {
-                    let mut node = mod_stmt::AstMod::new();
-                    if let Token::Identifier(name) = self.next() {
-                        node.name = name;
-                    } else {
-                        return Err(self.error("expected identifier after mod"));
+                    let name = self.next();
+                    let name = match name {
+                        Token::Identifier(name) => name,
+                        _ => return Err(error::Error::ModIdentifier(name)),
+                    };
+
+                    let semi = self.next();
+                    if !matches!(semi, Token::Semicolon) {
+                        return Err(error::Error::StatementSemicolon(semi));
                     }
 
-                    if !matches!(self.next(), Token::Semicolon) {
-                        return Err(self.error("expected semicolon after mod <name>"));
-                    }
-
-                    self.root.children.push(Box::new(node));
+                    let node = Box::new(AstMod::new(name));
+                    node
                 }
-                _ => {
-                    return Err(self.error_str(format!(
-                        "unexpected token, expected one of these: Fn | Mod, found, {:?}",
-                        token
-                    )));
-                }
-            }
+                Token::Fn => Box::new(self.parse_function()?),
+                _ => return Err(error::Error::UnexpectedGlobalScopeToken(token)),
+            };
+            self.root.children.push(node);
             token = self.next();
         }
         Ok(())

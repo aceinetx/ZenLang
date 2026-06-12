@@ -1,13 +1,13 @@
 use alloc::string::*;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum FunctionAttribute {
     Naked,
     Ctor,
 }
 
 impl FunctionAttribute {
-    pub fn map(name: String) -> Option<FunctionAttribute> {
+    pub fn map(name: &String) -> Option<FunctionAttribute> {
         if name == "naked" {
             return Some(FunctionAttribute::Naked);
         } else if name == "ctor" {
