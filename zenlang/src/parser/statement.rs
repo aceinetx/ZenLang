@@ -1,4 +1,6 @@
 use crate::ast::array_assign::AstArrayAssign;
+use crate::ast::break_stmt::AstBreak;
+use crate::ast::continue_stmt::AstContinue;
 use crate::ast::node::Compile;
 use crate::ast::number::AstNumber;
 use crate::ast::ret::AstReturn;
@@ -111,6 +113,8 @@ impl Parser<'_> {
                 self.back();
                 node
             }
+            Token::Break => Box::new(AstBreak::new()),
+            Token::Continue => Box::new(AstContinue::new()),
             _ => {
                 self.back();
                 let mut expr = self.parse_postfix()?;
