@@ -54,13 +54,24 @@ fn sleep ms {
 	});
 }
 
-fn main {
-	sleep(1000).then(fn v {
-		println("finished 1");
+fn async_fn {
+	return Future_new(fn resolve {
+		sleep(1000).then(fn v {
+			println("finished 1");
+			sleep(1000).then(fn v {
+				println("finished 2");
+				resolve(v);
+				return null;
+			});
+			return null;
+		});
 		return null;
 	});
-	sleep(1000).then(fn v {
-		println("finished 2");
+}
+
+fn main {
+	async_fn().then(fn v {
+		println("async 1");
 		return null;
 	});
 
