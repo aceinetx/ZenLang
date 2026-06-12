@@ -2,9 +2,9 @@ mod stdlib;
 
 fn Promise_new executor {
 	let inst = {
-		_typename = "Promise",
-		state = "pending",
-		continuations = [],
+		"_typename" = "Promise",
+		"state" = "pending",
+		"continuations" = [],
 	}
 	executor(resolve);
 
@@ -17,7 +17,6 @@ fn hello {
 }
 
 fn main {
-	println(set_timeout);
 	set_timeout(hello, 1000);
 	while true {}
 	return null;
