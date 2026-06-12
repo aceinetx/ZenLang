@@ -4,6 +4,15 @@ use alloc::format;
 
 impl VM {
     pub fn op_vmcall(&mut self, index: u8) {
+        match self.args.pop() {
+            Some(mut args) => {
+                while !args.is_empty() {
+                    self.stack.push(args.remove(0));
+                }
+            }
+            None => (),
+        }
+
         self.vmcall(index);
     }
 
