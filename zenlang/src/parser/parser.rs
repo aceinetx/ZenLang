@@ -64,7 +64,7 @@ impl<'a> Parser<'_> {
                     let name = self.next();
                     let name = match name {
                         Token::Identifier(name) => name,
-                        _ => return Err(error::Error::GlobalLetIdentifier(name)),
+                        _ => return Err(error::Error::ModIdentifier(name)),
                     };
 
                     let semi = self.next();
