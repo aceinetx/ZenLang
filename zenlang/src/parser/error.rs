@@ -25,6 +25,8 @@ pub enum Error {
     DictStrKey(Token),
     DictEqual(Token),
     GlobalLetIdentifier(Token),
+    IfLetIdent(Token),
+    IfLetEq(Token),
 }
 
 impl ToString for Error {
@@ -119,6 +121,12 @@ impl ToString for Error {
             }
             Self::GlobalLetIdentifier(token) => {
                 format!("Expected identifier after global let, but got {:?}", token)
+            }
+            Self::IfLetIdent(token) => {
+                format!("Expected identifier after if let, but got {:?}", token)
+            }
+            Self::IfLetEq(token) => {
+                format!("Expected `=` after if let identifier, but got {:?}", token)
             }
         };
     }
