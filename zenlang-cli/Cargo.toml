@@ -2,6 +2,7 @@
 name = "zenlang-cli"
 version = "0.1.0"
 edition = "2024"
+default-run = "zenlang-cli"
 
 [dependencies]
 zenlang = { version = "0.1.0", path = "../zenlang" }
