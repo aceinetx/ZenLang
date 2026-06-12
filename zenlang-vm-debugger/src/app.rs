@@ -1,7 +1,4 @@
-use eframe::{
-    egui::{self, Align, Color32, Panel, RichText, ScrollArea},
-    wgpu::Color,
-};
+use eframe::egui::{self, Align, Color32, Panel, RichText, ScrollArea};
 use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 use std::{fs, io::Read, path::PathBuf};
@@ -18,11 +15,12 @@ pub struct App {
     view_module_id: usize,
     vm: VM,
     error_pc: ProgramCounter,
+    loaded_path: PathBuf,
 }
 
 impl App {
-    fn load_file(&mut self, path: &PathBuf) {
-        let mut file = match fs::File::open(path) {
+    fn load_file(&mut self, path: PathBuf) {
+        let mut file = match fs::File::open(&path) {
             Ok(file) => file,
             Err(e) => {
                 eprintln!("error opening file: {}", e);
@@ -53,6 +51,7 @@ impl App {
             }
         }
 
+        self.vm = VM::new();
         self.vm.platform = Some(Box::new(Platform::new()));
 
         if let Err(e) = self.vm.load_module(&module) {
@@ -64,6 +63,8 @@ impl App {
             eprintln!("set entry function error: {}", e);
             return;
         }
+
+        self.loaded_path = path;
     }
 
     fn draw_module_selector(&mut self, ui: &mut egui::Ui) {
@@ -141,6 +142,13 @@ impl App {
                     self.view_module_id = self.vm.pc.module;
                 }
 
+                if ui.button("restart").clicked() {
+                    let path = std::mem::take(&mut self.loaded_path);
+                    self.load_file(path);
+                }
+            });
+
+            ui.horizontal(|ui| {
                 if self.vm.halted {
                     ui.label("halted");
                 }
@@ -221,6 +229,7 @@ impl Default for App {
             view_module_id: 0,
             vm: VM::new(),
             error_pc: ProgramCounter::new(),
+            loaded_path: PathBuf::new(),
         }
     }
 }
@@ -236,7 +245,7 @@ impl eframe::App for App {
             self.file_dialog.update(ui);
 
             if let Some(path) = self.file_dialog.take_picked() {
-                self.load_file(&path);
+                self.load_file(path);
             }
 
             ui.separator();
