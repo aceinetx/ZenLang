@@ -1,0 +1,10 @@
+[package]
+name = "zenlang-vm-debugger"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+eframe = "0.34.3"
+egui-file-dialog = "0.13.0"
+zenlang = { version = "0.1.0", path = "../zenlang" }
+zenlang-platform-std = { version = "0.1.0", path = "../zenlang-platform-std" }
