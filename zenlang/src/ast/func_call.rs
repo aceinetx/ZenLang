@@ -25,16 +25,15 @@ impl Compile for AstFuncCall {
     fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         {
             let module = compiler.get_module();
-            module.opcodes.push(Opcode::BeginFnArgs());
+            module.opcodes.push(Opcode::BeginArgs());
         }
 
         for arg in self.args.iter_mut() {
             arg.compile(compiler)?;
-        }
-
-        {
-            let module = compiler.get_module();
-            module.opcodes.push(Opcode::EndFnArgs());
+            {
+                let module = compiler.get_module();
+                module.opcodes.push(Opcode::PushArg());
+            }
         }
 
         self.reference.compile(compiler)?;

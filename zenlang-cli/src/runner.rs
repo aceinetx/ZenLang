@@ -1,5 +1,5 @@
 use std::fs;
-use zenlang::{compiler, module, parser, strong_u64::U64BitsControl, tokenizer, vm};
+use zenlang::{compiler, module, parser, tokenizer, vm};
 use zenlang_platform_std::*;
 
 fn run_vm(vm: &mut vm::VM) {
@@ -7,20 +7,19 @@ fn run_vm(vm: &mut vm::VM) {
         println!("vm error: {}", e);
         return;
     }
-    println!("{:?}", vm.modules);
+    // println!("{:?}", vm.modules);
 
     vm.run_until_halt();
 
     if !vm.error.is_empty() {
-        let mut pc = vm.pc;
-        pc.sub_low(1);
+        let pc = vm.pc;
 
         println!("\n-- begin runtime error --");
         println!("{}", vm.error);
-        if let Some(name) = vm.get_function_name_from_pc(pc) {
-            println!("runtime error in function {}", name,);
+        if let Some(name) = vm.get_function_name_from_pc(&pc) {
+            println!("runtime error in function {}", name);
         }
-        println!("runtime error at pc = {}:{}", pc.get_low(), pc.get_high(),);
+        println!("runtime error at pc = {}", pc);
         println!("-- end runtime error --");
         return;
     }

@@ -37,8 +37,8 @@ impl Compile for AstFunction {
             let ctor = self.attrs.contains(&FunctionAttribute::Ctor);
             module.functions.push(ModuleFunction::new(
                 name,
-                module.opcodes.len() as u32,
-                self.args.len() as u64,
+                module.opcodes.len(),
+                self.args.len(),
                 ctor,
             ));
         }
@@ -46,7 +46,7 @@ impl Compile for AstFunction {
         // Do attributes
         if !self.attrs.contains(&FunctionAttribute::Naked) {
             for arg in self.args.iter().rev() {
-                module.opcodes.push(Opcode::StoreVar(arg.to_string()));
+                module.opcodes.push(Opcode::StoreArg(arg.to_string()));
             }
         }
 

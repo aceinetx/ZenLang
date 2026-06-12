@@ -1,8 +1,8 @@
 use crate::module::Module;
 use crate::platform::Platform;
 use crate::scope::Scope;
-use crate::strong_u64::*;
 use crate::value::*;
+use crate::vm::ProgramCounter;
 use alloc::boxed::*;
 use alloc::format;
 use alloc::string::*;
@@ -12,9 +12,9 @@ pub static MAX_STACK_SIZE: usize = 1000;
 
 pub struct VM {
     pub modules: Vec<Module>,
-    pub pc: u64,
+    pub pc: ProgramCounter,
     pub stack: Vec<Value>,
-    pub call_stack: Vec<u64>,
+    pub call_stack: Vec<ProgramCounter>,
     pub scopes: Vec<Scope>,
     pub error: String,
     pub ret: Value,
@@ -22,15 +22,14 @@ pub struct VM {
     pub global_scope: Scope,
     pub halted: bool,
     pub self_var: Value,
-    pub(crate) bfas_stack_start: Vec<i64>,
-    pub(crate) bfas_stack_end: Vec<i64>,
+    pub args: Vec<Vec<Value>>,
 }
 
 impl VM {
     pub fn new() -> VM {
         return VM {
             modules: Vec::new(),
-            pc: 0,
+            pc: ProgramCounter::new(),
             stack: Vec::new(),
             call_stack: Vec::new(),
             scopes: Vec::new(),
@@ -40,8 +39,7 @@ impl VM {
             global_scope: Scope::new(),
             halted: false,
             self_var: Value::Null(),
-            bfas_stack_start: Vec::new(),
-            bfas_stack_end: Vec::new(),
+            args: Vec::new(),
         };
     }
 
@@ -67,8 +65,9 @@ impl VM {
 
         for func in module.functions.iter() {
             if func.ctor {
-                self.pc.set_low(func.addr as u32);
-                self.pc.set_high((self.modules.len() - 1) as u32);
+                self.pc.inst = func.addr;
+                self.pc.module = self.modules.len() - 1;
+
                 self.add_scope();
 
                 while !self.halted {
@@ -82,8 +81,8 @@ impl VM {
                 if !self.error.is_empty() {
                     self.halted = true;
                     return Err(format!(
-                        "in constructor of module {}: {}",
-                        module.name, self.error
+                        "in constructor of module {} at {}: {}",
+                        module.name, self.pc, self.error
                     ));
                 }
                 self.halted = false;
@@ -127,8 +126,8 @@ impl VM {
             let module = &self.modules[i];
             for function in module.functions.iter() {
                 if function.name == entry_fn_name {
-                    self.pc.set_low(function.addr as u32);
-                    self.pc.set_high(i as u32);
+                    self.pc.inst = function.addr;
+                    self.pc.module = i;
                     self.add_scope();
                     return Ok(());
                 }
@@ -154,15 +153,13 @@ impl VM {
         self.scopes.pop();
     }
 
-    pub fn get_function_name_from_pc(&mut self, pc: u64) -> Option<String> {
-        let module_index = pc.get_high() as usize;
-        let opcode_index = pc.get_low();
-        if module_index >= self.modules.len() {
+    pub fn get_function_name_from_pc(&mut self, pc: &ProgramCounter) -> Option<String> {
+        if pc.module >= self.modules.len() {
             return None;
         }
-        let module = &self.modules[module_index];
+        let module = &self.modules[pc.module];
         for function in module.functions.iter().rev() {
-            if opcode_index >= function.addr {
+            if pc.inst >= function.addr {
                 return Some(function.name.clone());
             }
         }
@@ -180,26 +177,36 @@ impl VM {
             return false;
         }
 
-        let module_index = self.pc.get_high() as usize;
-        let opcode_index = self.pc.get_low();
-        if module_index >= self.modules.len() {
+        if self.pc.module >= self.modules.len() {
+            self.error = format!(
+                "module pc overflow: {}/{}",
+                self.pc.module,
+                self.modules.len()
+            );
             self.halted = true;
             return false;
         }
 
-        let opcodes = core::mem::take(&mut self.modules[module_index].opcodes);
-        if opcode_index >= opcodes.len() as u32 {
+        let cycle_module = self.pc.module;
+        let opcodes = core::mem::take(&mut self.modules[cycle_module].opcodes);
+        if self.pc.inst >= opcodes.len() {
+            self.error = format!(
+                "inst pc overflow: {}/{} {:?}",
+                self.pc.inst,
+                opcodes.len(),
+                opcodes
+            );
             self.halted = true;
             return false;
         }
 
-        let opcode = &opcodes[opcode_index as usize];
+        let opcode = &opcodes[self.pc.inst as usize];
 
         self.execute_opcode(opcode);
 
-        self.modules[module_index].opcodes = opcodes;
+        self.modules[cycle_module].opcodes = opcodes;
 
-        self.pc.add_low(1);
+        self.pc.inst = self.pc.inst.wrapping_add(1);
 
         return true;
     }

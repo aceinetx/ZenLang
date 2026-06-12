@@ -8,6 +8,15 @@ impl VM {
     }
 
     pub fn op_dynvmcall(&mut self) {
+        match self.args.pop() {
+            Some(mut args) => {
+                while !args.is_empty() {
+                    self.stack.push(args.remove(0));
+                }
+            }
+            None => (),
+        }
+
         let index;
         if let Some(value) = self.stack.pop() {
             if let Value::Number(value) = value {

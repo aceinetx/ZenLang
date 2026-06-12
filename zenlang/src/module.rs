@@ -18,15 +18,15 @@ pub struct ModuleFunction {
     /// Function name
     pub name: String,
     /// Function address relative to the module offset
-    pub addr: u32,
+    pub addr: usize,
     /// Argument count
-    pub args_count: u64,
+    pub args_count: usize,
     /// Is a constructor function
     pub ctor: bool,
 }
 
 impl ModuleFunction {
-    pub fn new(name: String, addr: u32, args_count: u64, ctor: bool) -> ModuleFunction {
+    pub fn new(name: String, addr: usize, args_count: usize, ctor: bool) -> ModuleFunction {
         return ModuleFunction {
             name: name,
             addr: addr,
