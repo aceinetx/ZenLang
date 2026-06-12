@@ -31,9 +31,7 @@ impl Parser<'_> {
                 };
 
                 let mut assign = Box::new(AstAssign::new());
-                assign.name = name.clone();
                 let mut array_assign = Box::new(AstArrayAssign::new());
-                array_assign.name = name;
                 let mut is_array = false;
 
                 let mut token = self.next();
@@ -77,9 +75,11 @@ impl Parser<'_> {
                 let expr = self.parse_expression()?;
 
                 if is_array {
+                    array_assign.name = name;
                     array_assign.expr = Some(expr);
                     array_assign
                 } else {
+                    assign.name = name;
                     assign.expr = Some(expr);
                     assign
                 }
