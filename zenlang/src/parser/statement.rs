@@ -4,7 +4,6 @@ use crate::ast::number::AstNumber;
 use crate::ast::ret::AstReturn;
 use crate::ast::string::AstString;
 use crate::ast::var_assign::AstAssign;
-use crate::ast::var_ref::AstVarRef;
 use crate::ast::vmcall::AstVmcall;
 use crate::parser::*;
 use crate::tokenizer::Token::{self};
