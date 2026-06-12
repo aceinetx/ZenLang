@@ -1,0 +1,11 @@
+mod stdlib;
+
+fn main {
+	set_timeout(fn {
+		println("Timeout!");
+		return null;
+	}, 1000);
+
+	while(true){}
+	return null;
+}
