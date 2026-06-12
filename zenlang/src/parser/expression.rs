@@ -136,10 +136,11 @@ impl Parser<'_> {
                         let expr = self.parse_expression()?;
                         func_call.args.push(expr);
 
-                        self.back();
                         let comma = self.next();
-                        if !matches!(comma, Token::Comma) {
-                            return Err(error::Error::FunccallExpectedComma(comma));
+                        match comma {
+                            Token::Comma => (),
+                            Token::Rparen => self.back(),
+                            _ => return Err(error::Error::FunccallExpectedComma(comma)),
                         }
                     }
 
