@@ -1,5 +1,4 @@
 use crate::ast::array_assign::AstArrayAssign;
-use crate::ast::defer::AstDefer;
 use crate::ast::node::Compile;
 use crate::ast::number::AstNumber;
 use crate::ast::ret::AstReturn;
@@ -99,23 +98,6 @@ impl Parser<'_> {
                 self.back();
                 node
             }
-            Token::Defer => match self.next() {
-                Token::Lbrace => {
-                    self.back();
-                    let block = self.parse_block()?;
-                    let mut defer = Box::new(AstDefer::new());
-                    defer.block = block;
-
-                    defer
-                }
-                _ => {
-                    let mut defer = Box::new(AstDefer::new());
-                    defer.block.children.push(self.parse_statement()?);
-                    self.back();
-
-                    defer
-                }
-            },
             Token::Lbrace => {
                 require_semicolon = false;
                 self.back();
