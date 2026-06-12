@@ -95,14 +95,8 @@ impl VM {
                 self.check_stack_overflow();
                 self.pc = pc;
                 self.pc.inst = self.pc.inst.wrapping_sub(1);
-                self.add_scope();
 
                 self.scopes.push((&*scope.borrow()).clone());
-
-                let this_name = &String::from("self");
-                let scope = self.scopes.last_mut().unwrap();
-                scope.create_if_doesnt_exist(this_name);
-                *scope.get_mut(this_name).unwrap() = core::mem::take(&mut self.self_var);
 
                 let diff = match self.args.last() {
                     Some(args) => args,

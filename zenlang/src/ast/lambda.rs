@@ -1,4 +1,4 @@
-use alloc::{string::String, vec::Vec};
+use alloc::{format, string::String, vec::Vec};
 
 use crate::{
     ast::{
@@ -40,6 +40,17 @@ impl Compile for AstLambda {
         }
 
         self.block.compile(compiler)?;
+
+        // Check for implicit null
+        let module = compiler.get_module();
+        if module.opcodes.len() == 0 || !matches!(module.opcodes.last().unwrap(), Opcode::Ret()) {
+            module.opcodes.push(Opcode::LoadNull());
+            module.opcodes.push(Opcode::Ret());
+
+            compiler
+                .warnings
+                .push("lambda implicitly returns null".into());
+        }
 
         {
             let module = compiler.get_module();
