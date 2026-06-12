@@ -15,7 +15,7 @@ use alloc::boxed::Box;
 impl Parser<'_> {
     pub(crate) fn parse_statement(&mut self) -> Result<Box<dyn Compile>, error::Error> {
         let token = self.next();
-        let mut require_semicolon = false;
+        let mut require_semicolon = true;
 
         let statement: Box<dyn Compile> = match token {
             Token::Return => {
