@@ -111,3 +111,22 @@ fn main {
         Value::Number(42.0),
     );
 }
+
+#[test]
+fn vm_lambda_test_self() {
+    expect_to_return(
+        r#"
+fn test {
+    return self.lambda();
+}
+fn main {
+    let x = {"lambda" = fn {
+        return 42; 
+    }, "test" = test};
+    return x.test();
+}
+        "#
+        .into(),
+        Value::Number(42.0),
+    );
+}
