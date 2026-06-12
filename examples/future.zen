@@ -1,8 +1,8 @@
 mod stdlib;
 
-fn Promise_new executor {
+fn Future_new executor {
 	let self = {
-		"_typename" = "Promise",
+		"_typename" = "Future",
 		"state" = "pending",
 		"on_finish" = null,
 	};
@@ -25,7 +25,7 @@ fn Promise_new executor {
 }
 
 fn sleep ms {
-	return Promise_new(fn resolve {
+	return Future_new(fn resolve {
 		set_timeout(resolve, ms);
 		return null;
 	});
