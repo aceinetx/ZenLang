@@ -63,17 +63,6 @@ impl VM {
 
         match value {
             Value::FunctionRef(addr, args_count) => {
-                self.call_stack.push(self.pc);
-                self.check_stack_overflow();
-                self.pc = addr;
-                self.pc.inst = self.pc.inst.wrapping_sub(1);
-                self.add_scope();
-
-                let this_name = &String::from("self");
-                let scope = self.scopes.last_mut().unwrap();
-                scope.create_if_doesnt_exist(this_name);
-                *scope.get_mut(this_name).unwrap() = core::mem::take(&mut self.self_var);
-
                 let diff = match self.args.last() {
                     Some(args) => args,
                     None => {
@@ -88,16 +77,21 @@ impl VM {
                         "call: expected exactly {} arguments, but provided {} (trying to call a function at {})",
                         args_count, diff, self.pc,
                     );
+                    return;
                 }
-            }
-            Value::Lambda(pc, scope, args_count) => {
+
                 self.call_stack.push(self.pc);
                 self.check_stack_overflow();
-                self.pc = pc;
+                self.pc = addr;
                 self.pc.inst = self.pc.inst.wrapping_sub(1);
+                self.add_scope();
 
-                self.scopes.push((&*scope.borrow()).clone());
-
+                let this_name = &String::from("self");
+                let scope = self.scopes.last_mut().unwrap();
+                scope.create_if_doesnt_exist(this_name);
+                *scope.get_mut(this_name).unwrap() = core::mem::take(&mut self.self_var);
+            }
+            Value::Lambda(pc, scope, args_count) => {
                 let diff = match self.args.last() {
                     Some(args) => args,
                     None => {
@@ -112,7 +106,15 @@ impl VM {
                         "call: expected exactly {} arguments, but provided {} (trying to call a lambda at {})",
                         args_count, diff, self.pc,
                     );
+                    return;
                 }
+
+                self.call_stack.push(self.pc);
+                self.check_stack_overflow();
+                self.pc = pc;
+                self.pc.inst = self.pc.inst.wrapping_sub(1);
+
+                self.scopes.push((&*scope.borrow()).clone());
             }
             _ => {
                 self.error = format!(
