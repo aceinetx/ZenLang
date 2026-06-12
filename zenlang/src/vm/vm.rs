@@ -211,3 +211,9 @@ impl VM {
         return true;
     }
 }
+
+impl Default for VM {
+    fn default() -> Self {
+        Self::new()
+    }
+}
