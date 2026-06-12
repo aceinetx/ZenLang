@@ -5,13 +5,19 @@ use eframe::{
 use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 use std::{fs, io::Read, path::PathBuf};
-use zenlang::{compiler::Compiler, parser::Parser, tokenizer::Tokenizer, vm::VM};
+use zenlang::{
+    compiler::Compiler,
+    parser::Parser,
+    tokenizer::Tokenizer,
+    vm::{ProgramCounter, VM},
+};
 use zenlang_platform_std::*;
 
 pub struct App {
     file_dialog: FileDialog,
     view_module_id: usize,
     vm: VM,
+    error_pc: ProgramCounter,
 }
 
 impl App {
@@ -85,9 +91,16 @@ impl App {
                     ui.columns(2, |columns| {
                         let current =
                             self.vm.pc.inst == addr && self.vm.pc.module == self.view_module_id;
+                        let current_error = addr == self.error_pc.inst
+                            && self.error_pc.module == self.view_module_id
+                            && !self.vm.error.is_empty();
+
                         let mut color = Color32::from_rgb(255, 255, 255);
                         if current {
                             color = Color32::from_rgb(0, 0, 255);
+                        }
+                        if current_error {
+                            color = Color32::from_rgb(255, 0, 0);
                         }
 
                         let resp = columns[0].label(
@@ -121,6 +134,10 @@ impl App {
             ui.horizontal(|ui| {
                 if ui.button("step").clicked() && self.vm.error.is_empty() {
                     self.vm.step();
+                    if !self.vm.error.is_empty() {
+                        self.error_pc = self.vm.pc;
+                        self.error_pc.inst -= 1;
+                    }
                     self.view_module_id = self.vm.pc.module;
                 }
 
@@ -203,6 +220,7 @@ impl Default for App {
             file_dialog: FileDialog::new(),
             view_module_id: 0,
             vm: VM::new(),
+            error_pc: ProgramCounter::new(),
         }
     }
 }
