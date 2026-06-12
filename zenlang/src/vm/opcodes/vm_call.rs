@@ -75,7 +75,7 @@ impl VM {
                 if diff != args_count {
                     self.error = format!(
                         "call: expected exactly {} arguments, but provided {} (trying to call a function at {})",
-                        args_count, diff, self.pc,
+                        args_count, diff, addr,
                     );
                     return;
                 }
@@ -104,7 +104,7 @@ impl VM {
                 if diff != args_count {
                     self.error = format!(
                         "call: expected exactly {} arguments, but provided {} (trying to call a lambda at {})",
-                        args_count, diff, self.pc,
+                        args_count, diff, pc,
                     );
                     return;
                 }
