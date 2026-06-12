@@ -6,10 +6,8 @@ pub struct AstMod {
 }
 
 impl AstMod {
-    pub fn new() -> Self {
-        return Self {
-            name: String::new(),
-        };
+    pub fn new(name: String) -> Self {
+        return Self { name: name };
     }
 }
 

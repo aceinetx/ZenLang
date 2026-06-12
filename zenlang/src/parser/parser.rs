@@ -1,6 +1,7 @@
 use alloc::boxed::Box;
 
 use crate::ast::global_var::AstGlobalVar;
+use crate::ast::mod_stmt::AstMod;
 use crate::ast::node::Compile;
 use crate::ast::*;
 use crate::parser::error;
@@ -57,6 +58,21 @@ impl<'a> Parser<'_> {
                     }
 
                     let node = Box::new(AstGlobalVar::new(name));
+                    node
+                }
+                Token::Mod => {
+                    let name = self.next();
+                    let name = match name {
+                        Token::Identifier(name) => name,
+                        _ => return Err(error::Error::GlobalLetIdentifier(name)),
+                    };
+
+                    let semi = self.next();
+                    if !matches!(semi, Token::Semicolon) {
+                        return Err(error::Error::StatementSemicolon(semi));
+                    }
+
+                    let node = Box::new(AstMod::new(name));
                     node
                 }
                 Token::Fn => Box::new(self.parse_function()?),

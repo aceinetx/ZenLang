@@ -27,6 +27,7 @@ pub enum Error {
     GlobalLetIdentifier(Token),
     IfLetIdent(Token),
     IfLetEq(Token),
+    ModLetIdentifier(Token),
 }
 
 impl ToString for Error {
@@ -127,6 +128,9 @@ impl ToString for Error {
             }
             Self::IfLetEq(token) => {
                 format!("Expected `=` after if let identifier, but got {:?}", token)
+            }
+            Self::ModLetIdentifier(token) => {
+                format!("Expected identifier after global mod, but got {:?}", token)
             }
         };
     }
