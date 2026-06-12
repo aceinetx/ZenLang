@@ -148,9 +148,9 @@ impl App {
                 ui.label(format!("error: {}", self.vm.error));
             });
 
-            ui.label(format!("Return register: {}", self.vm.ret));
+            ui.strong(format!("Return register: {}", self.vm.ret));
 
-            ui.label("Call stack (most recent call first):");
+            ui.strong("Call stack (most recent call first):");
             for (index, pc) in self.vm.call_stack.iter().enumerate().rev() {
                 let mut module_name = "<unknown module>";
                 let mut function_name = "<unknown function>";
@@ -171,12 +171,12 @@ impl App {
                 ));
             }
 
-            ui.label("Stack (most recent value first):");
+            ui.strong("Stack (most recent value first):");
             for (index, value) in self.vm.stack.iter().enumerate().rev() {
                 ui.label(format!("{}. {}", index, value));
             }
 
-            ui.label("Argument stack (most recent value first):");
+            ui.strong("Argument stack (most recent value first):");
             if let Some(args) = self.vm.args.last() {
                 for (index, value) in args.iter().enumerate().rev() {
                     ui.label(format!("{}. {}", index, value));
@@ -190,10 +190,10 @@ impl App {
             table
                 .header(20.0, |mut header| {
                     header.col(|ui| {
-                        ui.strong("Name");
+                        ui.label("Name");
                     });
                     header.col(|ui| {
-                        ui.strong("Value");
+                        ui.label("Value");
                     });
                 })
                 .body(|mut body| {
