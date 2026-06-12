@@ -3,17 +3,22 @@ mod stdlib;
 fn Future_new executor {
 	let self = {
 		"_typename" = "Future",
+		"then" = Future_then,
 		"state" = "pending",
-		"on_finish" = null,
+		"handlers" = [],
+		"value" = null,
 	};
 
 	let resolve = fn value {
 		if self.state != "pending" {
 			return null;
 		}
+		let self.value = value;
 
-		if self.on_finish != null {
-			self.on_finish(value);
+		let i = 0;
+		while i < array_size(self.handlers){
+			self.handlers[i](value);
+			let i = i + 1;
 		}
 
 		return null;
@@ -24,6 +29,24 @@ fn Future_new executor {
 	return self;
 }
 
+fn Future_then on_finished {
+	return Future_new(fn resolve {
+		let handler = fn value {
+			resolve(on_finished(value));
+
+			return null;
+		};
+
+		if self.state == "finished" {
+			handler(self.value);
+		} else {
+			let self.handlers = array_push(self.handlers, handler);
+		}
+
+		return null;
+	});
+}
+
 fn sleep ms {
 	return Future_new(fn resolve {
 		set_timeout(resolve, ms);
@@ -32,16 +55,14 @@ fn sleep ms {
 }
 
 fn main {
-	let promise = sleep(1000);
-	let promise.on_finish = fn v {
+	sleep(1000).then(fn v {
 		println("finished 1");
 		return null;
-	};
-	let promise = sleep(1000);
-	let promise.on_finish = fn v {
+	});
+	sleep(1000).then(fn v {
 		println("finished 2");
 		return null;
-	};
+	});
 
 	while(true){}
 	return null;
