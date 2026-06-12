@@ -117,6 +117,7 @@ impl VM {
             Opcode::Ret() => {
                 self.op_ret();
             }
+            Opcode::Lambda(pc, args) => self.op_lambda(*pc, *args),
         }
     }
 }

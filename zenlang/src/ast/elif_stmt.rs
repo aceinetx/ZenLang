@@ -4,6 +4,7 @@ use crate::compiler::Compiler;
 use alloc::boxed::*;
 use alloc::string::*;
 
+#[derive(Debug)]
 pub struct AstElifStmt {
     pub value: Option<Box<dyn Compile>>,
     pub block: AstBlock,

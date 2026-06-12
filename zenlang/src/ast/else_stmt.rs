@@ -4,6 +4,7 @@ use crate::ast::block::AstBlock;
 use crate::ast::node::Compile;
 use crate::compiler::Compiler;
 
+#[derive(Debug)]
 pub struct AstElseStmt {
     pub block: AstBlock,
 }

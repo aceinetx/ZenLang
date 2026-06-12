@@ -4,6 +4,7 @@ use crate::ast::node::{Compile, StatementExpression};
 use crate::compiler::Compiler;
 use crate::opcode::Opcode;
 
+#[derive(Debug)]
 pub struct AstNumber {
     pub number: f64,
     do_push: bool,

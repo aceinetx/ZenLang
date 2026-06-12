@@ -1,9 +1,10 @@
 use crate::compiler::Compiler;
 use alloc::string::String;
+use core::fmt::Debug;
 use downcast::*;
 
 /// Trait implemented by all ast nodes
-pub trait Compile: Any {
+pub trait Compile: Any + Debug {
     /// Compiles the current node
     fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String>;
 }

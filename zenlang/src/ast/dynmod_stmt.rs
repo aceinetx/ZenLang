@@ -4,6 +4,7 @@ use crate::opcode::*;
 use alloc::boxed::*;
 use alloc::string::String;
 
+#[derive(Debug)]
 pub struct AstDynmod {
     pub name: Box<dyn Compile>,
 }

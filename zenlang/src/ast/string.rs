@@ -4,6 +4,7 @@ use crate::compiler::Compiler;
 use crate::opcode::Opcode;
 use alloc::string::*;
 
+#[derive(Debug)]
 pub struct AstString {
     pub string: String,
     do_push: bool,

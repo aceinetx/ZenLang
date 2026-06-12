@@ -4,6 +4,7 @@ use crate::ast::node::{Compile, StatementExpression};
 use crate::compiler::Compiler;
 use crate::opcode::Opcode;
 
+#[derive(Debug)]
 pub struct AstBoolean {
     pub flag: bool,
     do_push: bool,

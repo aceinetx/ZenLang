@@ -18,6 +18,7 @@ pub mod function;
 pub mod global_var;
 pub mod if_chain;
 pub mod if_stmt;
+pub mod lambda;
 pub mod mod_stmt;
 pub mod node;
 pub mod null;

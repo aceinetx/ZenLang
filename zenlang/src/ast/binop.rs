@@ -4,6 +4,7 @@ use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::boxed::*;
 use alloc::string::String;
 
+#[derive(Debug)]
 pub enum AstBinopOp {
     PLUS,
     MINUS,
@@ -21,6 +22,7 @@ pub enum AstBinopOp {
     BITOR,
 }
 
+#[derive(Debug)]
 pub struct AstBinop {
     pub left: Box<dyn Compile>,
     pub right: Box<dyn Compile>,

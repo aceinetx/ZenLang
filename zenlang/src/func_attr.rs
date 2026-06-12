@@ -1,6 +1,6 @@
 use alloc::string::*;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum FunctionAttribute {
     Naked,
     Ctor,

@@ -1,6 +1,7 @@
 use crate::{ast::node::Compile, compiler::Compiler, opcode::Opcode};
 use alloc::string::String;
 
+#[derive(Debug)]
 pub struct AstAssign {
     pub name: String,
     pub expr: Option<alloc::boxed::Box<dyn Compile>>,

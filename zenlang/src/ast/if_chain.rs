@@ -6,6 +6,7 @@ use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::string::String;
 use alloc::vec::*;
 
+#[derive(Debug)]
 pub struct AstIfChain {
     pub head: Option<AstIfStmt>,
     pub elifs: Vec<AstElifStmt>,

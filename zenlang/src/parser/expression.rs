@@ -4,6 +4,7 @@ use crate::ast::binop::{AstBinop, AstBinopOp};
 use crate::ast::boolean::AstBoolean;
 use crate::ast::dict::AstDict;
 use crate::ast::func_call::AstFuncCall;
+use crate::ast::lambda::AstLambda;
 use crate::ast::node::CompileStatementExpression;
 use crate::ast::null::AstNull;
 use crate::ast::number::AstNumber;
@@ -101,6 +102,28 @@ impl Parser<'_> {
                 }
 
                 Ok(node)
+            }
+            Token::Fn => {
+                let mut lambda = AstLambda::new();
+
+                let mut token;
+                loop {
+                    token = self.next();
+                    let name = match token {
+                        Token::Lbrace => {
+                            self.back();
+                            break;
+                        }
+                        Token::Identifier(ident) => ident,
+                        _ => return Err(error::Error::LambdaArgIdent(token)),
+                    };
+
+                    lambda.args.push(name);
+                }
+
+                lambda.block = self.parse_block()?;
+
+                Ok(Box::new(lambda))
             }
             Token::Lparen => {
                 let expr = self.parse_expression()?;

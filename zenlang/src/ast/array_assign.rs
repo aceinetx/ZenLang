@@ -4,6 +4,7 @@ use alloc::boxed::*;
 use alloc::string::String;
 use alloc::vec::*;
 
+#[derive(Debug)]
 pub struct AstArrayAssign {
     pub name: String,
     pub indexes: Vec<Box<dyn Compile>>,

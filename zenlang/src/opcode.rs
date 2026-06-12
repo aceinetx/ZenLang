@@ -44,4 +44,5 @@ pub enum Opcode {
     Band(),
     Bor(),
     Ret(),
+    Lambda(usize, usize),
 }

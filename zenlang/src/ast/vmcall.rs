@@ -4,6 +4,7 @@ use crate::ast::node::Compile;
 use crate::compiler::Compiler;
 use crate::opcode::Opcode;
 
+#[derive(Debug)]
 pub struct AstVmcall {
     pub id: u8,
 }

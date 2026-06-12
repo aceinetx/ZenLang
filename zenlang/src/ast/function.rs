@@ -6,6 +6,7 @@ use alloc::format;
 use alloc::string::*;
 use alloc::vec::*;
 
+#[derive(Debug)]
 pub struct AstFunction {
     pub block: AstBlock,
     pub name: String,

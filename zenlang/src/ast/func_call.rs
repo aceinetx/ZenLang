@@ -5,6 +5,7 @@ use alloc::boxed::*;
 use alloc::string::String;
 use alloc::vec::*;
 
+#[derive(Debug)]
 pub struct AstFuncCall {
     pub reference: Box<dyn Compile>,
     pub args: Vec<Box<dyn Compile>>,

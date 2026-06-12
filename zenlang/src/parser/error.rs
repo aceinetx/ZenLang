@@ -28,6 +28,7 @@ pub enum Error {
     IfLetIdent(Token),
     IfLetEq(Token),
     ModIdentifier(Token),
+    LambdaArgIdent(Token),
 }
 
 impl ToString for Error {
@@ -131,6 +132,12 @@ impl ToString for Error {
             }
             Self::ModIdentifier(token) => {
                 format!("Expected identifier after global mod, but got {:?}", token)
+            }
+            Self::LambdaArgIdent(token) => {
+                format!(
+                    "Expected identifier as an argument for a lambda, but got {:?}",
+                    token
+                )
             }
         };
     }

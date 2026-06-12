@@ -1,6 +1,7 @@
 use crate::{ast::node::Compile, compiler::Compiler};
 use alloc::string::*;
 
+#[derive(Debug)]
 pub struct AstMod {
     pub name: String,
 }

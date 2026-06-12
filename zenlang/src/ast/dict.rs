@@ -6,6 +6,7 @@ use alloc::boxed::*;
 use alloc::string::*;
 use alloc::vec::*;
 
+#[derive(Debug)]
 pub struct AstDict {
     pub dict: Vec<(String, Box<dyn Compile>)>,
     do_push: bool,

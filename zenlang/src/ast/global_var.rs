@@ -2,6 +2,7 @@ use crate::ast::node::Compile;
 use crate::compiler::Compiler;
 use alloc::string::*;
 
+#[derive(Debug)]
 pub struct AstGlobalVar {
     pub name: String,
 }

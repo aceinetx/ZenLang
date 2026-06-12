@@ -10,6 +10,13 @@ impl ProgramCounter {
     pub fn new() -> Self {
         return Self { module: 0, inst: 0 };
     }
+
+    pub fn with(module: usize, inst: usize) -> Self {
+        return Self {
+            module: module,
+            inst: inst,
+        };
+    }
 }
 
 impl Default for ProgramCounter {

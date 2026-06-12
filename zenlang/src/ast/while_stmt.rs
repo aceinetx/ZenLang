@@ -5,6 +5,7 @@ use alloc::boxed::*;
 use alloc::string::String;
 use alloc::vec::*;
 
+#[derive(Debug)]
 pub struct AstWhileStmt {
     pub value: Option<Box<dyn Compile>>,
     pub body: AstBlock,

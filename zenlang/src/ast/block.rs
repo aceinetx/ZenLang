@@ -4,6 +4,7 @@ use alloc::boxed::*;
 use alloc::string::String;
 use alloc::vec::*;
 
+#[derive(Debug)]
 pub struct AstBlock {
     pub children: Vec<Box<dyn Compile>>,
 }

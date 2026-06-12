@@ -53,8 +53,16 @@ impl VM {
     }
 
     pub fn op_call(&mut self) {
-        if let Some(value) = self.stack.pop() {
-            if let Value::FunctionRef(addr, args_count) = value {
+        let value = match self.stack.pop() {
+            Some(value) => value,
+            None => {
+                self.error = "call: stack is empty".into();
+                return;
+            }
+        };
+
+        match value {
+            Value::FunctionRef(addr, args_count) => {
                 self.call_stack.push(self.pc);
                 self.check_stack_overflow();
                 self.pc = addr;
@@ -81,11 +89,43 @@ impl VM {
                         args_count, diff, self.pc,
                     );
                 }
-            } else {
-                self.error = "call: value on stack is not a function reference".into();
             }
-        } else {
-            self.error = "call: stack is empty".into();
+            Value::Lambda(pc, scope, args_count) => {
+                self.call_stack.push(self.pc);
+                self.check_stack_overflow();
+                self.pc = pc;
+                self.pc.inst = self.pc.inst.wrapping_sub(1);
+                self.add_scope();
+
+                self.scopes.push((&*scope.borrow()).clone());
+
+                let this_name = &String::from("self");
+                let scope = self.scopes.last_mut().unwrap();
+                scope.create_if_doesnt_exist(this_name);
+                *scope.get_mut(this_name).unwrap() = core::mem::take(&mut self.self_var);
+
+                let diff = match self.args.last() {
+                    Some(args) => args,
+                    None => {
+                        self.error = "call: beginargs wasn't called".into();
+                        return;
+                    }
+                }
+                .len();
+
+                if diff != args_count {
+                    self.error = format!(
+                        "call: expected exactly {} arguments, but provided {} (trying to call a lambda at {})",
+                        args_count, diff, self.pc,
+                    );
+                }
+            }
+            _ => {
+                self.error = format!(
+                    "call: value on stack is not a function reference or a lambda ({})",
+                    value.get_type()
+                );
+            }
         }
     }
 }

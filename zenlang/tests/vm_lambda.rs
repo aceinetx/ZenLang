@@ -1,6 +1,7 @@
 extern crate alloc;
 
 use zenlang::compiler::*;
+use zenlang::module::Module;
 use zenlang::parser::*;
 use zenlang::tokenizer::*;
 use zenlang::value::*;
@@ -13,12 +14,15 @@ fn expect_to_return(code: String, value: Value) {
     if let Err(e) = compiler.compile() {
         assert_eq!(e, "");
     }
+    println!("{:?}", compiler.warnings);
+    println!("{:#?}", compiler.parser.root);
+
     let mut vm = VM::new();
     let module = compiler.get_module();
     println!("{:?}", module.opcodes);
 
     let _ = vm.load_module(&zenlang::stdlib::compile_stdlib_module());
-    let _ = vm.load_module(module);
+    let _ = vm.load_module(&module);
 
     if let Err(e) = vm.set_entry_function("main") {
         assert_eq!(e, "");
@@ -39,7 +43,7 @@ fn main {
     let x = 21;
     let lambda = fn {
         return x * 2;
-    }
+    };
     return lambda();
 }
         "#
@@ -55,7 +59,7 @@ fn vm_lambda_test_2() {
 fn main {
     let lambda = fn x {
         return x * 2;
-    }
+    };
     return lambda(21);
 }
         "#

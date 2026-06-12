@@ -7,6 +7,7 @@ mod vm_call;
 mod vm_cdfse;
 mod vm_cmp;
 mod vm_iafs;
+mod vm_lambda;
 mod vm_load_constants;
 mod vm_ret;
 mod vm_vars;

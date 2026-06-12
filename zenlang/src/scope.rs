@@ -9,7 +9,7 @@ use alloc::vec::*;
 /// Scope
 ///
 /// Contains variables values and names
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Scope {
     pub(crate) vars: Vec<(String, Value)>,
 }

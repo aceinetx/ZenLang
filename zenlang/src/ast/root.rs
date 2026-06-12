@@ -1,6 +1,7 @@
 use crate::{ast::node::Compile, compiler::Compiler};
 use alloc::{string::String, vec::*};
 
+#[derive(Debug)]
 pub struct AstRoot {
     pub children: Vec<alloc::boxed::Box<dyn Compile>>,
 }

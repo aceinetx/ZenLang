@@ -6,6 +6,7 @@ use alloc::boxed::*;
 use alloc::string::String;
 use alloc::vec::*;
 
+#[derive(Debug)]
 pub struct AstArray {
     pub values: Vec<Box<dyn Compile>>,
     do_push: bool,

@@ -4,6 +4,7 @@ use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::boxed::*;
 use alloc::string::String;
 
+#[derive(Debug)]
 pub struct AstArrayIndex {
     pub array: Box<dyn Compile>,
     pub index: Box<dyn Compile>,

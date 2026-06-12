@@ -3,6 +3,7 @@ use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::string::*;
 
+#[derive(Debug)]
 pub struct AstVarRef {
     pub name: String,
     do_push: bool,
