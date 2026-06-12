@@ -67,3 +67,24 @@ fn main {
         Value::Number(42.0),
     );
 }
+
+#[test]
+fn vm_lambda_test_3() {
+    expect_to_return(
+        r#"
+fn a {
+    let x = 21;
+    let lambda = fn {
+        return x * 2;
+    };
+    return lambda;
+}
+
+fn main {
+    return a()();
+}
+        "#
+        .into(),
+        Value::Number(42.0),
+    );
+}
