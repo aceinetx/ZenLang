@@ -29,6 +29,7 @@ pub enum Error {
     IfLetEq(Token),
     ModIdentifier(Token),
     LambdaArgIdent(Token),
+    ExprUnexpectedPrimary(Token),
 }
 
 impl ToString for Error {
@@ -138,6 +139,9 @@ impl ToString for Error {
                     "Expected identifier as an argument for a lambda, but got {:?}",
                     token
                 )
+            }
+            Self::ExprUnexpectedPrimary(token) => {
+                format!("Unexpected token for a primary expression - {:?}", token)
             }
         };
     }

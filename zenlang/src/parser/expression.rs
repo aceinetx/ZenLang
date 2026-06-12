@@ -134,7 +134,7 @@ impl Parser<'_> {
 
                 Ok(expr)
             }
-            _ => panic!("{:?}", token),
+            _ => return Err(error::Error::ExprUnexpectedPrimary(token)),
         }
     }
 
