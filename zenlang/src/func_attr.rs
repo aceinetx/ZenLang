@@ -7,7 +7,7 @@ pub enum FunctionAttribute {
 }
 
 impl FunctionAttribute {
-    pub fn map(name: String) -> Option<FunctionAttribute> {
+    pub fn map(name: &String) -> Option<FunctionAttribute> {
         if name == "naked" {
             return Some(FunctionAttribute::Naked);
         } else if name == "ctor" {

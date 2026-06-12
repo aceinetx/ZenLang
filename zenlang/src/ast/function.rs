@@ -1,4 +1,5 @@
 use crate::FunctionAttribute;
+use crate::ast::block::AstBlock;
 use crate::module::ModuleFunction;
 use crate::{ast::node::Compile, compiler::Compiler, opcode::Opcode};
 use alloc::format;
@@ -6,7 +7,7 @@ use alloc::string::*;
 use alloc::vec::*;
 
 pub struct AstFunction {
-    pub children: Vec<alloc::boxed::Box<dyn Compile>>,
+    pub block: AstBlock,
     pub name: String,
     pub args: Vec<String>,
     pub attrs: Vec<FunctionAttribute>,
@@ -15,7 +16,7 @@ pub struct AstFunction {
 impl AstFunction {
     pub fn new() -> Self {
         return Self {
-            children: Vec::new(),
+            block: AstBlock::new(),
             name: String::new(),
             args: Vec::new(),
             attrs: Vec::new(),
@@ -24,44 +25,12 @@ impl AstFunction {
 }
 
 impl Compile for AstFunction {
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return Some(&mut self.children);
-    }
-
-    fn compile_all(&mut self, compiler: &mut Compiler) -> Result<(), String> {
-        if let Err(e) = self.compile(compiler) {
-            return Err(e);
-        }
-
-        match self.get_children() {
-            Some(children) => {
-                for child in children.iter_mut() {
-                    if let Err(e) = child.compile_all(compiler) {
-                        return Err(e);
-                    }
-                }
-            }
-            None => {}
-        }
-
-        let module = compiler.get_module();
-        if module.opcodes.len() == 0 || !matches!(module.opcodes.last().unwrap(), Opcode::Ret()) {
-            module.opcodes.push(Opcode::LoadNull());
-            module.opcodes.push(Opcode::Ret());
-
-            compiler
-                .warnings
-                .push(format!("function {} implicitly returns null", self.name));
-        }
-
-        Ok(())
-    }
-
-    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         if self.name == "main" && self.args.len() > 0 {
             return Err("main function should not accept any arguments".into());
         }
 
+        // Add the function to the module
         let module = compiler.get_module();
         {
             let name = self.name.to_string();
@@ -74,10 +43,27 @@ impl Compile for AstFunction {
             ));
         }
 
+        // Do attributes
         if !self.attrs.contains(&FunctionAttribute::Naked) {
             for arg in self.args.iter().rev() {
                 module.opcodes.push(Opcode::StoreVar(arg.to_string()));
             }
+        }
+
+        // Compile the body
+        for child in self.block.children.iter_mut() {
+            child.compile(compiler)?;
+        }
+
+        // Check for implicit null
+        let module = compiler.get_module();
+        if module.opcodes.len() == 0 || !matches!(module.opcodes.last().unwrap(), Opcode::Ret()) {
+            module.opcodes.push(Opcode::LoadNull());
+            module.opcodes.push(Opcode::Ret());
+
+            compiler
+                .warnings
+                .push(format!("function {} implicitly returns null", self.name));
         }
 
         Ok(())

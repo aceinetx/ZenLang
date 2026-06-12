@@ -1,4 +1,6 @@
 use crate::ast::node::Compile;
+use crate::ast::node::StatementExpression;
+use crate::compiler::Compiler;
 use crate::opcode::Opcode;
 use alloc::boxed::*;
 use alloc::string::*;
@@ -19,21 +21,12 @@ impl AstDict {
 }
 
 impl Compile for AstDict {
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         if self.do_push {
             let mut names = Vec::<String>::new();
 
             for element in self.dict.iter_mut() {
-                if let Err(e) = element.1.compile(compiler) {
-                    return Err(e);
-                }
+                element.1.compile(compiler)?;
                 names.push(element.0.clone());
             }
 
@@ -42,5 +35,11 @@ impl Compile for AstDict {
         }
 
         Ok(())
+    }
+}
+
+impl StatementExpression for AstDict {
+    fn disable_push(&mut self) {
+        self.do_push = false;
     }
 }

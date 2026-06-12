@@ -9,7 +9,6 @@ pub mod block;
 pub mod boolean;
 pub mod break_stmt;
 pub mod continue_stmt;
-pub mod defer;
 pub mod dict;
 pub mod dynmod_stmt;
 pub mod elif_stmt;

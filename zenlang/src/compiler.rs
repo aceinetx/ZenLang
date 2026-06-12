@@ -38,14 +38,15 @@ impl<'a> Compiler<'_> {
     pub fn compile(&mut self) -> Result<(), String> {
         self.warnings.clear();
         if let Err(e) = self.parser.parse() {
-            return Err(e.into());
+            return Err(e.to_string());
         }
 
         let mut root = core::mem::take(&mut self.parser.root);
-        let result = root.compile_all(self);
+
+        let _ = root.compile(self)?;
 
         self.parser.root = root;
 
-        return result;
+        Ok(())
     }
 }

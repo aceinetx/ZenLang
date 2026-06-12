@@ -1,30 +1,26 @@
+use crate::ast::block::AstBlock;
+use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::*};
 use alloc::boxed::*;
+use alloc::string::String;
 use alloc::vec::*;
 
 pub struct AstWhileStmt {
     pub value: Option<Box<dyn Compile>>,
-    pub body: Vec<Box<dyn Compile>>,
+    pub body: AstBlock,
 }
 
 impl AstWhileStmt {
     pub fn new() -> Self {
         return Self {
             value: None,
-            body: Vec::new(),
+            body: AstBlock::new(),
         };
     }
 }
 
 impl Compile for AstWhileStmt {
-    fn get_children(&mut self) -> Option<&mut Vec<Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         let cmp_addr: usize;
         {
             let module = compiler.get_module();
@@ -33,9 +29,7 @@ impl Compile for AstWhileStmt {
 
         // * compile expression
         if let Some(value) = &mut self.value {
-            if let Err(e) = value.compile(compiler) {
-                return Err(e);
-            }
+            value.compile(compiler)?;
         } else {
             return Err("self.value is None".into());
         }
@@ -52,11 +46,7 @@ impl Compile for AstWhileStmt {
         // * compile body
         compiler.while_stmts_break_indexes.push(Vec::new());
         compiler.while_stmts_continue_indexes.push(Vec::new());
-        for node in &mut self.body {
-            if let Err(e) = node.compile(compiler) {
-                return Err(e);
-            }
-        }
+        self.body.compile(compiler)?;
 
         let exit_addr;
         {

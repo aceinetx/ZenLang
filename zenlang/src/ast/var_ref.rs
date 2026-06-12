@@ -1,6 +1,7 @@
+use crate::ast::node::StatementExpression;
+use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::Opcode};
 use alloc::string::*;
-use alloc::vec::*;
 
 pub struct AstVarRef {
     pub name: String,
@@ -8,31 +9,26 @@ pub struct AstVarRef {
 }
 
 impl AstVarRef {
-    pub fn new() -> Self {
+    pub fn new(name: String) -> Self {
         return Self {
-            name: String::new(),
+            name: name,
             do_push: true,
         };
     }
 }
 
 impl Compile for AstVarRef {
-    fn disable_push(&mut self) {
-        self.do_push = false;
-    }
-
-    fn get_children(&mut self) -> Option<&mut Vec<alloc::boxed::Box<dyn Compile>>> {
-        return None;
-    }
-
-    fn compile(
-        &mut self,
-        compiler: &mut crate::compiler::Compiler,
-    ) -> Result<(), alloc::string::String> {
+    fn compile(&mut self, compiler: &mut Compiler) -> Result<(), String> {
         let module = compiler.get_module();
         if self.do_push {
             module.opcodes.push(Opcode::LoadVar(self.name.clone()));
         }
         Ok(())
+    }
+}
+
+impl StatementExpression for AstVarRef {
+    fn disable_push(&mut self) {
+        self.do_push = false;
     }
 }
