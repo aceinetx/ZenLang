@@ -1,5 +1,4 @@
 use crate::ast::node::Compile;
-use crate::ast::node::StatementExpression;
 use crate::compiler::Compiler;
 use alloc::string::*;
 
@@ -8,10 +7,8 @@ pub struct AstGlobalVar {
 }
 
 impl AstGlobalVar {
-    pub fn new() -> Self {
-        return Self {
-            name: String::new(),
-        };
+    pub fn new(name: String) -> Self {
+        return Self { name: name };
     }
 }
 
@@ -21,8 +18,4 @@ impl Compile for AstGlobalVar {
         module.globals.push(self.name.clone());
         Ok(())
     }
-}
-
-impl StatementExpression for AstGlobalVar {
-    fn disable_push(&mut self) {}
 }

@@ -105,6 +105,12 @@ impl Parser<'_> {
                 self.back();
                 Box::new(block)
             }
+            Token::While => {
+                require_semicolon = false;
+                let node = Box::new(self.parse_while()?);
+                self.back();
+                node
+            }
             _ => {
                 self.back();
                 let mut expr = self.parse_postfix()?;

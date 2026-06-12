@@ -1,3 +1,4 @@
+use crate::ast::block::AstBlock;
 use crate::compiler::Compiler;
 use crate::{ast::node::Compile, opcode::*};
 use alloc::boxed::*;
@@ -6,14 +7,14 @@ use alloc::vec::*;
 
 pub struct AstWhileStmt {
     pub value: Option<Box<dyn Compile>>,
-    pub body: Vec<Box<dyn Compile>>,
+    pub body: AstBlock,
 }
 
 impl AstWhileStmt {
     pub fn new() -> Self {
         return Self {
             value: None,
-            body: Vec::new(),
+            body: AstBlock::new(),
         };
     }
 }
@@ -45,9 +46,7 @@ impl Compile for AstWhileStmt {
         // * compile body
         compiler.while_stmts_break_indexes.push(Vec::new());
         compiler.while_stmts_continue_indexes.push(Vec::new());
-        for node in &mut self.body {
-            node.compile(compiler)?;
-        }
+        self.body.compile(compiler)?;
 
         let exit_addr;
         {

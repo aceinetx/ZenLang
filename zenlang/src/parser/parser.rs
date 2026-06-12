@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use crate::ast::global_var::AstGlobalVar;
+use crate::ast::node::Compile;
 use crate::ast::*;
 use crate::parser::error;
 use crate::tokenizer::*;
@@ -41,13 +43,26 @@ impl<'a> Parser<'_> {
 
         let mut token = self.next();
         while !matches!(token, Token::EOF) {
-            match token {
-                Token::Fn => {
-                    let func = self.parse_function()?;
-                    self.root.children.push(Box::new(func));
+            let node: Box<dyn Compile> = match token {
+                Token::Let => {
+                    let name = self.next();
+                    let name = match name {
+                        Token::Identifier(name) => name,
+                        _ => return Err(error::Error::GlobalLetIdentifier(name)),
+                    };
+
+                    let semi = self.next();
+                    if !matches!(semi, Token::Semicolon) {
+                        return Err(error::Error::StatementSemicolon(semi));
+                    }
+
+                    let node = Box::new(AstGlobalVar::new(name));
+                    node
                 }
-                _ => {}
-            }
+                Token::Fn => Box::new(self.parse_function()?),
+                _ => return Err(error::Error::UnexpectedGlobalScopeToken(token)),
+            };
+            self.root.children.push(node);
             token = self.next();
         }
         Ok(())
