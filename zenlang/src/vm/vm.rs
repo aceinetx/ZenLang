@@ -23,7 +23,7 @@ pub struct VM {
     pub halted: bool,
     pub self_var: Value,
     pub args: Vec<Vec<Value>>,
-    pub(crate) timeout_funcs: Vec<(ProgramCounter, u128)>,
+    pub(crate) timeout_funcs: Vec<(Value, u128)>,
 }
 
 impl VM {
@@ -176,14 +176,14 @@ impl VM {
 
     fn collect_timeout_funcs(&mut self) {
         if let Some(platform) = &self.platform {
-            let mut timeout_func = ProgramCounter::new();
+            let mut timeout_func = Value::Null();
             let mut timeout = false;
             let mut timeout_func_index = 0;
 
-            for (i, func) in self.timeout_funcs.iter().enumerate() {
+            for (i, func) in self.timeout_funcs.iter_mut().enumerate() {
                 timeout_func_index = i;
                 if func.1 <= platform.get_time_millis() {
-                    timeout_func = func.0;
+                    timeout_func = core::mem::take(&mut func.0);
                     timeout = true;
                     break;
                 }
@@ -191,7 +191,7 @@ impl VM {
 
             if timeout {
                 self.timeout_funcs.remove(timeout_func_index);
-                self.stack.push(Value::FunctionRef(timeout_func, 0));
+                self.stack.push(timeout_func);
                 self.args.push(Vec::new());
                 self.op_call()
             }

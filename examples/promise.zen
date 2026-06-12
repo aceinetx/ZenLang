@@ -1,23 +1,48 @@
 mod stdlib;
 
 fn Promise_new executor {
-	let inst = {
+	let self = {
 		"_typename" = "Promise",
 		"state" = "pending",
-		"continuations" = [],
-	}
+		"on_finish" = null,
+	};
+
+	let resolve = fn value {
+		if self.state != "pending" {
+			return null;
+		}
+
+		if self.on_finish != null {
+			self.on_finish(value);
+		}
+
+		return null;
+	};
+	
 	executor(resolve);
 
-	return inst;
+	return self;
 }
 
-fn hello {
-	println("hello");
-	return null;
+fn sleep ms {
+	return Promise_new(fn resolve {
+		set_timeout(resolve, ms);
+		return null;
+	});
 }
 
 fn main {
-	set_timeout(hello, 1000);
-	while true {}
+	let promise = sleep(1000);
+	let promise.on_finish = fn v {
+		println("finished 1");
+		return null;
+	};
+	let promise = sleep(1000);
+	let promise.on_finish = fn v {
+		println("finished 2");
+		return null;
+	};
+
+	while(true){}
 	return null;
 }
