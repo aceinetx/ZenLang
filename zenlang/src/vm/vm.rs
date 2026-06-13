@@ -3,7 +3,9 @@ use crate::platform::Platform;
 use crate::scope::Scope;
 use crate::value::*;
 use crate::vm::ProgramCounter;
+use crate::vm::StopReason;
 use alloc::boxed::*;
+use alloc::collections::btree_set::BTreeSet;
 use alloc::format;
 use alloc::string::*;
 use alloc::vec::*;
@@ -23,6 +25,7 @@ pub struct VM {
     pub halted: bool,
     pub self_var: Value,
     pub args: Vec<Vec<Value>>,
+    pub breakpoints: BTreeSet<ProgramCounter>,
 }
 
 impl VM {
@@ -40,6 +43,7 @@ impl VM {
             halted: false,
             self_var: Value::Null(),
             args: Vec::new(),
+            breakpoints: BTreeSet::new(),
         };
     }
 
@@ -71,7 +75,7 @@ impl VM {
                 self.add_scope();
 
                 while !self.halted {
-                    if !self.step() {
+                    if self.step().is_some() {
                         break;
                     }
                 }
@@ -172,9 +176,13 @@ impl VM {
         }
     }
 
-    pub fn step(&mut self) -> bool {
+    pub fn step(&mut self) -> Option<StopReason> {
         if self.halted {
-            return false;
+            return Some(StopReason::Halt);
+        }
+
+        if !self.error.is_empty() {
+            return Some(StopReason::Error);
         }
 
         if self.pc.module >= self.modules.len() {
@@ -183,8 +191,7 @@ impl VM {
                 self.pc.module,
                 self.modules.len()
             );
-            self.halted = true;
-            return false;
+            return Some(StopReason::Error);
         }
 
         let cycle_module = self.pc.module;
@@ -196,19 +203,20 @@ impl VM {
                 opcodes.len(),
                 opcodes
             );
-            self.halted = true;
-            return false;
+            return Some(StopReason::Error);
         }
 
         let opcode = &opcodes[self.pc.inst as usize];
 
         self.execute_opcode(opcode);
-
         self.modules[cycle_module].opcodes = opcodes;
-
         self.pc.inst = self.pc.inst.wrapping_add(1);
 
-        return true;
+        if self.breakpoints.contains(&self.pc) {
+            return Some(StopReason::Breakpoint);
+        }
+
+        return None;
     }
 }
 
