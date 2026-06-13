@@ -58,32 +58,35 @@ fn Future_resolve value {
 fn sleep ms {
 	return Future_new(fn resolve {
 		set_timeout(fn {
-			println(resolve);
 			return resolve(null);
 		}, ms);
 		return null;
 	});
 }
 
-fn async_fn {
+fn async_fn ms {
 	let future = Future_new(fn resolve {
-		let future = sleep(1000);
+		let future = sleep(ms);
 		future.then(fn _ {
 			println("first sleep finished");
-			let future = sleep(1000);
+			let future = sleep(ms);
 			future.then(fn _ {
 				println("second sleep finished");
 				resolve(_);
+				return null;
 			});
+			return null;
 		});
+		return null;
 	});
 	return future;
 }
 
 fn main {
-	let future = async_fn();
+	let future = async_fn(100);
 	future.then(fn _ {
 		println("async_fn finished");
+		return null;
 	});
 
 	while(true){}
