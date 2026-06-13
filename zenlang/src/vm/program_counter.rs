@@ -1,6 +1,6 @@
 use core::fmt::Display;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct ProgramCounter {
     pub module: usize,
     pub inst: usize,
@@ -28,5 +28,13 @@ impl Default for ProgramCounter {
 impl Display for ProgramCounter {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "({};{})", self.module, self.inst)
+    }
+}
+
+impl Eq for ProgramCounter {}
+
+impl Ord for ProgramCounter {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        (self.module, self.inst).cmp(&(other.module, other.inst))
     }
 }
