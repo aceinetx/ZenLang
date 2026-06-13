@@ -191,8 +191,8 @@ impl VM {
 
             if timeout {
                 self.timeout_funcs.remove(timeout_func_index);
-                self.stack.push(timeout_func);
                 self.args.push(Vec::new());
+                self.stack.push(timeout_func);
                 self.op_call()
             }
         }
@@ -229,11 +229,16 @@ impl VM {
         let opcode = &opcodes[self.pc.inst as usize];
 
         self.execute_opcode(opcode);
+        self.pc.inst = self.pc.inst.wrapping_add(1);
+
+        if !self.error.is_empty() {
+            self.halted = true;
+            return false;
+        }
+
         self.collect_timeout_funcs();
 
         self.modules[cycle_module].opcodes = opcodes;
-
-        self.pc.inst = self.pc.inst.wrapping_add(1);
 
         return true;
     }

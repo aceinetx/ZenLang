@@ -13,6 +13,7 @@ fn Future_new executor {
 		if self.state != "pending" {
 			return null;
 		}
+		let self.state = "finished";
 		let self.value = value;
 
 		let i = 0;
@@ -47,32 +48,42 @@ fn Future_then on_finished {
 	});
 }
 
+fn Future_resolve value {
+	return Future_new(fn resolve {
+		resolve(value);
+		return null;
+	});
+}
+
 fn sleep ms {
 	return Future_new(fn resolve {
-		set_timeout(resolve, ms);
+		set_timeout(fn {
+			println(resolve);
+			return resolve(null);
+		}, ms);
 		return null;
 	});
 }
 
 fn async_fn {
-	return Future_new(fn resolve {
-		sleep(1000).then(fn v {
-			println("finished 1");
-			sleep(1000).then(fn v {
-				println("finished 2");
-				resolve(v);
-				return null;
+	let future = Future_new(fn resolve {
+		let future = sleep(1000);
+		future.then(fn _ {
+			println("first sleep finished");
+			let future = sleep(1000);
+			future.then(fn _ {
+				println("second sleep finished");
+				resolve(_);
 			});
-			return null;
 		});
-		return null;
 	});
+	return future;
 }
 
 fn main {
-	async_fn().then(fn v {
-		println("async 1");
-		return null;
+	let future = async_fn();
+	future.then(fn _ {
+		println("async_fn finished");
 	});
 
 	while(true){}
