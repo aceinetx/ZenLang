@@ -1,16 +1,22 @@
+use core::cell::RefCell;
+
 use crate::module::Module;
 use crate::platform::Platform;
 use crate::scope::Scope;
 use crate::value::*;
 use crate::vm::ProgramCounter;
 use crate::vm::StopReason;
+use crate::vm::global_state::GlobalState;
 use alloc::boxed::*;
 use alloc::collections::btree_set::BTreeSet;
 use alloc::format;
+use alloc::rc::Rc;
 use alloc::string::*;
 use alloc::vec::*;
 
-pub static MAX_STACK_SIZE: usize = 1000;
+pub static MAX_STACK_SIZE: usize = 1024;
+
+pub type VMError = String;
 
 pub struct VM {
     pub modules: Vec<Module>,
@@ -18,32 +24,30 @@ pub struct VM {
     pub stack: Vec<Value>,
     pub call_stack: Vec<ProgramCounter>,
     pub scopes: Vec<Scope>,
-    pub error: String,
     pub ret: Value,
     pub platform: Option<Box<dyn Platform>>,
-    pub global_scope: Scope,
     pub halted: bool,
     pub self_var: Value,
     pub args: Vec<Vec<Value>>,
     pub breakpoints: BTreeSet<ProgramCounter>,
+    pub global_state: Rc<RefCell<GlobalState>>,
 }
 
 impl VM {
-    pub fn new() -> VM {
+    pub fn new(global_state: Rc<RefCell<GlobalState>>) -> VM {
         return VM {
             modules: Vec::new(),
             pc: ProgramCounter::new(),
             stack: Vec::new(),
             call_stack: Vec::new(),
             scopes: Vec::new(),
-            error: String::new(),
             ret: Value::Null(),
             platform: None,
-            global_scope: Scope::new(),
             halted: false,
             self_var: Value::Null(),
             args: Vec::new(),
             breakpoints: BTreeSet::new(),
+            global_state: global_state,
         };
     }
 
@@ -58,13 +62,15 @@ impl VM {
         self.modules.push(module.clone());
 
         for var in module.globals.iter() {
-            if self.global_scope.get(var).is_some() {
+            let mut state = self.global_state.borrow_mut();
+
+            if state.global_scope.get(var).is_some() {
                 return Err(format!(
                     "multiple definition of global {} (second definition in module {})",
                     var, module.name
                 ));
             }
-            self.global_scope.create_if_doesnt_exist(var);
+            state.global_scope.create_if_doesnt_exist(var);
         }
 
         for func in module.functions.iter() {
@@ -74,22 +80,20 @@ impl VM {
 
                 self.add_scope();
 
+                let mut error = Ok(None);
                 while !self.halted {
-                    if self.step().is_some() {
-                        break;
-                    }
+                    error = self.step();
                 }
 
                 self.scopes.clear();
 
-                if !self.error.is_empty() {
+                if let Err(e) = error {
                     self.halted = true;
                     return Err(format!(
                         "in constructor of module {} at {}: {}",
-                        module.name, self.pc, self.error
+                        module.name, self.pc, e
                     ));
                 }
-                self.halted = false;
             }
         }
 
@@ -140,13 +144,14 @@ impl VM {
         return Err("cannot find entry function");
     }
 
-    pub(crate) fn check_stack_overflow(&mut self) {
+    pub(crate) fn check_stack_overflow(&mut self) -> Result<(), VMError> {
         if self.call_stack.len() >= MAX_STACK_SIZE {
-            self.error = "call stack overflow".into();
+            return Err("call stack overflow".into());
         }
         if self.stack.len() >= MAX_STACK_SIZE {
-            self.error = "call stack overflow".into();
+            return Err("value stack overflow".into());
         }
+        return Ok(());
     }
 
     pub(crate) fn add_scope(&mut self) {
@@ -176,52 +181,46 @@ impl VM {
         }
     }
 
-    pub fn step(&mut self) -> Option<StopReason> {
+    pub fn step(&mut self) -> Result<Option<StopReason>, VMError> {
         if self.halted {
-            return Some(StopReason::Halt);
-        }
-
-        if !self.error.is_empty() {
-            return Some(StopReason::Error);
+            return Ok(Some(StopReason::Halt));
         }
 
         if self.pc.module >= self.modules.len() {
-            self.error = format!(
+            self.halted = true;
+            return Err(format!(
                 "module pc overflow: {}/{}",
                 self.pc.module,
                 self.modules.len()
-            );
-            return Some(StopReason::Error);
+            ));
         }
 
         let cycle_module = self.pc.module;
         let opcodes = core::mem::take(&mut self.modules[cycle_module].opcodes);
         if self.pc.inst >= opcodes.len() {
-            self.error = format!(
+            self.halted = true;
+            return Err(format!(
                 "inst pc overflow: {}/{} {:?}",
                 self.pc.inst,
                 opcodes.len(),
                 opcodes
-            );
-            return Some(StopReason::Error);
+            ));
         }
 
         let opcode = &opcodes[self.pc.inst as usize];
 
-        self.execute_opcode(opcode);
+        if let Err(e) = self.execute_opcode(opcode) {
+            self.halted = true;
+            return Err(e);
+        }
+
         self.modules[cycle_module].opcodes = opcodes;
         self.pc.inst = self.pc.inst.wrapping_add(1);
 
         if self.breakpoints.contains(&self.pc) {
-            return Some(StopReason::Breakpoint);
+            return Ok(Some(StopReason::Breakpoint));
         }
 
-        return None;
-    }
-}
-
-impl Default for VM {
-    fn default() -> Self {
-        Self::new()
+        return Ok(None);
     }
 }

@@ -72,7 +72,7 @@ impl Value {
     }
 
     /// Perform an equal (==) operation. All operands are valid
-    pub fn equal(&self, other: &Value, vm: &VM) -> bool {
+    pub fn equal(&self, other: &Value) -> bool {
         match (self, other) {
             (Value::Number(x), Value::Number(y)) => x == y,
             (Value::String(a), Value::String(b)) => a == b,
@@ -84,7 +84,7 @@ impl Value {
                             return false;
                         }
                         for i in 0..a.len() {
-                            if !a[i].equal(&b[i], vm) {
+                            if !a[i].equal(&b[i]) {
                                 return false;
                             }
                         }
@@ -99,7 +99,7 @@ impl Value {
                             if !b.contains_key(pair.0) {
                                 return false;
                             }
-                            if !pair.1.equal(&b[pair.0], vm) {
+                            if !pair.1.equal(&b[pair.0]) {
                                 return false;
                             }
                         }

@@ -1,9 +1,8 @@
 use crate::value::*;
-use crate::vm::VM;
-use alloc::format;
+use crate::vm::*;
 
 impl VM {
-    pub fn op_vmcall(&mut self, index: u8) {
+    pub fn op_vmcall(&mut self, index: u8) -> Result<(), VMError> {
         match self.args.pop() {
             Some(mut args) => {
                 while !args.is_empty() {
@@ -14,9 +13,11 @@ impl VM {
         }
 
         self.vmcall(index);
+
+        return Ok(());
     }
 
-    pub fn op_dynvmcall(&mut self) {
+    pub fn op_dynvmcall(&mut self) -> Result<(), VMError> {
         match self.args.pop() {
             Some(mut args) => {
                 while !args.is_empty() {
@@ -26,18 +27,20 @@ impl VM {
             None => (),
         }
 
-        let index;
-        if let Some(value) = self.stack.pop() {
-            if let Value::Number(value) = value {
-                index = value as i64 as u8;
-            } else {
-                self.error = format!("dynvmcall failed: value on stack is not a number");
-                return;
+        let index = match self.stack.pop() {
+            Some(value) => match value {
+                Value::Number(value) => value as i64 as u8,
+                _ => {
+                    return Err("dynvmcall failed: value on stack is not a number".into());
+                }
+            },
+            None => {
+                return Err("dynvmcall failed: no more values on stack".into());
             }
-        } else {
-            self.error = format!("dynvmcall failed: no more values on stack");
-            return;
-        }
+        };
+
         self.vmcall(index);
+
+        return Ok(());
     }
 }

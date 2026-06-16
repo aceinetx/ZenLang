@@ -1,5 +1,6 @@
+use crate::vm::VMError;
+
 pub enum StopReason {
     Halt,
-    Error,
     Breakpoint,
 }

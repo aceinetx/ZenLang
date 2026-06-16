@@ -17,6 +17,7 @@ pub mod opcode;
 pub mod parser;
 pub mod platform;
 pub mod scope;
+pub mod state;
 pub mod stdlib;
 pub mod tokenizer;
 pub mod value;

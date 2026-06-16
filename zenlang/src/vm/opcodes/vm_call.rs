@@ -1,45 +1,43 @@
 use crate::value::*;
-use crate::vm::VM;
+use crate::vm::*;
 use alloc::format;
 use alloc::string::*;
 use alloc::vec::*;
 
 impl VM {
-    pub fn op_beginargs(&mut self) {
+    pub fn op_beginargs(&mut self) -> Result<(), VMError> {
         self.args.push(Vec::new());
+        Ok(())
     }
 
-    pub fn op_pusharg(&mut self) {
+    pub fn op_pusharg(&mut self) -> Result<(), VMError> {
         match self.args.last_mut() {
             Some(args) => args,
             None => {
-                self.error = "pusharg: beginargs wasn't called".into();
-                return;
+                return Err("pusharg: beginargs wasn't called".into());
             }
         }
         .push(match self.stack.pop() {
             Some(value) => value,
             None => {
-                self.error = "pusharg: no values on stack".into();
-                return;
+                return Err("pusharg: no values on stack".into());
             }
         });
+        return Ok(());
     }
 
-    pub fn op_storearg(&mut self, name: &String) {
+    pub fn op_storearg(&mut self, name: &String) -> Result<(), VMError> {
         let value = match match self.args.last_mut() {
             Some(args) => args,
             None => {
-                self.error = "storearg: beginargs wasn't called".into();
-                return;
+                return Err("storearg: beginargs wasn't called".into());
             }
         }
         .pop()
         {
             Some(value) => value,
             None => {
-                self.error = "storearg: no more arguments".into();
-                return;
+                return Err("storearg: no more arguments".into());
             }
         };
 
@@ -50,14 +48,15 @@ impl VM {
         let scope = self.scopes.last_mut().unwrap();
         scope.create_if_doesnt_exist(&name);
         *scope.get_mut(&name).unwrap() = value;
+
+        return Ok(());
     }
 
-    pub fn op_call(&mut self) {
+    pub fn op_call(&mut self) -> Result<(), VMError> {
         let value = match self.stack.pop() {
             Some(value) => value,
             None => {
-                self.error = "call: stack is empty".into();
-                return;
+                return Err("call: stack is empty".into());
             }
         };
 
@@ -77,17 +76,16 @@ impl VM {
                 let diff = match self.args.last() {
                     Some(args) => args,
                     None => {
-                        self.error = "call: beginargs wasn't called".into();
-                        return;
+                        return Err("call: beginargs wasn't called".into());
                     }
                 }
                 .len();
 
                 if diff != args_count {
-                    self.error = format!(
+                    return Err(format!(
                         "call: expected exactly {} arguments, but provided {} (trying to call a function at {})",
                         args_count, diff, self.pc,
-                    );
+                    ));
                 }
             }
             Value::Lambda(pc, scope, args_count) => {
@@ -101,25 +99,25 @@ impl VM {
                 let diff = match self.args.last() {
                     Some(args) => args,
                     None => {
-                        self.error = "call: beginargs wasn't called".into();
-                        return;
+                        return Err("call: beginargs wasn't called".into());
                     }
                 }
                 .len();
 
                 if diff != args_count {
-                    self.error = format!(
+                    return Err(format!(
                         "call: expected exactly {} arguments, but provided {} (trying to call a lambda at {})",
                         args_count, diff, self.pc,
-                    );
+                    ));
                 }
             }
             _ => {
-                self.error = format!(
+                return Err(format!(
                     "call: value on stack is not a function reference or a lambda ({})",
                     value.get_type()
-                );
+                ));
             }
         }
+        return Ok(());
     }
 }

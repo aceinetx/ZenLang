@@ -1,12 +1,11 @@
 use crate::module::Module;
-use crate::vm::VM;
+use crate::vm::*;
 use alloc::string::*;
 use alloc::vec::*;
 
 /// Platform trait
 ///
 /// This should be implemented and passed to the VM, otherwise OS dependant features won't work
-
 pub trait Platform {
     fn print(&self, s: String);
     fn println(&self, s: String) {
@@ -18,7 +17,7 @@ pub trait Platform {
     }
     fn read_file_bytes(&self, name: String) -> Option<Vec<u8>>;
     fn write_file_bytes(&self, name: String, bytes: Vec<u8>);
-    fn vmcall(&self, _vm: &mut VM, _index: u8) -> bool {
-        return false;
+    fn vmcall(&self, _vm: &mut VM, _index: u8) -> Option<Result<(), VMError>> {
+        return None;
     }
 }

@@ -1,13 +1,13 @@
 use crate::value::*;
 use crate::vm::VM;
-use alloc::format;
+use crate::vm::VMError;
 use alloc::string::*;
 
 impl VM {
     /// Perform Aiafs operation
     ///
     /// The reason it's in a function (not in execute_opcode) is because it needs to be recursive
-    fn aiafs(&mut self, value: &mut Value, set_to: Value, index: Value) {
+    fn aiafs(&mut self, value: &mut Value, set_to: Value, index: Value) -> Result<(), VMError> {
         match value {
             Value::Object(obj) => match &mut *obj.borrow_mut() {
                 Object::Array(array) => {
@@ -15,17 +15,14 @@ impl VM {
                     if let Value::Number(index) = index {
                         usz_index = index as usize;
                     } else {
-                        self.error =
-                            format!("aiafs failed: expected number when indexing an array");
-                        return;
+                        return Err("aiafs failed: expected number when indexing an array".into());
                     }
 
                     if usz_index > array.len() {
-                        self.error = format!("aiafs failed: index outside bounds");
-                        return;
+                        return Err("aiafs failed: index outside bounds".into());
                     } else if usz_index == array.len() {
                         array.push(set_to);
-                        return;
+                        return Ok(());
                     }
 
                     array[usz_index] = set_to;
@@ -35,47 +32,41 @@ impl VM {
                     if let Value::String(s) = index {
                         s_index = s;
                     } else {
-                        self.error =
-                            format!("aiafs failed: expected string when indexing a dictionary");
-                        return;
+                        return Err(
+                            "aiafs failed: expected string when indexing a dictionary".into()
+                        );
                     }
 
                     dict.insert(s_index, set_to);
                 }
             },
             _ => {
-                self.error = format!("aiafs failed: value is not an object");
+                return Err("aiafs failed: value is not an object".into());
             }
         }
-        return;
+        return Ok(());
     }
 
-    pub fn op_aiafs(&mut self) {
-        let set_value: Value;
-        let index: Value;
-        let mut object: Value;
+    pub fn op_aiafs(&mut self) -> Result<(), VMError> {
+        let index = match self.stack.pop() {
+            Some(value) => value,
+            None => {
+                return Err("aiafs failed: no more values on stack for index".into());
+            }
+        };
+        let set_value = match self.stack.pop() {
+            Some(value) => value,
+            None => {
+                return Err("aiafs failed: no more values on stack for set value".into());
+            }
+        };
+        let mut object = match self.stack.pop() {
+            Some(value) => value,
+            None => {
+                return Err("aiafs failed: no more values on stack for object".into());
+            }
+        };
 
-        if let Some(value) = self.stack.pop() {
-            index = value;
-        } else {
-            self.error = format!("aiafs failed: no more values on stack for index");
-            return;
-        }
-
-        if let Some(value) = self.stack.pop() {
-            set_value = value;
-        } else {
-            self.error = format!("aiafs failed: no more values on stack for set value");
-            return;
-        }
-
-        if let Some(value) = self.stack.pop() {
-            object = value;
-        } else {
-            self.error = format!("aiafs failed: no more values on stack for object");
-            return;
-        }
-
-        self.aiafs(&mut object, set_value, index);
+        return self.aiafs(&mut object, set_value, index);
     }
 }

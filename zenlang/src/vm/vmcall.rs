@@ -8,6 +8,46 @@ use alloc::rc::Rc;
 use alloc::string::*;
 use alloc::vec::*;
 
+macro_rules! pop_stack {
+    ($stack: expr) => {
+        match $stack.pop() {
+            Some(value) => value,
+            None => {
+                return Err("vmcall: no value on stack".into());
+            }
+        }
+    };
+}
+
+macro_rules! pop_value {
+    ($stack: expr, $pat: path) => {
+        match pop_stack!($stack) {
+            $pat(v) => v,
+            _ => {
+                return Err(format!("vmcall: expected {}", stringify!($pat)));
+            }
+        }
+    };
+}
+
+macro_rules! pop_object_pair {
+    ($stack: expr, $pat: path) => {{
+        let obj = pop_value!($stack, Value::Object);
+        match &*obj.borrow_mut() {
+            $pat(v) => (obj, v),
+            _ => {
+                return Err(format!("vmcall: expected {}", stringify!($pat)));
+            }
+        }
+    }};
+}
+
+macro_rules! pop_object {
+    ($stack: expr, $pat: path) => {
+        pop_object_pair!($stack, $pat).1
+    };
+}
+
 impl VM {
     /// Performs a vmcall
     ///
@@ -15,26 +55,18 @@ impl VM {
     /// - 1: print
     /// - 2: println
     /// - 3: get_string
-    pub fn vmcall(&mut self, index: u8) {
+    pub fn vmcall(&mut self, index: u8) -> Result<(), VMError> {
         match index {
             1 => {
                 // print
                 if let Some(platform) = &self.platform {
-                    if let Some(value) = self.stack.pop() {
-                        platform.print(format!("{}", value));
-                        return;
-                    }
-                    self.error = "vmcall: no value on stack".into();
+                    platform.print(format!("{}", pop_stack!(self.stack)));
                 }
             }
             2 => {
                 // println
                 if let Some(platform) = &self.platform {
-                    if let Some(value) = self.stack.pop() {
-                        platform.println(format!("{}", value));
-                        return;
-                    }
-                    self.error = "vmcall: no value on stack".into();
+                    platform.println(format!("{}", pop_stack!(self.stack)));
                 }
             }
             3 => {
@@ -48,218 +80,71 @@ impl VM {
             4 => {
                 // load module dynamically
                 if let Some(platform) = &self.platform {
-                    if let Some(value) = self.stack.pop() {
-                        if let Value::String(name) = value {
-                            //platform.println(format!("{}", value));
-                            self.error = format!("module not found: {}", name);
-                            if let Some(module) = platform.get_module(name) {
-                                self.error.clear();
+                    let name = pop_value!(self.stack, Value::String);
 
-                                let _ = self.load_module(&module);
-                            }
-                            return;
-                        } else {
-                            self.error = "vmcall: expected a string".into();
-                        }
+                    if let Some(module) = platform.get_module(name) {
+                        let _ = self.load_module(&module);
+                    } else {
+                        return Err(format!("module not found: {}", name));
                     }
-                    self.error = "vmcall: no value on stack".into();
+                    return Ok(());
                 }
             }
             5 => {
                 // array size
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Object(obj) = value {
-                        if let Object::Array(array) = &*obj.borrow() {
-                            self.stack.push(Value::Number(array.len() as f64));
-                        } else {
-                            self.error = "vmcall: expected an array".into();
-                        }
-                    } else {
-                        self.error = "vmcall: expected an object".into();
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                }
+                let array = pop_object!(self.stack, Object::Array);
+
+                self.stack.push(Value::Number(array.len() as f64));
             }
             6 => {
                 // array push
-                let mut array;
                 let element;
 
-                if let Some(value) = self.stack.pop() {
-                    element = value;
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Object(obj) = value {
-                        if let Object::Array(value) = &*obj.borrow() {
-                            array = value.clone();
-                        } else {
-                            self.error = "vmcall: expected an array".into();
-                            return;
-                        }
-                    } else {
-                        self.error = "vmcall: expected an object".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let value = pop_stack!(self.stack);
+                let (obj, array) = pop_object_pair!(self.stack, Object::Array);
 
                 array.push(element);
-                let ptr = Rc::new(RefCell::new(Object::Array(array)));
-                self.stack.push(Value::Object(ptr));
+                self.stack.push(Value::Object(obj));
             }
             7 => {
                 // array pop
-                let mut array;
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Object(obj) = value {
-                        if let Object::Array(value) = &*obj.borrow() {
-                            array = value.clone();
-                        } else {
-                            self.error = "vmcall: expected an array".into();
-                            return;
-                        }
-                    } else {
-                        self.error = "vmcall: expected an object".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let (obj, array) = pop_object_pair!(self.stack, Object::Array);
 
                 array.pop();
-                let ptr = Rc::new(RefCell::new(Object::Array(array)));
-                self.stack.push(Value::Object(ptr));
+                self.stack.push(Value::Object(obj));
             }
             8 => {
                 // array remove
-                let mut array;
-                let at;
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Number(value) = value {
-                        at = value as usize;
-                    } else {
-                        self.error = "vmcall: expected a number".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Object(obj) = value {
-                        if let Object::Array(value) = &*obj.borrow() {
-                            array = value.clone();
-                        } else {
-                            self.error = "vmcall: expected an array".into();
-                            return;
-                        }
-                    } else {
-                        self.error = "vmcall: expected an object".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let value = pop_stack!(self.stack);
+                let at = pop_value!(self.stack, Value::Number) as usize;
+                let (obj, array) = pop_object_pair!(self.stack, Object::Array);
 
                 if at >= array.len() {
                     self.stack.push(Value::Null());
-                    return;
+                    return Ok(());
                 }
 
                 array.remove(at);
-                let ptr = Rc::new(RefCell::new(Object::Array(array)));
-                self.stack.push(Value::Object(ptr));
+                self.stack.push(Value::Object(obj));
             }
             9 => {
                 // array insert
-                let mut array;
-                let at;
-                let element;
-
-                if let Some(value) = self.stack.pop() {
-                    element = value;
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Number(value) = value {
-                        at = value as usize;
-                    } else {
-                        self.error = "vmcall: expected a number".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Object(obj) = value {
-                        if let Object::Array(value) = &*obj.borrow() {
-                            array = value.clone();
-                        } else {
-                            self.error = "vmcall: expected an array".into();
-                            return;
-                        }
-                    } else {
-                        self.error = "vmcall: expected an object".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let element = pop_stack!(self.stack);
+                let at = pop_value!(self.stack, Value::Number) as usize;
+                let (obj, array) = pop_object_pair!(self.stack, Object::Array);
 
                 if at >= array.len() {
                     self.stack.push(Value::Null());
-                    return;
+                    return Ok(());
                 }
+
                 array.insert(at, element);
-                let ptr = Rc::new(RefCell::new(Object::Array(array)));
-                self.stack.push(Value::Object(ptr));
+                self.stack.push(Value::Object(obj));
             }
             10 => {
                 // string split
-                let string;
-                let delimiter;
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::String(value) = value {
-                        delimiter = value;
-                    } else {
-                        self.error = "vmcall: expected a string".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::String(value) = value {
-                        string = value;
-                    } else {
-                        self.error = "vmcall: expected a string".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let delimiter = pop_value!(self.stack, Value::String);
+                let string = pop_value!(self.stack, Value::String);
 
                 let mut array: Vec<Value> = Vec::new();
                 for part in string.split(&delimiter) {
@@ -271,19 +156,7 @@ impl VM {
             }
             11 => {
                 // read file bytes
-                let name;
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::String(value) = value {
-                        name = value;
-                    } else {
-                        self.error = "vmcall: expected a string".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let name = pop_value!(self.stack, Value::String);
 
                 if let Some(platform) = &self.platform {
                     if let Some(bytes) = platform.read_file_bytes(name) {
@@ -301,19 +174,7 @@ impl VM {
             }
             12 => {
                 // read file str
-                let name;
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::String(value) = value {
-                        name = value;
-                    } else {
-                        self.error = "vmcall: expected a string".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let name = pop_value!(self.stack, Value::String);
 
                 if let Some(platform) = &self.platform {
                     if let Some(bytes) = platform.read_file_bytes(name) {
@@ -330,45 +191,19 @@ impl VM {
             }
             13 => {
                 // write file bytes
-                let name;
                 let mut bytes: Vec<u8> = Vec::new();
 
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Object(obj) = value {
-                        if let Object::Array(array) = &*obj.borrow() {
-                            for value in array.iter() {
-                                if let Value::Number(byte) = value {
-                                    bytes.push(*byte as u8);
-                                } else {
-                                    self.error =
-                                        "vmcall: expected non number in a byte array".into();
-                                    return;
-                                }
-                            }
-                        } else {
-                            self.error = "vmcall: expected a byte array".into();
-                            return;
-                        }
+                let array = pop_object!(self.stack, Object::Array);
+
+                for value in array.iter() {
+                    if let Value::Number(byte) = value {
+                        bytes.push(*byte as u8);
                     } else {
-                        self.error = "vmcall: expected an object".into();
-                        return;
+                        return Err("vmcall: found non number in a byte array".into());
                     }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
                 }
 
-                if let Some(value) = self.stack.pop() {
-                    if let Value::String(value) = value {
-                        name = value;
-                    } else {
-                        self.error = "vmcall: expected a string".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let name = pop_value!(self.stack, Value::String);
 
                 if let Some(platform) = &self.platform {
                     platform.write_file_bytes(name, bytes);
@@ -376,34 +211,13 @@ impl VM {
             }
             14 => {
                 // write file str
-                let name;
                 let mut bytes: Vec<u8> = Vec::new();
 
-                if let Some(value) = self.stack.pop() {
-                    if let Value::String(string) = value {
-                        for ch in string.chars() {
-                            bytes.push(ch as u8);
-                        }
-                    } else {
-                        self.error = "vmcall: expected a string".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
+                let string = pop_value!(self.stack, Value::String);
+                for ch in string.chars() {
+                    bytes.push(ch as u8);
                 }
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::String(value) = value {
-                        name = value;
-                    } else {
-                        self.error = "vmcall: expected a string".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let name = pop_value!(self.stack, Value::String);
 
                 if let Some(platform) = &self.platform {
                     platform.write_file_bytes(name, bytes);
@@ -411,19 +225,7 @@ impl VM {
             }
             15 => {
                 // ord
-                let ch;
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::String(value) = value {
-                        ch = value;
-                    } else {
-                        self.error = "vmcall: expected a string".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let ch = pop_value!(self.stack, Value::String);
 
                 if ch.is_empty() {
                     self.stack.push(Value::Null());
@@ -434,78 +236,46 @@ impl VM {
             }
             16 => {
                 // chr
-                let ch;
-
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Number(value) = value {
-                        ch = value as i64 as u8;
-                    } else {
-                        self.error = "vmcall: expected a number".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let ch = pop_value!(self.stack, Value::Number) as i64 as u8;
 
                 self.stack
                     .push(Value::String(String::from_utf8_lossy(&[ch]).to_string()));
             }
             17 => {
                 // stringify
-                if let Some(value) = self.stack.pop() {
-                    self.stack.push(Value::String(format!("{}", value)));
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                self.stack
+                    .push(Value::String(format!("{}", pop_stack!(self.stack))));
             }
             18 => {
                 // number
-                if let Some(value) = self.stack.pop() {
-                    if let Value::String(num_str) = value {
-                        match num_str.parse::<f64>() {
-                            Err(e) => {
-                                self.stack.push(interop_err(Value::String(e.to_string())));
-                            }
-                            Ok(num) => {
-                                self.stack.push(interop_ok(Value::Number(num)));
-                            }
-                        }
-                    } else {
-                        self.error = "vmcall: expected a string".into();
-                        return;
+                let num_str = pop_value!(self.stack, Value::String);
+                match num_str.parse::<f64>() {
+                    Err(e) => {
+                        self.stack.push(interop_err(Value::String(e.to_string())));
                     }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
+                    Ok(num) => {
+                        self.stack.push(interop_ok(Value::Number(num)));
+                    }
                 }
             }
             19 => {
                 // clone
-                if let Some(value) = self.stack.pop() {
-                    if let Value::Object(obj) = value {
-                        let obj = &*obj.borrow();
-                        let new = Rc::new(RefCell::new(obj.clone()));
-                        self.stack.push(Value::Object(new));
-                    } else {
-                        self.error = "vmcall: expected an object".into();
-                        return;
-                    }
-                } else {
-                    self.error = "vmcall: no value on stack".into();
-                    return;
-                }
+                let obj = &*pop_value!(self.stack, Value::Object).borrow();
+
+                let new = Rc::new(RefCell::new(obj.clone()));
+                self.stack.push(Value::Object(new));
             }
             _ => {
                 if let Some(mut platform) = self.platform.take() {
                     let result = platform.as_mut().vmcall(self, index);
-                    if !result {
-                        self.error = format!("vmcall: invalid vmcall index {}", index);
+                    if result.is_none() {
+                        return Err(format!("vmcall: invalid vmcall index {}", index));
                     }
                     self.platform = Some(platform);
                 }
+                return Ok(());
             }
         }
+        return Ok(());
     }
 }
