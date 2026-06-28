@@ -170,9 +170,12 @@ impl VM {
         return None;
     }
 
-    pub fn run_until_halt(&mut self) {
-        while !self.halted {
-            self.step();
+    pub fn run_until_halt(&mut self) -> StopReason {
+        loop {
+            let reason = self.step();
+            if reason.is_some() {
+                return reason.unwrap();
+            }
         }
     }
 
